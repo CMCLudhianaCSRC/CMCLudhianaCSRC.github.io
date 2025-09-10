@@ -42,7 +42,7 @@
                 <span id="logoPlaceholder" class="text-slate-400 text-xs p-2 text-center">Logo<br/>Placeholder</span>
             </div>
             <div class="flex-1">
-                <h1 class="text-3xl md:text-4xl font-bold tracking-tight">Forensics Quiz Scoreboard 2025</h1>
+                <h1 id="mainTitle" class="text-3xl md:text-4xl font-bold tracking-tight px-2 py-1 rounded-lg hover:bg-slate-200/60 focus:outline-none">Forensics Quiz Scoreboard 2025</h1>
             </div>
             <div class="no-print">
                 <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white ring-1 ring-slate-200 shadow-sm cursor-pointer hover:bg-slate-50">
@@ -83,8 +83,10 @@
     <script>
         // --- Persistent state ---
         const LS_KEY = 'scoreboard.v1';
+        const DEFAULT_TITLE = 'Forensics Quiz Scoreboard 2025';
 
         const state = {
+            title: DEFAULT_TITLE,
             rounds: 3,
             teams: [
                 { id: crypto.randomUUID(), name: 'Team A', scores: [] },
@@ -95,7 +97,7 @@
 
         function loadState() {
             try {
-                const raw = sessionStorage.getItem(LS_KEY);
+                const raw = localStorage.getItem(LS_KEY);
                 if (!raw) return;
                 const parsed = JSON.parse(raw);
                 if (parsed && typeof parsed === 'object') {
@@ -106,13 +108,19 @@
 
         function saveState() {
             try {
-                sessionStorage.setItem(LS_KEY, JSON.stringify(state));
+                localStorage.setItem(LS_KEY, JSON.stringify(state));
             } catch (e) { console.warn('Failed to save state:', e); }
         }
 
         // --- UI rendering ---
         const tableBody = document.getElementById('tableBody');
         const roundHeadersEnd = document.getElementById('roundHeadersEnd');
+        const mainTitle = document.getElementById('mainTitle');
+
+        function renderTitle() {
+            mainTitle.textContent = state.title;
+            document.title = state.title;
+        }
 
         function renderRoundHeaders() {
             // Remove existing dynamic round headers
@@ -228,6 +236,7 @@
         }
 
         function render() {
+            renderTitle();
             renderRoundHeaders();
             renderTableRows();
         }
@@ -255,7 +264,7 @@
 
         document.getElementById('clearAllBtn').addEventListener('click', () => {
             if (!confirm('Clear teams, rounds, and scores?')) return;
-            Object.assign(state, { rounds: 3, teams: [ { id: crypto.randomUUID(), name: 'Team A', scores: [] }, { id: crypto.randomUUID(), name: 'Team B', scores: [] } ] });
+            Object.assign(state, { title: DEFAULT_TITLE, rounds: 3, teams: [ { id: crypto.randomUUID(), name: 'Team A', scores: [] }, { id: crypto.randomUUID(), name: 'Team B', scores: [] } ] });
             saveState();
             render();
         });
@@ -305,6 +314,21 @@
                 applyLogo();
             };
             reader.readAsDataURL(file);
+        });
+
+        // Title editing
+        mainTitle.contentEditable = 'true';
+        mainTitle.spellcheck = false;
+        mainTitle.addEventListener('focus', () => mainTitle.classList.add('cell-focus'));
+        mainTitle.addEventListener('blur', () => {
+            mainTitle.classList.remove('cell-focus');
+            const txt = mainTitle.textContent.trim();
+            state.title = txt || state.title;
+            renderTitle();
+            saveState();
+        });
+        mainTitle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); mainTitle.blur(); }
         });
 
         // Keyboard save shortcut
