@@ -36,7 +36,7 @@
     }
     .wrap{max-width:1200px; margin:24px auto; padding:16px;}
 
-    .card{background:linear-gradient(180deg, color-mix(in oklab, var(--surface) 95%, transparent), var(--surface)); border:1px solid #1f2937; box-shadow:var(--shadow); border-radius:var(--radius);}
+    .card{background:linear-gradient(180deg, color-mix(in oklab, var(--surface) 95%, transparent), var(--surface)); border:1px solid #1f2937; box-shadow:var(--shadow); border-radius:var(--radius);} 
     .pad{padding:18px;}
 
     .titlebar{
@@ -129,7 +129,7 @@
 
   <script>
     /* ===============================
-       SCOREBOARD — MULTI‑HOUSE (LOCALSTORAGE)
+       SCOREBOARD — MULTI‑HOUSE (LOCALSTORAGE + Supabase-ready)
        Works on GitHub Pages (no server)
        =============================== */
 
@@ -173,17 +173,17 @@
     }
 
     const saveDebounced = (function(){
-      let t=null; return function(){ clearTimeout(t); t=setTimeout(save, 250); };
+      let t=null; return function(){ clearTimeout(t); t=setTimeout(()=>window.save(), 250); };
     })();
 
     function applyTheme(view){
       const themeName = (view==='MAIN') ? 'MAIN' : view;
       document.body.classList.remove('theme-RED','theme-GREEN','theme-BLUE','theme-YELLOW');
       if(view!=='MAIN') document.body.classList.add('theme-'+view);
-      $('#themeName').textContent = themeName;
-      $('#viewLabel').textContent = themeName;
+      document.getElementById('themeName').textContent = themeName;
+      document.getElementById('viewLabel').textContent = themeName;
       $$('.view-buttons .btn').forEach(b=> b.classList.toggle('active', b.dataset.view===view));
-      $('#appTitle').innerHTML = `${state.settings.title} — <span id="viewLabel">${themeName}</span>`;
+      document.getElementById('appTitle').innerHTML = `${state.settings.title} — <span id="viewLabel">${themeName}</span>`;
     }
 
     function visibleTeams(){
@@ -208,15 +208,15 @@
     function render(){
       ensureScoresLength();
       const teams = visibleTeams();
-      if($('#toggleSort').checked){ teams.sort((a,b)=> sum(b.scores)-sum(a.scores)); }
+      if(document.getElementById('toggleSort').checked){ teams.sort((a,b)=> sum(b.scores)-sum(a.scores)); }
 
       const thead = [`<thead><tr><th style="min-width:220px;text-align:left">Team</th>`];
       for(let i=0;i<state.rounds;i++) thead.push(`<th>R${i+1}</th>`);
       thead.push(`<th>Total</th><th style="width:1%"></th></tr></thead>`);
 
       const rows = teams.map(team=>{
-        const scoreCells = team.scores.map((val, idx)=>`
-          <td>
+        const scoreCells = team.scores.map((val, idx)=>
+          `<td>
             <div class="score-cell">
               <input class="score-input" type="number" min="0" step="1" value="${val}" data-team="${team.id}" data-round="${idx}" />
               <div class="mini-row">
@@ -247,8 +247,8 @@
 
       const html = `<table>${thead.join('')}${rows?`<tbody>${rows}</tbody>`:`<tbody><tr><td colspan="${state.rounds+3}" style="text-align:center;color:var(--muted);padding:22px">No teams yet in this view. Click <strong>+ Add Team</strong> to begin.</td></tr></tbody>`}${tfoot}</table>`;
 
-      $('#tableWrap').innerHTML = html;
-      $('#roundCount').textContent = String(state.rounds);
+      document.getElementById('tableWrap').innerHTML = html;
+      document.getElementById('roundCount').textContent = String(state.rounds);
       saveDebounced();
     }
 
@@ -334,20 +334,20 @@
         btn.addEventListener('click', ()=> setView(btn.dataset.view));
       });
 
-      $('#addTeamBtn').addEventListener('click', addTeamPrompt);
-      $('#addRoundBtn').addEventListener('click', addRound);
-      $('#removeRoundBtn').addEventListener('click', removeRound);
-      $('#resetViewBtn').addEventListener('click', resetCurrentView);
-      $('#clearAllBtn').addEventListener('click', clearAll);
-      $('#exportBtn').addEventListener('click', exportJSON);
-      $('#importFile').addEventListener('change', (e)=>{
+      document.getElementById('addTeamBtn').addEventListener('click', addTeamPrompt);
+      document.getElementById('addRoundBtn').addEventListener('click', addRound);
+      document.getElementById('removeRoundBtn').addEventListener('click', removeRound);
+      document.getElementById('resetViewBtn').addEventListener('click', resetCurrentView);
+      document.getElementById('clearAllBtn').addEventListener('click', clearAll);
+      document.getElementById('exportBtn').addEventListener('click', exportJSON);
+      document.getElementById('importFile').addEventListener('change', (e)=>{
         const f = e.target.files && e.target.files[0]; if(f) importJSON(f);
         e.target.value = '';
       });
-      $('#toggleSort').addEventListener('change', (e)=>{ state.settings.sortByTotal = e.target.checked; render(); });
+      document.getElementById('toggleSort').addEventListener('change', (e)=>{ state.settings.sortByTotal = e.target.checked; render(); });
 
       // Delegated events inside table
-      $('#tableWrap').addEventListener('input', (e)=>{
+      document.getElementById('tableWrap').addEventListener('input', (e)=>{
         const el = e.target;
         if(el.matches('[data-team-name]')){
           const team = state.teams.find(t=> t.id === el.dataset.teamName);
@@ -372,7 +372,7 @@
         }
       });
 
-      $('#tableWrap').addEventListener('click', (e)=>{
+      document.getElementById('tableWrap').addEventListener('click', (e)=>{
         const el = e.target;
         if(!(el instanceof HTMLElement)) return;
         if(el.dataset.act === 'inc' || el.dataset.act === 'dec'){
@@ -399,7 +399,7 @@
     }
 
     function updateFooterTotals(){
-      const table = $('#tableWrap table'); if(!table) return;
+      const table = document.querySelector('#tableWrap table'); if(!table) return;
       const teams = visibleTeams();
       // Update per-round totals
       const foot = table.tFoot; if(!foot) return;
@@ -423,8 +423,116 @@
     load();
     attachEvents();
     // Restore sort toggle
-    const sortChk = $('#toggleSort'); if(sortChk) sortChk.checked = !!state.settings.sortByTotal;
+    const sortChk = document.getElementById('toggleSort'); if(sortChk) sortChk.checked = !!state.settings.sortByTotal;
     setView(currentView || 'MAIN');
+  </script>
+
+  <!-- ================= SUPABASE SYNC MODULE ================= -->
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    // ---- CONFIG (EDIT THESE) ----
+    const SUPABASE_URL = "https://zrojpvsmsdqduvheglgz.supabase.co"; // [EDIT 1]
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpyb2pwdnNtc2RxZHV2aGVnbGd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0ODg2NjIsImV4cCI6MjA3MzA2NDY2Mn0.Dfz5qQqhKUccBJrH7OS3D-hPPfYIRAYdOx2g_LiCGE4";               // [EDIT 2]
+    const BOARD_ID = "scoreboard_states";                         // [optional]
+    // -----------------------------
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Keep references to original local load/save
+    const originalLoad = window.load;
+    const originalSave = window.save;
+
+    // Track whether we loaded from remote successfully
+    let _loadedRemote = false;
+
+    const defaultState = () => ({
+      rounds: 5,
+      teams: [],
+      settings: { title: "Forensics Quiz Scoreboard 2025", lastView: "MAIN", sortByTotal: false }
+    });
+
+    async function remoteLoad() {
+      try{
+        const { data, error } = await supabase
+          .from("scoreboard_states")
+          .select("payload")
+          .eq("id", BOARD_ID)
+          .maybeSingle(); // Avoid PGRST116 when 0 rows
+
+        if (error) return false; // we'll fallback
+        if (!data || !data.payload) return false; // nothing seeded yet
+
+        window.state = data.payload;
+        window.currentView = (state.settings && state.settings.lastView) || "MAIN";
+        window.applyTheme(currentView);
+        window.render();
+        _loadedRemote = true;
+        return true;
+      }catch{
+        return false;
+      }
+    }
+
+    let remoteSaveTimer = null;
+    function remoteSaveDebounced() {
+      clearTimeout(remoteSaveTimer);
+      remoteSaveTimer = setTimeout(async () => {
+        try{
+          if (!window.state) window.state = defaultState(); // ensure non-null payload
+          await supabase.from("scoreboard_states").upsert({
+            id: BOARD_ID,
+            payload: window.state,
+          });
+        }catch{}
+      }, 300);
+    }
+
+    // Override global load/save so the debouncer calls remote too
+    window.load = async function() {
+      const ok = await remoteLoad();
+      if (!ok) {
+        // If no remote row, prefer localStorage; otherwise seed defaults
+        if (localStorage.getItem(LS_KEY)) {
+          originalLoad();
+        } else {
+          window.state = defaultState();
+          window.currentView = "MAIN";
+          window.applyTheme(currentView);
+          window.render();
+        }
+      }
+    };
+    window.save = function() {
+      try { originalSave(); } catch {}
+      if (!window.state) window.state = defaultState(); // guard against null payload
+      remoteSaveDebounced();
+    };
+
+    // Optional: live sync across devices (enable Realtime on this table in Supabase)
+    try {
+      supabase.channel("scoreboard-sync")
+        .on("postgres_changes",
+          { event: "*", schema: "public", table: "scoreboard_states", filter: `id=eq.${BOARD_ID}` },
+          (payload) => {
+            if (payload.new?.payload) {
+              window.state = payload.new.payload;
+              window.currentView = (state.settings && state.settings.lastView) || "MAIN";
+              window.applyTheme(currentView);
+              window.render();
+            }
+          }
+        ).subscribe();
+    } catch {}
+
+    // Ensure first paint uses remote if available, otherwise seed remote immediately once
+    try {
+      await window.load();
+      if (!_loadedRemote) {
+        // Seed remote with whatever we have locally/defaults to avoid future 0-row selects
+        try { await supabase.from("scoreboard_states").upsert({ id: BOARD_ID, payload: window.state || defaultState() }); } catch {}
+      }
+    } catch {}
   </script>
 </body>
 </html>
