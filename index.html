@@ -1,351 +1,430 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Forensics Quiz Scoreboard 2025</title>
-    <!-- Tailwind (CDN) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        display: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial"],
-                    },
-                },
-            },
-        };
-    </script>
-    <!-- Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
-    <style>
-        ::-webkit-scrollbar { height: 10px; width: 10px; }
-        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 9999px; }
-        .score-input::-webkit-outer-spin-button,.score-input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
-        .score-input[type=number]{ -moz-appearance:textfield; appearance: textfield; }
-        .cell-focus { box-shadow: inset 0 0 0 2px rgb(59 130 246 / .6); border-radius: .5rem; }
-        @media print {
-            .no-print { display: none !important; }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Forensics Quiz Scoreboard 2025</title>
+  <style>
+    /* ---------- THEME ---------- */
+    :root{
+      --accent: #6366f1; /* default (MAIN) */
+      --bg: #0b1220;
+      --surface: #0f172a;
+      --surface-2: #111827;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --shadow: 0 10px 30px rgba(0,0,0,.3);
+      --radius: 18px;
+    }
+    body.theme-RED    { --accent:#ef4444; }
+    body.theme-GREEN  { --accent:#22c55e; }
+    body.theme-BLUE   { --accent:#3b82f6; }
+    body.theme-YELLOW { --accent:#f59e0b; }
+
+    /* ---------- LAYOUT ---------- */
+    html,body{height:100%;}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, color-mix(in oklab, var(--accent) 35%, transparent), transparent),
+        radial-gradient(1200px 600px at 110% 10%, color-mix(in oklab, var(--accent) 20%, transparent), transparent),
+        linear-gradient(180deg, #0b1220, #0a0f1a 60%, #090e18);
+    }
+    .wrap{max-width:1200px; margin:24px auto; padding:16px;}
+
+    .card{background:linear-gradient(180deg, color-mix(in oklab, var(--surface) 95%, transparent), var(--surface)); border:1px solid #1f2937; box-shadow:var(--shadow); border-radius:var(--radius);}
+    .pad{padding:18px;}
+
+    .titlebar{
+      text-align:center; padding:24px 12px 12px; position:relative;
+    }
+    .titlebar h1{ margin:0; font-size: clamp(20px, 3vw, 34px); letter-spacing:.3px; }
+    .subtitle{ color:var(--muted); font-size:14px; margin-top:6px; }
+
+    .view-buttons{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:14px 0 6px; }
+    .btn{
+      appearance:none; border:1px solid #263041; background:linear-gradient(180deg, color-mix(in oklab, var(--surface-2) 92%, transparent), var(--surface-2));
+      color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600; letter-spacing:.2px; transition:200ms ease;
+    }
+    .btn:hover{ transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.25); }
+    .btn.active, .btn.primary{ border-color: color-mix(in oklab, var(--accent) 60%, #263041); outline:1px solid color-mix(in oklab, var(--accent) 45%, transparent); }
+
+    .toolbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:center; margin:16px 0; }
+    .toolbar .btn{ padding:9px 12px; }
+    .accent{ background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 25%, var(--surface-2)), color-mix(in oklab, var(--accent) 15%, var(--surface-2))); border-color: color-mix(in oklab, var(--accent) 60%, #263041); }
+
+    .pill{ font-size:12px; padding:6px 10px; border-radius:999px; background:color-mix(in oklab, var(--accent) 15%, #0f172a); border:1px solid color-mix(in oklab, var(--accent) 45%, #1f2937); }
+
+    .grid{ overflow:auto; border-top:1px solid #1f2937; }
+    table{ width:100%; border-collapse:separate; border-spacing:0; }
+    thead th{ position:sticky; top:0; backdrop-filter: blur(6px); background:linear-gradient(180deg, color-mix(in oklab, var(--surface) 92%, transparent), var(--surface)); border-bottom:1px solid #1f2937; padding:12px; font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:#b6c2d2; }
+    tbody td{ border-bottom:1px solid #162033; padding:10px; }
+    tbody tr:hover td{ background:linear-gradient(180deg, color-mix(in oklab, var(--accent) 6%, transparent), transparent); }
+
+    .team-input{ width:100%; background:#0b1220; color:var(--text); border:1px solid #1f2937; border-radius:10px; padding:9px 10px; }
+    .score-cell{ display:grid; grid-template-rows:auto auto; gap:6px; }
+    .score-input{ width:80px; max-width:100%; text-align:center; background:#0b1220; color:var(--text); border:1px solid #1f2937; border-radius:10px; padding:8px; }
+    .mini-row{ display:flex; justify-content:center; gap:6px; }
+    .mini{ font-size:12px; padding:6px 10px; border-radius:8px; border:1px solid #283246; background:#0e1624; color:#cbd5e1; cursor:pointer; }
+
+    .total-badge{ display:inline-block; padding:6px 10px; border-radius:12px; background: color-mix(in oklab, var(--accent) 12%, #0f172a); border:1px solid color-mix(in oklab, var(--accent) 40%, #1f2937); font-weight:700; }
+    .house-chip{ font-weight:700; letter-spacing:.04em; }
+
+    .footer{ display:flex; gap:10px; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-top:14px; color:var(--muted); font-size:12px; }
+    .right{ display:flex; gap:8px; align-items:center; }
+
+    .hidden{ display:none !important; }
+
+    /* Responsive tweaks */
+    @media (max-width:700px){
+      .score-input{ width:64px; }
+      thead th, tbody td{ padding:8px; }
+    }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 min-h-screen font-display">
-    <div class="max-w-7xl mx-auto p-4 md:p-8">
-        <!-- Header / Branding -->
-        <div class="flex flex-col items-center gap-4 mb-6 text-center">
-            <div class="w-16 h-16 bg-white rounded-2xl shadow-md ring-1 ring-slate-200 flex items-center justify-center overflow-hidden">
-                <!-- 🔁 PLACEHOLDER: Replace the src below with your logo / image URL -->
-                <img id="logoImg" src="" alt="Logo placeholder" class="w-full h-full object-cover hidden"/>
-                <span id="logoPlaceholder" class="text-slate-400 text-xs p-2 text-center">Logo<br/>Placeholder</span>
-            </div>
-            <div class="flex-1">
-                <h1 id="mainTitle" class="text-3xl md:text-4xl font-bold tracking-tight px-2 py-1 rounded-lg hover:bg-slate-200/60 focus:outline-none">Forensics Quiz Scoreboard 2025</h1>
-            </div>
-            <div class="no-print">
-                <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white ring-1 ring-slate-200 shadow-sm cursor-pointer hover:bg-slate-50">
-                    <i class="ph ph-image"></i>
-                    <span>Set Logo</span>
-                    <input type="file" id="logoFile" accept="image/*" class="hidden"/>
-                </label>
-            </div>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="titlebar">
+        <h1 id="appTitle">Forensics Quiz Scoreboard 2025 — <span id="viewLabel">MAIN</span></h1>
+        <div class="subtitle">Overall scoreboard (MAIN). Switch to a House to manage its teams & scores. Everything auto‑saves.</div>
+        <div class="view-buttons pad">
+          <button class="btn primary" data-view="MAIN" id="btnMain">Main Scoreboard</button>
+          <button class="btn" data-view="RED"   id="btnRED"><span class="house-chip">RED</span></button>
+          <button class="btn" data-view="GREEN" id="btnGREEN"><span class="house-chip">GREEN</span></button>
+          <button class="btn" data-view="BLUE"  id="btnBLUE"><span class="house-chip">BLUE</span></button>
+          <button class="btn" data-view="YELLOW"id="btnYELLOW"><span class="house-chip">YELLOW</span></button>
         </div>
+      </div>
 
-        <!-- Table wrapper -->
-        <div class="overflow-auto rounded-2xl ring-1 ring-slate-200 bg-white shadow">
-            <table id="scoreTable" class="min-w-full border-separate border-spacing-0">
-                <thead class="bg-slate-50 text-slate-600">
-                    <tr>
-                        <th class="sticky left-0 z-10 bg-slate-50 px-4 py-3 text-left font-semibold border-b border-slate-200">Team</th>
-                        <!-- Dynamic Round Headers here -->
-                        <th id="roundHeadersEnd" class="px-4 py-3 text-left font-semibold border-b border-slate-200">Total</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
+      <div class="pad">
+        <div class="toolbar">
+          <button class="btn accent" id="addTeamBtn">+ Add Team</button>
+          <button class="btn" id="addRoundBtn">+ Add Round</button>
+          <button class="btn" id="removeRoundBtn">− Remove Last Round</button>
+          <button class="btn" id="resetViewBtn">Reset Current View</button>
+          <button class="btn" id="clearAllBtn">Clear All Data</button>
+          <span class="pill">Rounds: <strong id="roundCount">0</strong></span>
+          <label class="btn" for="importFile">Import JSON</label>
+          <input id="importFile" type="file" accept="application/json" class="hidden" />
+          <button class="btn" id="exportBtn">Export JSON</button>
+          <label class="btn" for="toggleSort"><input type="checkbox" id="toggleSort"/> Sort by Total</label>
         </div>
+      </div>
 
-        <!-- Toolbar -->
-        <div class="no-print grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mt-6">
-            <button type="button" id="addTeamBtn" class="px-3 py-2 rounded-xl bg-indigo-600 text-white font-semibold shadow hover:bg-indigo-500">+ Team</button>
-            <button type="button" id="addRoundBtn" class="px-3 py-2 rounded-xl bg-indigo-600 text-white font-semibold shadow hover:bg-indigo-500">+ Round</button>
+      <div class="grid pad" id="tableWrap">
+        <!-- table injected here -->
+      </div>
 
-            <button type="button" id="resetScoresBtn" class="px-3 py-2 rounded-xl bg-white ring-1 ring-slate-200 shadow hover:bg-slate-50">Reset Scores</button>
-            <button type="button" id="clearAllBtn" class="px-3 py-2 rounded-xl bg-white ring-1 ring-slate-200 shadow hover:bg-slate-50">Clear All</button>
-
-            <button type="button" id="exportCsvBtn" class="px-3 py-2 rounded-xl bg-white ring-1 ring-slate-200 shadow hover:bg-slate-50">Export CSV</button>
-            <button type="button" id="printBtn" class="px-3 py-2 rounded-xl bg-white ring-1 ring-slate-200 shadow hover:bg-slate-50">Print</button>
-        </div>
+      <div class="pad footer">
+        <div>Tip: Click a House (RED/GREEN/BLUE/YELLOW) to switch theme + filter teams. MAIN shows all teams.</div>
+        <div class="right"><span>Theme:</span> <span class="pill" id="themeName">MAIN</span></div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // --- Persistent state ---
-        const LS_KEY = 'scoreboard.v1';
-        const DEFAULT_TITLE = 'Forensics Quiz Scoreboard 2025';
+  <script>
+    /* ===============================
+       SCOREBOARD — MULTI‑HOUSE (LOCALSTORAGE)
+       Works on GitHub Pages (no server)
+       =============================== */
 
-        const state = {
-            title: DEFAULT_TITLE,
-            rounds: 3,
-            teams: [
-                { id: crypto.randomUUID(), name: 'Team A', scores: [] },
-                { id: crypto.randomUUID(), name: 'Team B', scores: [] },
-            ],
-            logo: null,
-        };
+    const LS_KEY = 'forensics_scoreboard_v3';
 
-        function loadState() {
-            try {
-                const raw = localStorage.getItem(LS_KEY);
-                if (!raw) return;
-                const parsed = JSON.parse(raw);
-                if (parsed && typeof parsed === 'object') {
-                    Object.assign(state, parsed);
-                }
-            } catch (e) { console.warn('Failed to load state:', e); }
+    /** @typedef {{id:string,name:string,house:'RED'|'GREEN'|'BLUE'|'YELLOW',scores:number[]}} Team */
+    /** @typedef {{rounds:number, teams:Team[], settings:{title:string,lastView:string, sortByTotal:boolean}}} State */
+
+    /** @type {State} */
+    let state = null;
+    let currentView = 'MAIN';
+
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+    function uid(){ return 't' + Math.random().toString(36).slice(2,9); }
+
+    function load(){
+      try{
+        const raw = localStorage.getItem(LS_KEY);
+        if(raw){
+          state = JSON.parse(raw);
+          // Data guards
+          state.rounds = Math.max(1, Number(state.rounds||1));
+          state.teams = Array.isArray(state.teams) ? state.teams : [];
+          state.settings = Object.assign({title:'Forensics Quiz Scoreboard 2025', lastView:'MAIN', sortByTotal:false}, state.settings||{});
+        } else {
+          state = { rounds: 5, teams: [], settings: { title:'Forensics Quiz Scoreboard 2025', lastView:'MAIN', sortByTotal:false } };
         }
+      }catch(e){
+        console.error('Load failed, resetting.', e);
+        state = { rounds: 5, teams: [], settings: { title:'Forensics Quiz Scoreboard 2025', lastView:'MAIN', sortByTotal:false } };
+      }
+      currentView = state.settings.lastView || 'MAIN';
+      applyTheme(currentView);
+    }
 
-        function saveState() {
-            try {
-                localStorage.setItem(LS_KEY, JSON.stringify(state));
-            } catch (e) { console.warn('Failed to save state:', e); }
+    function save(){
+      try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+      catch(e){ console.warn('Save failed', e); }
+    }
+
+    const saveDebounced = (function(){
+      let t=null; return function(){ clearTimeout(t); t=setTimeout(save, 250); };
+    })();
+
+    function applyTheme(view){
+      const themeName = (view==='MAIN') ? 'MAIN' : view;
+      document.body.classList.remove('theme-RED','theme-GREEN','theme-BLUE','theme-YELLOW');
+      if(view!=='MAIN') document.body.classList.add('theme-'+view);
+      $('#themeName').textContent = themeName;
+      $('#viewLabel').textContent = themeName;
+      $$('.view-buttons .btn').forEach(b=> b.classList.toggle('active', b.dataset.view===view));
+      $('#appTitle').innerHTML = `${state.settings.title} — <span id="viewLabel">${themeName}</span>`;
+    }
+
+    function visibleTeams(){
+      if(currentView==='MAIN') return [...state.teams];
+      return state.teams.filter(t=>t.house===currentView);
+    }
+
+    function ensureScoresLength(){
+      // Ensure each team has scores array length === state.rounds
+      state.teams.forEach(t=>{
+        t.scores = Array.isArray(t.scores) ? t.scores : [];
+        if(t.scores.length < state.rounds){
+          while(t.scores.length < state.rounds) t.scores.push(0);
+        } else if(t.scores.length > state.rounds){
+          t.scores = t.scores.slice(0, state.rounds);
         }
+      });
+    }
 
-        // --- UI rendering ---
-        const tableBody = document.getElementById('tableBody');
-        const roundHeadersEnd = document.getElementById('roundHeadersEnd');
-        const mainTitle = document.getElementById('mainTitle');
+    function sum(arr){ return arr.reduce((a,b)=> a + (Number(b)||0), 0); }
 
-        function renderTitle() {
-            mainTitle.textContent = state.title;
-            document.title = state.title;
+    function render(){
+      ensureScoresLength();
+      const teams = visibleTeams();
+      if($('#toggleSort').checked){ teams.sort((a,b)=> sum(b.scores)-sum(a.scores)); }
+
+      const thead = [`<thead><tr><th style="min-width:220px;text-align:left">Team</th>`];
+      for(let i=0;i<state.rounds;i++) thead.push(`<th>R${i+1}</th>`);
+      thead.push(`<th>Total</th><th style="width:1%"></th></tr></thead>`);
+
+      const rows = teams.map(team=>{
+        const scoreCells = team.scores.map((val, idx)=>`
+          <td>
+            <div class="score-cell">
+              <input class="score-input" type="number" min="0" step="1" value="${val}" data-team="${team.id}" data-round="${idx}" />
+              <div class="mini-row">
+                <button class="mini" data-act="dec" data-team="${team.id}" data-round="${idx}">−</button>
+                <button class="mini" data-act="inc" data-team="${team.id}" data-round="${idx}">+</button>
+              </div>
+            </div>
+          </td>`).join('');
+        const total = sum(team.scores);
+        return `<tr>
+          <td>
+            <input class="team-input" type="text" value="${escapeHtml(team.name)}" data-team-name="${team.id}" />
+            <div class="subtitle" style="font-size:11px;margin-top:6px">House: <span class="house-chip">${team.house}</span></div>
+          </td>
+          ${scoreCells}
+          <td><span class="total-badge">${total}</span></td>
+          <td><button class="mini" data-act="removeTeam" data-team="${team.id}">Delete</button></td>
+        </tr>`
+      }).join('');
+
+      const tfoot = `
+        <tfoot><tr>
+          <th style="text-align:left">Totals</th>
+          ${Array.from({length:state.rounds}).map((_,i)=>`<th>${sum(teams.map(t=> Number(t.scores[i])||0))}</th>`).join('')}
+          <th>${sum(teams.map(t=> sum(t.scores)))}</th>
+          <th></th>
+        </tr></tfoot>`;
+
+      const html = `<table>${thead.join('')}${rows?`<tbody>${rows}</tbody>`:`<tbody><tr><td colspan="${state.rounds+3}" style="text-align:center;color:var(--muted);padding:22px">No teams yet in this view. Click <strong>+ Add Team</strong> to begin.</td></tr></tbody>`}${tfoot}</table>`;
+
+      $('#tableWrap').innerHTML = html;
+      $('#roundCount').textContent = String(state.rounds);
+      saveDebounced();
+    }
+
+    function addTeamPrompt(){
+      let defaultName = `Team ${state.teams.length+1}`;
+      const name = prompt('Team name?', defaultName);
+      if(!name) return;
+      let house = currentView;
+      if(currentView==='MAIN'){
+        house = prompt('House for this team? (RED / GREEN / BLUE / YELLOW)', 'RED');
+        if(!house) return; house = house.toUpperCase().trim();
+        if(!['RED','GREEN','BLUE','YELLOW'].includes(house)){ alert('Please enter one of: RED, GREEN, BLUE, YELLOW'); return; }
+      }
+      state.teams.push({ id: uid(), name: name.trim(), house, scores: Array.from({length: state.rounds}, ()=>0) });
+      render();
+    }
+
+    function removeTeam(teamId){
+      const team = state.teams.find(t=>t.id===teamId);
+      if(!team) return;
+      if(!confirm(`Delete team "${team.name}"?`)) return;
+      state.teams = state.teams.filter(t=>t.id!==teamId);
+      render();
+    }
+
+    function addRound(){ state.rounds = Math.min(100, state.rounds + 1); render(); }
+    function removeRound(){ if(state.rounds>1){ state.rounds -= 1; render(); } }
+
+    function resetCurrentView(){
+      const teams = visibleTeams();
+      if(!teams.length){ alert('No teams in this view.'); return; }
+      if(!confirm('Reset ALL scores in the current view to 0?')) return;
+      const ids = new Set(teams.map(t=>t.id));
+      state.teams.forEach(t=>{ if(ids.has(t.id)) t.scores = t.scores.map(()=>0); });
+      render();
+    }
+
+    function clearAll(){
+      if(!confirm('Completely clear ALL teams & scores? This cannot be undone.')) return;
+      state.teams = [];
+      state.rounds = 5;
+      render();
+    }
+
+    function setView(view){
+      currentView = view;
+      state.settings.lastView = view;
+      applyTheme(view);
+      render();
+    }
+
+    function exportJSON(){
+      const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'forensics_scoreboard.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=> URL.revokeObjectURL(a.href), 5000);
+    }
+
+    function importJSON(file){
+      const reader = new FileReader();
+      reader.onload = e => {
+        try{
+          const obj = JSON.parse(String(e.target.result));
+          if(!obj || typeof obj !== 'object') throw new Error('Invalid JSON');
+          // simple validation
+          obj.rounds = Math.max(1, Number(obj.rounds||1));
+          obj.teams = Array.isArray(obj.teams) ? obj.teams : [];
+          obj.settings = Object.assign({title:'Forensics Quiz Scoreboard 2025', lastView:'MAIN', sortByTotal:false}, obj.settings||{});
+          state = obj;
+          currentView = state.settings.lastView || 'MAIN';
+          applyTheme(currentView);
+          render();
+        }catch(err){ alert('Import failed: '+err.message); }
+      };
+      reader.readAsText(file);
+    }
+
+    function attachEvents(){
+      // View switching
+      $$('.view-buttons .btn').forEach(btn=>{
+        btn.addEventListener('click', ()=> setView(btn.dataset.view));
+      });
+
+      $('#addTeamBtn').addEventListener('click', addTeamPrompt);
+      $('#addRoundBtn').addEventListener('click', addRound);
+      $('#removeRoundBtn').addEventListener('click', removeRound);
+      $('#resetViewBtn').addEventListener('click', resetCurrentView);
+      $('#clearAllBtn').addEventListener('click', clearAll);
+      $('#exportBtn').addEventListener('click', exportJSON);
+      $('#importFile').addEventListener('change', (e)=>{
+        const f = e.target.files && e.target.files[0]; if(f) importJSON(f);
+        e.target.value = '';
+      });
+      $('#toggleSort').addEventListener('change', (e)=>{ state.settings.sortByTotal = e.target.checked; render(); });
+
+      // Delegated events inside table
+      $('#tableWrap').addEventListener('input', (e)=>{
+        const el = e.target;
+        if(el.matches('[data-team-name]')){
+          const team = state.teams.find(t=> t.id === el.dataset.teamName);
+          if(team){ team.name = el.value.slice(0, 60); saveDebounced(); }
         }
-
-        function renderRoundHeaders() {
-            // Remove existing dynamic round headers
-            const theadRow = roundHeadersEnd.parentElement;
-            [...theadRow.querySelectorAll('[data-round-header]')].forEach(el => el.remove());
-            // Insert new round headers before Total
-            for (let r = 0; r < state.rounds; r++) {
-                const th = document.createElement('th');
-                th.className = 'px-4 py-3 text-left font-semibold border-b border-slate-200';
-                th.dataset.roundHeader = '1';
-                th.innerHTML = `Round <span class="text-slate-400">${r + 1}</span>`;
-                theadRow.insertBefore(th, roundHeadersEnd);
+        if(el.matches('.score-input')){
+          const team = state.teams.find(t=> t.id === el.dataset.team);
+          const idx = Number(el.dataset.round);
+          if(team && !Number.isNaN(idx)){
+            const v = clampInt(el.value, 0, 9999);
+            team.scores[idx] = v; // sanitized
+            // Update total badge cell without full re-render
+            const row = el.closest('tr');
+            if(row){
+              const total = sum(team.scores);
+              const badge = row.querySelector('.total-badge'); if(badge) badge.textContent = String(total);
+              // update column totals footer
+              updateFooterTotals();
             }
+            saveDebounced();
+          }
         }
+      });
 
-        function ensureScoresLength(team) {
-            if (!Array.isArray(team.scores)) team.scores = [];
-            while (team.scores.length < state.rounds) team.scores.push(0);
-            if (team.scores.length > state.rounds) team.scores.length = state.rounds;
+      $('#tableWrap').addEventListener('click', (e)=>{
+        const el = e.target;
+        if(!(el instanceof HTMLElement)) return;
+        if(el.dataset.act === 'inc' || el.dataset.act === 'dec'){
+          const team = state.teams.find(t=> t.id === el.dataset.team);
+          const idx = Number(el.dataset.round);
+          if(!team) return;
+          let val = Number(team.scores[idx]||0);
+          val += (el.dataset.act==='inc' ? 1 : -1);
+          if(val<0) val = 0; if(val>9999) val = 9999;
+          team.scores[idx] = val;
+          // reflect in the paired input field
+          const input = el.parentElement?.previousElementSibling;
+          if(input && input.classList.contains('score-input')) input.value = String(val);
+          // Update totals minimally
+          const row = el.closest('tr');
+          if(row){ const badge = row.querySelector('.total-badge'); if(badge) badge.textContent = String(sum(team.scores)); }
+          updateFooterTotals();
+          saveDebounced();
         }
-
-        function teamTotal(team) {
-            return team.scores.reduce((a, b) => a + (Number(b) || 0), 0);
+        if(el.dataset.act === 'removeTeam'){
+          removeTeam(el.dataset.team);
         }
+      });
+    }
 
-        function renderTableRows() {
-            tableBody.innerHTML = '';
-            state.teams.forEach((team, rowIdx) => {
-                ensureScoresLength(team);
-                const tr = document.createElement('tr');
+    function updateFooterTotals(){
+      const table = $('#tableWrap table'); if(!table) return;
+      const teams = visibleTeams();
+      // Update per-round totals
+      const foot = table.tFoot; if(!foot) return;
+      const cells = foot.rows[0].cells; // [0] is label, last is empty
+      for(let i=0;i<state.rounds;i++){
+        const tot = sum(teams.map(t=> Number(t.scores[i])||0));
+        cells[i+1].textContent = String(tot);
+      }
+      cells[state.rounds+1].textContent = String(sum(teams.map(t=> sum(t.scores))));
+    }
 
-                // Team Name (sticky)
-                const nameTd = document.createElement('td');
-                nameTd.className = 'sticky left-0 z-10 bg-white/95 backdrop-blur px-4 py-2 border-b border-slate-100 whitespace-nowrap';
-                nameTd.style.minWidth = '12rem';
-                nameTd.appendChild(renderTeamNameCell(team));
-                tr.appendChild(nameTd);
+    function clampInt(v, min, max){
+      v = Math.round(Number(v||0)); if(Number.isNaN(v)) v = 0; return Math.min(max, Math.max(min, v));
+    }
 
-                // Round score inputs
-                for (let c = 0; c < state.rounds; c++) {
-                    tr.appendChild(renderScoreCell(team, c));
-                }
+    function escapeHtml(str){
+      return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+    }
 
-                // Total cell
-                const totalTd = document.createElement('td');
-                totalTd.className = 'px-4 py-2 border-b border-slate-100 font-semibold text-right';
-                totalTd.textContent = teamTotal(team);
-                totalTd.dataset.totalFor = team.id;
-                tr.appendChild(totalTd);
-
-                tableBody.appendChild(tr);
-            });
-        }
-
-        function renderTeamNameCell(team) {
-            const wrap = document.createElement('div');
-            wrap.className = 'flex items-center gap-2';
-
-            const nameDiv = document.createElement('div');
-            nameDiv.className = 'px-2 py-1 rounded-lg hover:bg-slate-50 focus:outline-none';
-            nameDiv.contentEditable = 'true';
-            nameDiv.spellcheck = false;
-            nameDiv.textContent = team.name;
-            nameDiv.addEventListener('focus', () => nameDiv.classList.add('cell-focus'));
-            nameDiv.addEventListener('blur', () => {
-                nameDiv.classList.remove('cell-focus');
-                const txt = nameDiv.textContent.trim();
-                team.name = txt || team.name;
-                saveState();
-            });
-            nameDiv.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') { e.preventDefault(); nameDiv.blur(); }
-            });
-
-            const delBtn = document.createElement('button');
-            delBtn.className = 'no-print ml-1 p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50';
-            delBtn.innerHTML = '<i class="ph ph-trash"></i>';
-            delBtn.title = 'Remove team';
-            delBtn.addEventListener('click', () => {
-                if (confirm(`Remove team \"${team.name}\"?`)) {
-                    state.teams = state.teams.filter(t => t.id !== team.id);
-                    saveState();
-                    render();
-                }
-            });
-
-            wrap.appendChild(nameDiv);
-            wrap.appendChild(delBtn);
-            return wrap;
-        }
-
-        function renderScoreCell(team, roundIdx) {
-            const td = document.createElement('td');
-            td.className = 'px-2 py-1 border-b border-slate-100';
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.className = 'score-input w-24 md:w-28 lg:w-32 text-right px-3 py-2 rounded-xl bg-slate-50 focus:bg-white ring-1 ring-transparent focus:ring-indigo-200 transition';
-            input.value = team.scores[roundIdx] ?? 0;
-            input.inputMode = 'numeric';
-            input.min = '0';
-            input.addEventListener('input', () => {
-                team.scores[roundIdx] = Number(input.value || 0);
-                updateTeamTotal(team);
-                saveState();
-            });
-            td.appendChild(input);
-            return td;
-        }
-
-        function updateTeamTotal(team) {
-            const totalCell = document.querySelector(`[data-total-for="${team.id}"]`);
-            if (totalCell) totalCell.textContent = teamTotal(team);
-        }
-
-        function render() {
-            renderTitle();
-            renderRoundHeaders();
-            renderTableRows();
-        }
-
-        // --- Actions ---
-        document.getElementById('addTeamBtn').addEventListener('click', () => {
-            state.teams.push({ id: crypto.randomUUID(), name: `Team ${String.fromCharCode(65 + state.teams.length)}`, scores: Array(state.rounds).fill(0) });
-            saveState();
-            render();
-        });
-
-        document.getElementById('addRoundBtn').addEventListener('click', () => {
-            state.rounds += 1;
-            state.teams.forEach(t => t.scores.push(0));
-            saveState();
-            render();
-        });
-
-        document.getElementById('resetScoresBtn').addEventListener('click', () => {
-            if (!confirm('Reset all scores to 0?')) return;
-            state.teams.forEach(t => t.scores = Array(state.rounds).fill(0));
-            saveState();
-            render();
-        });
-
-        document.getElementById('clearAllBtn').addEventListener('click', () => {
-            if (!confirm('Clear teams, rounds, and scores?')) return;
-            Object.assign(state, { title: DEFAULT_TITLE, rounds: 3, teams: [ { id: crypto.randomUUID(), name: 'Team A', scores: [] }, { id: crypto.randomUUID(), name: 'Team B', scores: [] } ] });
-            saveState();
-            render();
-        });
-
-        document.getElementById('printBtn').addEventListener('click', () => window.print());
-
-        // Export CSV
-        document.getElementById('exportCsvBtn').addEventListener('click', () => {
-            const headers = ['Team', ...Array.from({length: state.rounds}, (_, i) => `Round ${i+1}`), 'Total'];
-            const rows = state.teams.map(t => [t.name, ...t.scores.map(n => Number(n)||0), teamTotal(t)]);
-            const csv = [headers, ...rows].map(r => r.map(v => typeof v === 'string' && v.includes(',') ? '"'+v.replaceAll('"','""')+'"' : v).join(',')).join('\n');
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'scoreboard.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
-
-        // Logo handling
-        const logoFile = document.getElementById('logoFile');
-        const logoImg = document.getElementById('logoImg');
-        const logoPlaceholder = document.getElementById('logoPlaceholder');
-
-        function applyLogo() {
-            if (state.logo) {
-                logoImg.src = state.logo;
-                logoImg.classList.remove('hidden');
-                logoPlaceholder.classList.add('hidden');
-            } else {
-                logoImg.src = '';
-                logoImg.classList.add('hidden');
-                logoPlaceholder.classList.remove('hidden');
-            }
-        }
-
-        logoFile.addEventListener('change', (e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = () => {
-                state.logo = reader.result;
-                saveState();
-                applyLogo();
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // Title editing
-        mainTitle.contentEditable = 'true';
-        mainTitle.spellcheck = false;
-        mainTitle.addEventListener('focus', () => mainTitle.classList.add('cell-focus'));
-        mainTitle.addEventListener('blur', () => {
-            mainTitle.classList.remove('cell-focus');
-            const txt = mainTitle.textContent.trim();
-            state.title = txt || state.title;
-            renderTitle();
-            saveState();
-        });
-        mainTitle.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); mainTitle.blur(); }
-        });
-
-        // Keyboard save shortcut
-        window.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-                e.preventDefault();
-                saveState();
-                const btn = document.getElementById('exportCsvBtn');
-                btn.classList.add('ring-2','ring-emerald-300');
-                setTimeout(() => btn.classList.remove('ring-2','ring-emerald-300'), 400);
-            }
-        });
-
-        // Init
-        loadState();
-        render();
-        applyLogo();
-    </script>
+    // Init
+    load();
+    attachEvents();
+    // Restore sort toggle
+    const sortChk = $('#toggleSort'); if(sortChk) sortChk.checked = !!state.settings.sortByTotal;
+    setView(currentView || 'MAIN');
+  </script>
 </body>
 </html>
