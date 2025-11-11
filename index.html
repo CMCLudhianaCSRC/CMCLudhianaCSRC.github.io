@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>DooraVisionAssistant for VA’s (DVA) — Single‑File Demo</title>
   <!-- Leaflet CSS -->
   <link
@@ -12,13 +12,11 @@
     crossorigin="anonymous"
   />
   <style>
-    :root{
-      --bg:#0b0d10; --panel:#12151a; --panel-2:#161a21; --text:#e7ecf3; --muted:#9fb0c3; --accent:#6aa7ff; --border:#1e2633;
-    }
+    :root{ --bg:#0b0d10; --panel:#12151a; --panel-2:#161a21; --text:#e7ecf3; --muted:#9fb0c3; --accent:#6aa7ff; --border:#1e2633; }
     *{box-sizing:border-box}
-    html,body,#app{height:100%}
+    html,body{height:100%;}
     body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Helvetica,Arial}
-    #app{display:grid;grid-template-columns:380px 1fr;grid-template-rows:100%;}
+    #app{height:100svh;display:grid;grid-template-columns:380px 1fr;grid-template-rows:100%;}
     @media (max-width: 920px){#app{grid-template-columns:100%;grid-template-rows:auto 1fr}}
     aside{background:linear-gradient(180deg,var(--panel),var(--panel-2));border-right:1px solid var(--border);padding:16px;overflow:auto}
     h1{font-size:18px;margin:0 0 8px}
@@ -26,7 +24,7 @@
     .hint{font-size:12px;color:var(--muted)}
     .row{display:flex;gap:8px;align-items:center}
     .section{padding:12px;border:1px solid var(--border);border-radius:12px;background:#0f1318}
-    #map{height:100%;width:100%}
+    #map{height:100%;width:100%;min-height:60svh}
     .leaflet-container{background:#0a0c10}
     .legend{position:absolute;bottom:12px;left:12px;background:#0f1318;border:1px solid var(--border);border-radius:12px;color:var(--text);padding:10px 12px;z-index:500;max-width:60vw}
     .legend h4{margin:0 0 6px;font-size:12px;color:var(--muted)}
@@ -180,9 +178,7 @@ const CITY_TIMES = {
 };
 
 // Approx median weekly rent (A$) — rough placeholders for 2‑bed units.
-// Replace with your live feed or CSV later if needed.
-const RENT_DATA = {
-  "Darling Point":1200,"Double Bay":1100,"Point Piper":1600,"Bellevue Hill":1050,
+const RENT_DATA = { "Darling Point":1200,"Double Bay":1100,"Point Piper":1600,"Bellevue Hill":1050,
   "Vaucluse":1500,"Dover Heights":1300,"Rose Bay":1100,"Watsons Bay":1600,
   "North Bondi":1100,"Bondi Beach":1000,"Bondi":950,"Tamarama":1100,
   "Bondi Junction":900,"Waverley":950,"Queens Park":1000,
@@ -192,13 +188,9 @@ const RENT_DATA = {
   "Hillsdale":750,"Banksmeadow":800,"Malabar":850,"Little Bay":900,
   "Chifley":800,"La Perouse":900,"Phillip Bay":900,"Matraville":800,"Port Botany":800,
   "Mascot":850,"Rosebery":900,"Eastlakes":780,"Waterloo":900,"Zetland":950,
-  "Redfern":950,"Surry Hills":1000,"Paddington":1000,"Edgecliff":1000,"Woollahra":1100
-};
+  "Redfern":950,"Surry Hills":1000,"Paddington":1000,"Edgecliff":1000,"Woollahra":1100 };
 function formatAUD(x){ if(x==null||isNaN(x)) return '—'; return 'A$'+Math.round(x).toLocaleString('en-AU'); }
-function clusterAvgRent(cluster){
-  const vals = cluster.suburbs.map(s=>RENT_DATA[s]).filter(v=>typeof v==='number');
-  if(!vals.length) return null; return vals.reduce((a,b)=>a+b,0)/vals.length;
-}
+function clusterAvgRent(cluster){ const vals = cluster.suburbs.map(s=>RENT_DATA[s]).filter(v=>typeof v==='number'); if(!vals.length) return null; return vals.reduce((a,b)=>a+b,0)/vals.length; }
 
 // One‑liner descriptors for VA script
 const CLUSTER_TONES = {
@@ -220,23 +212,19 @@ const CLUSTER_TONES = {
   IS4:"Surry Hills fringe — walkable to CBD; dining, terraces, creative scene.",
   ICE1:"Paddington/Edgecliff/Woollahra — boutiques, terraces, quick T4 to city."
 };
-function buildVAScript(cluster, counts, rent){
-  const tone = CLUSTER_TONES[cluster.id]||'';
-  const bits = [];
-  if(tone) bits.push(tone);
-  if(counts){ const s = counts.schools, p = counts.parks, l = counts.libraries; bits.push(`${s} schools, ${p} parks, ${l} libraries in the area (OSM data).`); }
-  if(rent){ bits.push(`Typical ${cluster.suburbs.length>1? 'area' : 'suburb'} weekly rent around <b>${formatAUD(rent)}/wk</b> for 2‑bed units (rough guide).`); }
-  const tt = CITY_TIMES[cluster.id]; if(tt){ bits.push(`To the city: <b>Train ${tt.train}</b>; <b>Bus ${tt.bus}</b>.`); }
-  return bits.join(' ');
-}
 
-const COLORS = ["#4f46e5","#ef4444","#22c55e","#eab308","#06b6d4","#a855f7","#f97316","#14b8a6","#f43f5e","#3b82f6","#8b5cf6","#84cc16","#fb7185","#f59e0b","#10b981","#60a5fa","#e879f9","#34d399","#f87171","#fbbf24"];
+// Utils
+const COLORS=["#4f46e5","#ef4444","#22c55e","#eab308","#06b6d4","#a855f7","#f97316","#14b8a6","#f43f5e","#3b82f6","#8b5cf6","#84cc16","#fb7185","#f59e0b","#10b981","#60a5fa","#e879f9","#34d399","#f87171","#fbbf24"];
 function darken(hex, amt=-30){const c=hex.replace('#','');const num=parseInt(c,16);let r=(num>>16)+amt,g=((num>>8)&255)+amt,b=(num&255)+amt;r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b));return '#'+(r<<16|g<<8|b).toString(16).padStart(6,'0');}
 function esc(s){return String(s||'').replace(/[&<>\"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));}
+function ensureMapIsVisible(){ requestAnimationFrame(()=>map.invalidateSize()); setTimeout(()=>map.invalidateSize(), 180); }
 
 // Map init
 const map = L.map('map', { zoomControl:true, preferCanvas:true }).setView([-33.87,151.21], 11.6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
+window.addEventListener('resize', ensureMapIsVisible);
+window.addEventListener('orientationchange', ensureMapIsVisible);
+window.addEventListener('visibilitychange', ()=>{ if(!document.hidden) ensureMapIsVisible(); });
 
 // Groups/layers
 const clusterLayers = {}; // id -> {color, layers: L.GeoJSON[], bounds: LatLngBounds}
@@ -244,24 +232,29 @@ const clusterColor = {};
 const poiGroup = L.layerGroup().addTo(map);
 const labelsGroup = L.layerGroup().addTo(map);
 
-// Build cluster color map + pills + legend + suburb dropdown
+// Pills + legend + suburb dropdown
 const pillsDiv=document.getElementById('clusterPills');
 const legendItems=document.getElementById('legendItems');
 const suburbSelect=document.getElementById('suburbSelect');
 CLUSTERS.forEach((c,i)=>{ clusterColor[c.id]=COLORS[i%COLORS.length]; });
 CLUSTERS.forEach(c=>{
   const pill=document.createElement('button'); pill.className='pill'; pill.textContent=c.id; pill.style.borderColor=darken(clusterColor[c.id],-30);
-  pill.style.boxShadow=`inset 0 0 0 2px ${clusterColor[c.id]}22`;
-  pill.dataset.id=c.id; pill.onclick=()=>highlightCluster(c.id,true);
+  pill.style.boxShadow=`inset 0 0 0 2px ${clusterColor[c.id]}22`; pill.dataset.id=c.id; pill.onclick=()=>highlightCluster(c.id,true);
   pillsDiv.appendChild(pill);
   const li=document.createElement('div'); li.className='item';
   li.innerHTML=`<span class="swatch" style="background:${clusterColor[c.id]}"></span><span><b>${c.id}</b> — ${c.name}</span>`;
   legendItems.appendChild(li);
 });
-(function fillSuburbDropdown(){
-  const all = Array.from(new Set(CLUSTERS.flatMap(c=>c.suburbs))).sort();
-  all.forEach(s=>{ const opt=document.createElement('option'); opt.value=s; opt.textContent=s; suburbSelect.appendChild(opt); });
-})();
+(function fillSuburbDropdown(){ const all = Array.from(new Set(CLUSTERS.flatMap(c=>c.suburbs))).sort(); all.forEach(s=>{ const opt=document.createElement('option'); opt.value=s; opt.textContent=s; suburbSelect.appendChild(opt); }); })();
+
+// --- Concurrency‑limited pool ---
+async function poolLimit(limit, items, iterator){
+  const results=new Array(items.length); let i=0;
+  const workers=Array.from({length:Math.min(limit,items.length)}, async function run(){
+    while(true){ const cur=i++; if(cur>=items.length) break; results[cur]=await iterator(items[cur],cur); }
+  });
+  await Promise.all(workers); return results;
+}
 
 // --- Suburb boundary fetch via OpenStreetMap (Nominatim), cached ---
 const suburbPolyCache = {};
@@ -271,25 +264,27 @@ async function getSuburbGeometry(name){
   try{ const cached=localStorage.getItem(key); if(cached){ const g=JSON.parse(cached); suburbPolyCache[name]=g; return g; } }catch(_){ }
   const q = encodeURIComponent(name+', Sydney, NSW, Australia');
   const url = `https://nominatim.openstreetmap.org/search?format=geojson&polygon_geojson=1&limit=1&q=${q}`;
-  const resp = await fetch(url, {headers:{'Accept':'application/geo+json'}});
-  if(!resp.ok){ suburbPolyCache[name]=null; return null; }
-  const data = await resp.json();
-  let feat = data?.features?.[0];
-  if(Array.isArray(data?.features)){
-    const exact = data.features.find(f=> (f.properties?.display_name||'').toLowerCase().includes(name.toLowerCase()));
-    if(exact) feat = exact;
-  }
-  const geom = feat?.geometry || null;
-  suburbPolyCache[name]=geom;
-  try{ localStorage.setItem(key, JSON.stringify(geom)); }catch(_){ }
-  return geom;
+  try{
+    const resp = await fetch(url, {headers:{'Accept':'application/geo+json'}});
+    if(!resp.ok){ suburbPolyCache[name]=null; return null; }
+    const data = await resp.json();
+    let feat = data?.features?.[0];
+    if(Array.isArray(data?.features)){
+      const exact = data.features.find(f=> (f.properties?.display_name||'').toLowerCase().includes(name.toLowerCase()));
+      if(exact) feat = exact;
+    }
+    const geom = feat?.geometry || null;
+    suburbPolyCache[name]=geom;
+    try{ localStorage.setItem(key, JSON.stringify(geom)); }catch(_){ }
+    return geom;
+  }catch(e){ suburbPolyCache[name]=null; return null; }
 }
 
-// Draw helpers
+// Draw helpers (always black border)
 function addSuburbToCluster(clusterId, geom, suburbName){
   if(!geom) return null;
   const color = clusterColor[clusterId] || '#888';
-  const layer = L.geoJSON(geom, { style: { color: darken(color,-20), weight: 2, fillColor: color, fillOpacity: 0.35, opacity: 0.9 } });
+  const layer = L.geoJSON(geom, { style: { color: '#000', weight: 2.2, fillColor: color, fillOpacity: 0.35, opacity: 1 } });
   layer.options.suburbName = suburbName || '';
   layer.addTo(map);
   layer.on('click',()=>highlightCluster(clusterId,true));
@@ -302,24 +297,24 @@ function addSuburbToCluster(clusterId, geom, suburbName){
 
 function setClusterStyle(clusterId, active){
   const cfg = clusterLayers[clusterId]; if(!cfg) return;
-  cfg.layers.forEach(l=> l.setStyle(active ? { fillOpacity:0.6, weight:3, color:darken(cfg.color,-10) } : { fillOpacity:0.12, weight:1, color:darken(cfg.color,-40) }));
+  cfg.layers.forEach(l=> l.setStyle(active ? { fillOpacity:0.6, weight:3, color:'#000' } : { fillOpacity:0.16, weight:2.2, color:'#000' }));
   if(active) cfg.layers.forEach(l=> l.bringToFront());
 }
 
-// Init: fetch ALL suburb outlines and draw immediately when each arrives (original clusters)
+// Init: fetch ALL suburb outlines (original clusters) with concurrency
 (async function initOutlines(){
   const loader = document.getElementById('loader'); const prog = document.getElementById('prog');
   const allSuburbs = Array.from(new Set(CLUSTERS.flatMap(c=>c.suburbs)));
-  loader.style.display='block';
-  for(let i=0;i<allSuburbs.length;i++){
-    const s = allSuburbs[i];
+  loader.style.display='block'; let done=0;
+  await poolLimit(6, allSuburbs, async (s)=>{
     const geom = await getSuburbGeometry(s);
     CLUSTERS.forEach(c=>{ if(c.suburbs.includes(s)) addSuburbToCluster(c.id, geom, s); });
-    prog.textContent = Math.round(((i+1)/allSuburbs.length)*100)+'%';
-  }
+    done++; prog.textContent = Math.round((done/allSuburbs.length)*100)+'%';
+  });
   loader.style.display='none';
   const groups = Object.values(clusterLayers).flatMap(c=>c.layers);
-  if(groups.length){ const g = L.featureGroup(groups); map.fitBounds(g.getBounds(), {padding:[20,20]}); }
+  if(groups.length){ const g = L.featureGroup(groups); try{ map.fitBounds(g.getBounds(), {padding:[20,20]}); }catch(_){} }
+  ensureMapIsVisible();
 })();
 
 // Highlight logic + info + amenities + labels
@@ -329,45 +324,23 @@ function highlightCluster(id, fit=false){
   Object.keys(clusterLayers).forEach(cid=> setClusterStyle(cid, cid===id));
   document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('active', p.dataset.id===id));
   labelsGroup.clearLayers();
-  const c = CLUSTERS.find(x=>x.id===id) || AUTO_CLUSTERS.find(x=>x.id===id);
+  const c = (CLUSTERS.find(x=>x.id===id) || AUTO_CLUSTERS.find(x=>x.id===id));
   if(c){
     renderInfoForCluster(c);
-    if(fit && clusterLayers[id]?.bounds){ map.fitBounds(clusterLayers[id].bounds, {padding:[30,30]}); }
+    if(fit && clusterLayers[id]?.bounds){ try{ map.fitBounds(clusterLayers[id].bounds, {padding:[30,30]}); }catch(_){} }
     fetchAmenitiesForCluster(c);
     drawLabelsForCluster(c);
+    ensureMapIsVisible();
   }
 }
 
-function drawLabelsForCluster(c){
-  const cfg = clusterLayers[c.id]; if(!cfg) return;
-  cfg.layers.forEach(l=>{
-    const center = l.getBounds().getCenter();
-    const name = l.options.suburbName || 'Suburb';
-    const icon = L.divIcon({className:'suburb-label', html:esc(name), iconSize:[0,0], iconAnchor:[0,0]});
-    L.marker(center, {icon, interactive:false}).addTo(labelsGroup);
-  });
-}
+function drawLabelsForCluster(c){ const cfg = clusterLayers[c.id]; if(!cfg) return; cfg.layers.forEach(l=>{ const center = l.getBounds().getCenter(); const name = l.options.suburbName || 'Suburb'; const icon = L.divIcon({className:'suburb-label', html:esc(name), iconSize:[0,0], iconAnchor:[0,0]}); L.marker(center, {icon, interactive:false}).addTo(labelsGroup); }); }
 
-function clearHighlight(){
-  highlighted=null; document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
-  Object.keys(clusterLayers).forEach(cid=> setClusterStyle(cid, true));
-  poiGroup.clearLayers();
-  labelsGroup.clearLayers();
-  setInfo('Pick a cluster to see corridors, To‑City times, average rent, and environment basics.');
-}
+function clearHighlight(){ highlighted=null; document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active')); Object.keys(clusterLayers).forEach(cid=> setClusterStyle(cid, true)); poiGroup.clearLayers(); labelsGroup.clearLayers(); setInfo('Pick a cluster to see corridors, To‑City times, average rent, and environment basics.'); ensureMapIsVisible(); }
 
 // Suburb selection → highlight its cluster
 suburbSelect.addEventListener('change', ()=>{
-  const s = suburbSelect.value; if(!s) return;
-  const c = (CLUSTERS.find(c=> c.suburbs.includes(s)) || AUTO_CLUSTERS.find(c=> c.suburbs.includes(s)));
-  if(c){ highlightCluster(c.id, true);
-    const cfg = clusterLayers[c.id]; if(cfg && cfg.layers.length){
-      const layer = cfg.layers.find(l=> (l.options.suburbName||'')===s) || cfg.layers[0];
-      const center = layer.getBounds().getCenter();
-      const blip = L.circleMarker(center, {radius:8, weight:2, color:'#fff', fill:true, fillOpacity:0.9, opacity:0.9});
-      blip.addTo(map); setTimeout(()=>{ map.removeLayer(blip); }, 1200);
-    }
-  }
+  const s = suburbSelect.value; if(!s) return; const c = (CLUSTERS.find(c=> c.suburbs.includes(s)) || AUTO_CLUSTERS.find(c=> c.suburbs.includes(s))); if(c){ highlightCluster(c.id, true); const cfg = clusterLayers[c.id]; if(cfg && cfg.layers.length){ const layer = cfg.layers.find(l=> (l.options.suburbName||'')===s) || cfg.layers[0]; const center = layer.getBounds().getCenter(); const blip = L.circleMarker(center, {radius:8, weight:2, color:'#fff', fill:true, fillOpacity:0.9, opacity:0.9}); blip.addTo(map); setTimeout(()=>{ map.removeLayer(blip); }, 1200); } }
 });
 
 // Controls
@@ -375,16 +348,20 @@ const btnClear=document.getElementById('btnClear');
 const btnReset=document.getElementById('btnReset');
 const btnSydney=document.getElementById('btnSydney');
 btnClear.onclick=clearHighlight;
-btnReset.onclick=()=>{ clearHighlight(); const groups = Object.values(clusterLayers).flatMap(c=>c.layers); if(groups.length){ const g=L.featureGroup(groups); map.fitBounds(g.getBounds(),{padding:[20,20]}); } };
+btnReset.onclick=()=>{ clearHighlight(); const groups = Object.values(clusterLayers).flatMap(c=>c.layers); if(groups.length){ const g=L.featureGroup(groups); try{ map.fitBounds(g.getBounds(),{padding:[20,20]}); }catch(_){} } ensureMapIsVisible(); };
 
 // Info rendering
 const infoBody = document.getElementById('infoBody');
 function setInfo(html){ infoBody.innerHTML=html; }
+function buildVAScript(cluster, counts, rent){
+  const tone = CLUSTER_TONES[cluster.id]||''; const bits = []; if(tone) bits.push(tone);
+  if(counts){ const s = counts.schools, p = counts.parks, l = counts.libraries; bits.push(`${s} schools, ${p} parks, ${l} libraries in the area (OSM data).`); }
+  if(rent){ bits.push(`Typical ${cluster.suburbs.length>1? 'area' : 'suburb'} weekly rent around <b>${formatAUD(rent)}/wk</b> for 2‑bed units (rough guide).`); }
+  const tt = CITY_TIMES[cluster.id]; if(tt){ bits.push(`To the city: <b>Train ${tt.train}</b>; <b>Bus ${tt.bus}</b>.`); }
+  return bits.join(' ');
+}
 function renderInfoForCluster(c){
-  const city = CITY_TIMES[c.id]||{};
-  const suburbTags = c.suburbs.map(s=>`<span class=\"pill\" style=\"padding:4px 8px\">${esc(s)}</span>`).join(' ');
-  const connectTags = (c.connects||[]).map(id=>`<span class=\"pill\" data-go=\"${id}\" style=\"padding:4px 8px\">${id}</span>`).join(' ');
-  const rentVal = clusterAvgRent(c);
+  const city = CITY_TIMES[c.id]||{}; const suburbTags = c.suburbs.map(s=>`<span class=\"pill\" style=\"padding:4px 8px\">${esc(s)}</span>`).join(' '); const connectTags = (c.connects||[]).map(id=>`<span class=\"pill\" data-go=\"${id}\" style=\"padding:4px 8px\">${id}</span>`).join(' '); const rentVal = clusterAvgRent(c);
   setInfo(`
     <h3>${esc(c.id)} — ${esc(c.name)}</h3>
     <div class=\"table-wrap\"><table class=\"table\">
@@ -420,31 +397,19 @@ function renderInfoForCluster(c){
     <div class=\"callout\" id=\"envScript\">Building a short talking summary…</div>
   `);
 }
-
-infoBody.addEventListener('click',(e)=>{
-  const go = e.target.closest('[data-go]'); if(go){ highlightCluster(go.dataset.go,true); }
-});
+infoBody.addEventListener('click',(e)=>{ const go = e.target.closest('[data-go]'); if(go){ highlightCluster(go.dataset.go,true); } });
 
 // --- Amenities via Overpass API (schools, parks, libraries) ---
 async function fetchAmenitiesForCluster(cluster){
-  poiGroup.clearLayers();
-  const cfg = clusterLayers[cluster.id]; if(!cfg || !cfg.layers.length){
-    const tb=document.getElementById('envTbody'); if(tb) tb.innerHTML='<tr><td colspan="2" class="hint">—</td></tr>';
-    return; }
+  poiGroup.clearLayers(); const cfg = clusterLayers[cluster.id]; if(!cfg || !cfg.layers.length){ const tb=document.getElementById('envTbody'); if(tb) tb.innerHTML='<tr><td colspan="2" class="hint">—</td></tr>'; return; }
   let bounds = cfg.bounds; if(!bounds){ cfg.layers.forEach(l=>{ bounds = bounds? bounds.extend(l.getBounds()) : l.getBounds(); }); cfg.bounds = bounds; }
   if(!bounds){ const tb=document.getElementById('envTbody'); if(tb) tb.innerHTML='<tr><td colspan="2" class="hint">—</td></tr>'; return; }
   const west=bounds.getWest(), south=bounds.getSouth(), east=bounds.getEast(), north=bounds.getNorth();
   const query = `[
     out:json][timeout:25];(
-      node["amenity"="school"](${south},${west},${north},${east});
-      way["amenity"="school"](${south},${west},${north},${east});
-      rel["amenity"="school"](${south},${west},${north},${east});
-      node["amenity"="library"](${south},${west},${north},${east});
-      way["amenity"="library"](${south},${west},${north},${east});
-      rel["amenity"="library"](${south},${west},${north},${east});
-      node["leisure"="park"](${south},${west},${north},${east});
-      way["leisure"="park"](${south},${west},${north},${east});
-      rel["leisure"="park"](${south},${west},${north},${east});
+      node["amenity"="school"](${south},${west},${north},${east}); way["amenity"="school"](${south},${west},${north},${east}); rel["amenity"="school"](${south},${west},${north},${east});
+      node["amenity"="library"](${south},${west},${north},${east}); way["amenity"="library"](${south},${west},${north},${east}); rel["amenity"="library"](${south},${west},${north},${east});
+      node["leisure"="park"](${south},${west},${north},${east}); way["leisure"="park"](${south},${west},${north},${east}); rel["leisure"="park"](${south},${west},${north},${east});
     );out center 60;`;
   try{
     const resp = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body: query});
@@ -452,148 +417,53 @@ async function fetchAmenitiesForCluster(cluster){
     const data = await resp.json();
     const els = data.elements||[];
     const items = els.map(e=>({ id:e.id, type:e.tags?.amenity||e.tags?.leisure||'poi', name:e.tags?.name||'(unnamed)', lat:(e.lat||e.center?.lat), lng:(e.lon||e.center?.lon) })).filter(x=>x.lat && x.lng);
-
-    const schools = items.filter(x=>x.type==='school');
-    const libraries = items.filter(x=>x.type==='library');
-    const parks = items.filter(x=>x.type==='park');
-
+    const schools = items.filter(x=>x.type==='school'); const libraries = items.filter(x=>x.type==='library'); const parks = items.filter(x=>x.type==='park');
     [...schools,...libraries,...parks].slice(0,150).forEach(it=>{ L.marker([it.lat,it.lng]).addTo(poiGroup).bindTooltip(`${esc(it.name)} — ${esc(it.type)}`); });
-
-    // Counts table
-    const cs=document.getElementById('envCountSchools'); if(cs) cs.textContent = schools.length;
-    const cp=document.getElementById('envCountParks'); if(cp) cp.textContent = parks.length;
-    const cl=document.getElementById('envCountLibraries'); if(cl) cl.textContent = libraries.length;
-
-    // Top list table
-    const tb=document.getElementById('envTbody');
-    if(tb){
-      const rows = items.slice(0,12).map(it=>`<tr><td>${esc(it.name)}</td><td class=\"hint\">${esc(it.type)}</td></tr>`).join('');
-      tb.innerHTML = rows || '<tr><td colspan="2" class="hint">No items found in OSM.</td></tr>';
-    }
-
-    // VA talking script
-    const rentVal = clusterAvgRent(cluster);
-    const counts = {schools:schools.length, parks:parks.length, libraries:libraries.length};
-    const script = buildVAScript(cluster, counts, rentVal);
-    const es=document.getElementById('envScript'); if(es) es.innerHTML = script;
-  }catch(err){
-    const tb=document.getElementById('envTbody'); if(tb) tb.innerHTML='<tr><td colspan="2" class="hint">Could not load amenities right now.</td></tr>';
-  }
+    const cs=document.getElementById('envCountSchools'); if(cs) cs.textContent = schools.length; const cp=document.getElementById('envCountParks'); if(cp) cp.textContent = parks.length; const cl=document.getElementById('envCountLibraries'); if(cl) cl.textContent = libraries.length;
+    const tb=document.getElementById('envTbody'); if(tb){ const rows = items.slice(0,12).map(it=>`<tr><td>${esc(it.name)}</td><td class=\"hint\">${esc(it.type)}</td></tr>`).join(''); tb.innerHTML = rows || '<tr><td colspan="2" class="hint">No items found in OSM.</td></tr>'; }
+    const rentVal = clusterAvgRent(cluster); const counts = {schools:schools.length, parks:parks.length, libraries:libraries.length}; const script = buildVAScript(cluster, counts, rentVal); const es=document.getElementById('envScript'); if(es) es.innerHTML = script;
+  }catch(err){ const tb=document.getElementById('envTbody'); if(tb) tb.innerHTML='<tr><td colspan="2" class="hint">Could not load amenities right now.</td></tr>'; }
 }
 
 // -----------------------------
 // Auto‑Clusters for Greater Sydney (distance to CBD + station proximity)
 // -----------------------------
-const AUTO_CLUSTERS = [];
-let autoColorsIdx = 0;
-function nextColor(){ return COLORS[(autoColorsIdx++)%COLORS.length]; }
-
-function haversineKm(a,b){
-  const toRad=(x)=>x*Math.PI/180; const R=6371;
-  const dLat=toRad(b[0]-a[0]); const dLon=toRad(b[1]-a[1]);
-  const lat1=toRad(a[0]); const lat2=toRad(b[0]);
-  const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
-  return 2*R*Math.asin(Math.sqrt(h));
-}
+const AUTO_CLUSTERS = []; let autoColorsIdx = 0; function nextColor(){ return COLORS[(autoColorsIdx++)%COLORS.length]; }
+function haversineKm(a,b){ const toRad=(x)=>x*Math.PI/180; const R=6371; const dLat=toRad(b[0]-a[0]); const dLon=toRad(b[1]-a[1]); const lat1=toRad(a[0]); const lat2=toRad(b[0]); const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
 const CBD=[-33.873,151.206];
-function classify(distKm, stationKm){
-  if(distKm<=4 && stationKm<=1.2) return 'A1';
-  if(distKm<=8 && stationKm<=1.2) return 'A2';
-  if(distKm<=12 && stationKm<=2.0) return 'A3';
-  if(distKm<=20 && stationKm<=3.0) return 'A4';
-  if(distKm>20 && stationKm<=4.0) return 'A5';
-  if(distKm<=8) return 'B1';
-  if(distKm<=15) return 'B2';
-  return 'B3';
-}
-const AUTO_META = {
-  A1:{name:'0–4 km + rail'}, A2:{name:'4–8 km + rail'}, A3:{name:'8–12 km + rail'}, A4:{name:'12–20 km + rail'}, A5:{name:'20km+ + rail'},
-  B1:{name:'≤8 km bus‑only'}, B2:{name:'8–15 km bus‑only'}, B3:{name:'15km+ bus‑only'}
-};
+function classify(distKm, stationKm){ if(distKm<=4 && stationKm<=1.2) return 'A1'; if(distKm<=8 && stationKm<=1.2) return 'A2'; if(distKm<=12 && stationKm<=2.0) return 'A3'; if(distKm<=20 && stationKm<=3.0) return 'A4'; if(distKm>20 && stationKm<=4.0) return 'A5'; if(distKm<=8) return 'B1'; if(distKm<=15) return 'B2'; return 'B3'; }
+const AUTO_META = { A1:{name:'0–4 km + rail'}, A2:{name:'4–8 km + rail'}, A3:{name:'8–12 km + rail'}, A4:{name:'12–20 km + rail'}, A5:{name:'20km+ + rail'}, B1:{name:'≤8 km bus‑only'}, B2:{name:'8–15 km bus‑only'}, B3:{name:'15km+ bus‑only'} };
 
 async function loadSydneyAuto(){
-  const btn = btnSydney; btn.disabled=true; btn.textContent='Loading…';
-  document.getElementById('loader').style.display='block';
-  document.getElementById('prog').textContent='0%';
-
-  // 1) Fetch all train stations within Greater Sydney bbox once
+  const btn = btnSydney; btn.disabled=true; btn.textContent='Loading…'; document.getElementById('loader').style.display='block'; document.getElementById('prog').textContent='0%';
   const bbox = {south:-34.1, west:150.5, north:-33.5, east:151.5};
-  const qStations = `[
-    out:json][timeout:50];(
-      node["railway"="station"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
-    );out center 500;`;
-  let stations=[];
-  try{
-    const resp = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:qStations});
-    const data = await resp.json();
-    stations = (data.elements||[]).map(e=>[e.lat||e.center?.lat, e.lon||e.center?.lon]).filter(Boolean);
-  }catch(_){}
-
-  // 2) Get a list of suburb names via Overpass (place=suburb nodes), then resolve polygons via Nominatim (cached)
-  const qSuburbs = `[
-    out:json][timeout:50];
-    node["place"="suburb"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
-    out 200;`;
-  let names=[];
-  try{
-    const resp = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:qSuburbs});
-    const data = await resp.json();
-    names = Array.from(new Set((data.elements||[]).map(e=>e.tags?.name).filter(Boolean))).sort();
-  }catch(_){ names=[]; }
-
-  // Safety cap to avoid hammering Nominatim; you can raise this later
-  const MAX = Math.min(220, names.length);
-  let done=0;
-  function prog(){ document.getElementById('prog').textContent = Math.round((done/MAX)*100)+'%'; }
-
-  for(let i=0;i<MAX;i++){
-    const name = names[i];
-    const geom = await getSuburbGeometry(name);
-    done++; prog();
-    if(!geom) continue;
-    // Compute centroid from bounds for heuristics
-    const temp = L.geoJSON(geom); const center = temp.getBounds().getCenter();
-    const dist = haversineKm([center.lat,center.lng], CBD);
-    let minStation = Infinity;
-    for(const s of stations){ const d = haversineKm([center.lat,center.lng], s); if(d<minStation) minStation=d; }
-    if(!isFinite(minStation)) minStation=99;
-    const code = classify(dist, minStation);
-    let cluster = AUTO_CLUSTERS.find(x=>x.id===code);
-    if(!cluster){
-      cluster = {id:code, name:AUTO_META[code]?.name||code, suburbs:[], alias:`${code} – Auto`, corridors:'Auto‑generated (distance + rail proximity)'};
-      AUTO_CLUSTERS.push(cluster);
-      // add pill + legend
-      clusterColor[code]=nextColor();
-      const pill=document.createElement('button'); pill.className='pill'; pill.textContent=code; pill.style.borderColor=darken(clusterColor[code],-30);
-      pill.style.boxShadow=`inset 0 0 0 2px ${clusterColor[code]}22`; pill.dataset.id=code; pill.onclick=()=>highlightCluster(code,true);
-      pillsDiv.appendChild(pill);
-      const li=document.createElement('div'); li.className='item';
-      li.innerHTML=`<span class="swatch" style="background:${clusterColor[code]}"></span><span><b>${code}</b> — ${AUTO_META[code]?.name||'Auto'}</span>`;
-      legendItems.appendChild(li);
-    }
-    cluster.suburbs.push(name);
-    addSuburbToCluster(code, geom, name);
-    // Add to dropdown if not present
-    if(![...suburbSelect.options].some(o=>o.value===name)){
-      const opt=document.createElement('option'); opt.value=name; opt.textContent=name; suburbSelect.appendChild(opt);
-    }
-  }
-
-  document.getElementById('loader').style.display='none';
-  btn.textContent='Loaded Sydney (auto)';
+  const qStations = `[out:json][timeout:50];(node["railway"="station"](${bbox.south},${bbox.west},${bbox.north},${bbox.east}););out center 500;`;
+  let stations=[]; try{ const resp = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:qStations}); const data = await resp.json(); stations = (data.elements||[]).map(e=>[e.lat||e.center?.lat, e.lon||e.center?.lon]).filter(Boolean); }catch(_){ stations=[]; }
+  const qSuburbs = `[out:json][timeout:50]; node["place"="suburb"](${bbox.south},${bbox.west},${bbox.north},${bbox.east}); out 200;`;
+  let names=[]; try{ const resp = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:qSuburbs}); const data = await resp.json(); names = Array.from(new Set((data.elements||[]).map(e=>e.tags?.name).filter(Boolean))).sort(); }catch(_){ names=[]; }
+  const MAX = Math.min(220, names.length); let done=0; const prog=()=>{ document.getElementById('prog').textContent = Math.round((done/MAX)*100)+'%'; };
+  await poolLimit(6, names.slice(0,MAX), async (name)=>{
+    const geom = await getSuburbGeometry(name); done++; prog(); if(!geom) return;
+    const temp = L.geoJSON(geom); const center = temp.getBounds().getCenter(); const dist = haversineKm([center.lat,center.lng], CBD); let minStation = Infinity; for(const s of stations){ const d = haversineKm([center.lat,center.lng], s); if(d<minStation) minStation=d; } if(!isFinite(minStation)) minStation=99;
+    const code = classify(dist, minStation); let cluster = AUTO_CLUSTERS.find(x=>x.id===code); if(!cluster){ cluster = {id:code, name:AUTO_META[code]?.name||code, suburbs:[], alias:`${code} – Auto`, corridors:'Auto‑generated (distance + rail proximity)'}; AUTO_CLUSTERS.push(cluster); clusterColor[code]=nextColor(); const pill=document.createElement('button'); pill.className='pill'; pill.textContent=code; pill.style.borderColor=darken(clusterColor[code],-30); pill.style.boxShadow=`inset 0 0 0 2px ${clusterColor[code]}22`; pill.dataset.id=code; pill.onclick=()=>highlightCluster(code,true); pillsDiv.appendChild(pill); const li=document.createElement('div'); li.className='item'; li.innerHTML=`<span class="swatch" style="background:${clusterColor[code]}"></span><span><b>${code}</b> — ${AUTO_META[code]?.name||'Auto'}</span>`; legendItems.appendChild(li); }
+    cluster.suburbs.push(name); addSuburbToCluster(code, geom, name); if(![...suburbSelect.options].some(o=>o.value===name)){ const opt=document.createElement('option'); opt.value=name; opt.textContent=name; suburbSelect.appendChild(opt); }
+  });
+  document.getElementById('loader').style.display='none'; btn.textContent='Loaded Sydney (auto)'; ensureMapIsVisible();
 }
-btnSydney.onclick=loadSydneyAuto;
+const btnSydney=document.getElementById('btnSydney'); btnSydney.onclick=loadSydneyAuto;
 
 // -----------------------------
-// Self‑tests (basic)
+// Self‑tests (keep old + add new)
 // -----------------------------
 (function runTests(){
   const rows=[]; function ok(name,cond){ rows.push(`<span class="badge">${cond?'PASS':'FAIL'}</span> ${name}`); }
   ok('esc()', esc('<>&"')==='&lt;&gt;&amp;&quot;');
   ok('darken()', /^#[0-9a-f]{6}$/i.test(darken('#ffffff',-10)));
   ok('clusterAvgRent()', (function(){ const c={suburbs:['Bondi','Coogee']}; const v=clusterAvgRent(c); return v>900 && v<1000; })());
-  ok('classify()', (function(){ return classify(3,0.5)==='A1' && classify(10,3)==='A3' && classify(9,9)==='B2'; })());
-  document.getElementById('diagBody').innerHTML = rows.join('<br>');
+  ok('classify()', (function(){ return classify(3,0.5)==='A1' && classify(10,1)==='A3' && classify(9,9)==='B2'; })());
+  ok('poolLimit()', (function(){ let seq=[]; return poolLimit(3, [1,2,3,4,5], async (x)=>{ await new Promise(r=>setTimeout(r, 5)); seq.push(x); return x*2; }).then(res=> res.length===5 && Math.max(...res)===10 ); })());
+  ok('map.invalidateSize exists', typeof map.invalidateSize==='function');
+  Promise.all(rows).then(()=>{ document.getElementById('diagBody').innerHTML = rows.join('<br>'); });
 })();
 </script>
 </body>
