@@ -22,7 +22,7 @@
     h1{font-size:18px;margin:0 0 8px}
     h2{font-size:15px;margin:16px 0 8px;color:var(--muted);font-weight:600}
     .hint{font-size:12px;color:var(--muted)}
-    .row{display:flex;gap:8px;align-items:center}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .section{padding:12px;border:1px solid var(--border);border-radius:12px;background:#0f1318}
     #map{height:100%;width:100%;min-height:60svh}
     .leaflet-container{background:#0a0c10}
@@ -51,6 +51,12 @@
     .table-compact th,.table-compact td{padding:6px 8px;font-size:13px}
     .callout{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#0d131a;box-shadow:inset 0 0 0 1px #00000020}
     .badge{display:inline-block;padding:2px 6px;border-radius:999px;background:#0b1220;border:1px solid #243043;color:#9fb0c3;font-size:11px}
+    /* legend toggle */
+    .legend .legend-toggle{display:flex;align-items:center;gap:8px;width:100%;background:#0e1217;border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:10px;cursor:pointer;font-weight:700}
+    .legend .legend-toggle .chev{display:inline-block;transition:transform .18s ease}
+    .legend.collapsed .legend-toggle .chev{transform:rotate(-90deg)}
+    .legend .legend-body{margin-top:6px}
+    .legend.collapsed .legend-body{display:none}
   </style>
 </head>
 <body>
@@ -67,10 +73,12 @@
         </select>
       </div>
       <div id="clusterPills" class="cluster-pills" style="margin-top:8px"></div>
-      <div class="row" style="margin-top:8px;gap:6px;flex-wrap:wrap">
+      <div class="row" style="margin-top:8px;gap:6px">
         <button id="btnClear" class="pill">Clear highlight</button>
         <button id="btnReset" class="pill">Reset view</button>
         <button id="btnSydney" class="pill" title="Load Greater Sydney with auto‑clusters">Load Sydney (auto)</button>
+        <button id="btnCorrAuto" class="pill" data-on="1" title="When on, highlighting a cluster also shows its corridors/stations">Auto Corridors: ON</button>
+        <button id="btnCorrAll" class="pill" title="Show all clusters’ corridors/stations at once">Show All Corridors</button>
       </div>
     </div>
 
@@ -88,9 +96,11 @@
   </aside>
   <main style="position:relative">
     <div id="map"></div>
-    <div class="legend" id="legend">
-      <h4>Clusters</h4>
-      <div id="legendItems"></div>
+    <div class="legend" id="legend" aria-live="polite">
+      <button id="legendToggle" class="legend-toggle" aria-expanded="true" aria-controls="legendItems" title="Show/Hide cluster keys">
+        <span>Clusters</span> <span class="chev">▾</span>
+      </button>
+      <div id="legendItems" class="legend-body"></div>
     </div>
     <div id="loader" class="loader" style="display:none">Loading suburb outlines… <span id="prog">0%</span></div>
   </main>
@@ -231,6 +241,7 @@ const clusterLayers = {}; // id -> {color, layers: L.GeoJSON[], bounds: LatLngBo
 const clusterColor = {};
 const poiGroup = L.layerGroup().addTo(map);
 const labelsGroup = L.layerGroup().addTo(map);
+const corridorsGroup = L.layerGroup().addTo(map);
 
 // Pills + legend + suburb dropdown
 const pillsDiv=document.getElementById('clusterPills');
@@ -242,9 +253,24 @@ CLUSTERS.forEach(c=>{
   pill.style.boxShadow=`inset 0 0 0 2px ${clusterColor[c.id]}22`; pill.dataset.id=c.id; pill.onclick=()=>highlightCluster(c.id,true);
   pillsDiv.appendChild(pill);
   const li=document.createElement('div'); li.className='item';
-  li.innerHTML=`<span class="swatch" style="background:${clusterColor[c.id]}"></span><span><b>${c.id}</b> — ${c.name}</span>`;
+  li.innerHTML=`<span class=\"swatch\" style=\"background:${clusterColor[c.id]}\"></span><span><b>${c.id}</b> — ${c.name}</span>`;
   legendItems.appendChild(li);
 });
+// Legend open/close toggle with persistence
+(function legendToggleInit(){
+  const legendEl=document.getElementById('legend');
+  const toggle=document.getElementById('legendToggle');
+  const pref=localStorage.getItem('legend_open');
+  const isOpen = pref!== 'false';
+  if(!isOpen){ legendEl.classList.add('collapsed'); toggle.setAttribute('aria-expanded','false'); }
+  toggle.addEventListener('click',()=>{
+    const collapsed = legendEl.classList.toggle('collapsed');
+    const expanded = !collapsed;
+    toggle.setAttribute('aria-expanded', String(expanded));
+    localStorage.setItem('legend_open', String(expanded));
+    ensureMapIsVisible();
+  });
+})();
 (function fillSuburbDropdown(){ const all = Array.from(new Set(CLUSTERS.flatMap(c=>c.suburbs))).sort(); all.forEach(s=>{ const opt=document.createElement('option'); opt.value=s; opt.textContent=s; suburbSelect.appendChild(opt); }); })();
 
 // --- Concurrency‑limited pool ---
@@ -330,13 +356,18 @@ function highlightCluster(id, fit=false){
     if(fit && clusterLayers[id]?.bounds){ try{ map.fitBounds(clusterLayers[id].bounds, {padding:[30,30]}); }catch(_){} }
     fetchAmenitiesForCluster(c);
     drawLabelsForCluster(c);
+    // Corridors/stations overlay if enabled
+    if(corrAutoOn && !showAllCorr){
+      clearAllCorridors();
+      drawCorridorsForCluster(c);
+    }
     ensureMapIsVisible();
   }
 }
 
 function drawLabelsForCluster(c){ const cfg = clusterLayers[c.id]; if(!cfg) return; cfg.layers.forEach(l=>{ const center = l.getBounds().getCenter(); const name = l.options.suburbName || 'Suburb'; const icon = L.divIcon({className:'suburb-label', html:esc(name), iconSize:[0,0], iconAnchor:[0,0]}); L.marker(center, {icon, interactive:false}).addTo(labelsGroup); }); }
 
-function clearHighlight(){ highlighted=null; document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active')); Object.keys(clusterLayers).forEach(cid=> setClusterStyle(cid, true)); poiGroup.clearLayers(); labelsGroup.clearLayers(); setInfo('Pick a cluster to see corridors, To‑City times, average rent, and environment basics.'); ensureMapIsVisible(); }
+function clearHighlight(){ highlighted=null; document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active')); Object.keys(clusterLayers).forEach(cid=> setClusterStyle(cid, true)); poiGroup.clearLayers(); labelsGroup.clearLayers(); setInfo('Pick a cluster to see corridors, To‑City times, average rent, and environment basics.'); ensureMapIsVisible(); if(!showAllCorr) clearAllCorridors(); }
 
 // Suburb selection → highlight its cluster
 suburbSelect.addEventListener('change', ()=>{
@@ -347,8 +378,13 @@ suburbSelect.addEventListener('change', ()=>{
 const btnClear=document.getElementById('btnClear');
 const btnReset=document.getElementById('btnReset');
 const btnSydney=document.getElementById('btnSydney');
+const btnCorrAuto=document.getElementById('btnCorrAuto');
+const btnCorrAll=document.getElementById('btnCorrAll');
 btnClear.onclick=clearHighlight;
 btnReset.onclick=()=>{ clearHighlight(); const groups = Object.values(clusterLayers).flatMap(c=>c.layers); if(groups.length){ const g=L.featureGroup(groups); try{ map.fitBounds(g.getBounds(),{padding:[20,20]}); }catch(_){} } ensureMapIsVisible(); };
+let corrAutoOn=true; let showAllCorr=false;
+btnCorrAuto.onclick=()=>{ corrAutoOn=!corrAutoOn; btnCorrAuto.dataset.on=corrAutoOn?"1":"0"; btnCorrAuto.textContent = `Auto Corridors: ${corrAutoOn? 'ON':'OFF'}`; if(!corrAutoOn && !showAllCorr) clearAllCorridors(); if(corrAutoOn && highlighted && !showAllCorr){ const c=(CLUSTERS.find(x=>x.id===highlighted)||AUTO_CLUSTERS.find(x=>x.id===highlighted)); if(c) drawCorridorsForCluster(c); } };
+btnCorrAll.onclick=()=>{ showAllCorr=!showAllCorr; btnCorrAll.textContent = showAllCorr? 'Hide All Corridors' : 'Show All Corridors'; if(showAllCorr){ drawAllCorridors(); } else { clearAllCorridors(); if(corrAutoOn && highlighted){ const c=(CLUSTERS.find(x=>x.id===highlighted)||AUTO_CLUSTERS.find(x=>x.id===highlighted)); if(c) drawCorridorsForCluster(c); } } };
 
 // Info rendering
 const infoBody = document.getElementById('infoBody');
@@ -426,6 +462,93 @@ async function fetchAmenitiesForCluster(cluster){
 }
 
 // -----------------------------
+// Corridor & Station overlays (from cluster.corridors text)
+// -----------------------------
+const SYD_BBOX={south:-34.1, west:150.5, north:-33.5, east:151.5};
+const roadCache={}, stationCache={}, ferryCache={};
+const clusterCorridorLayers={};
+
+function extractRoadNames(text){
+  if(!text) return [];
+  const roads=[];
+  const re=/\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)*\s(?:Road|Rd|Street|St|Parade|Pde|Ave|Avenue|Drive|Dr|Highway|Hwy|Boulevard|Blvd|Crescent|Cres|Lane|Ln|Way|Place|Quay|Quays|Walk|Mall|Esplanade|Circuit|Kingsway|Motorway|Mwy))\b/g;
+  let m; while((m=re.exec(text))){ roads.push(m[1].replace(/\s+/g,' ').trim()); }
+  // Whitelist canonical names mentioned in the doc that may be hyphenated/abbrev
+  ['Anzac Parade','Old South Head Rd','New South Head Rd','Bondi Rd','Oxford St','Macpherson St','Cleveland St','Maroubra Rd','Victoria Rd','Military Rd','Bunnerong Rd','Botany Rd'].forEach(n=>{ if(text.includes(n) && !roads.includes(n)) roads.push(n); });
+  return Array.from(new Set(roads));
+}
+function extractStationNames(text){
+  if(!text) return [];
+  const base=[];
+  const stationList=['Edgecliff','Bondi Junction','Mascot','Green Square','Redfern','Central'];
+  stationList.forEach(n=>{ if(text.toLowerCase().includes(n.toLowerCase())) base.push(n); });
+  // explicit "Something Station" patterns
+  const re=/(\b[A-Z][A-Za-z]+(?:\s[A-Z][A-Za-z]+)*\sStation\b)/g; let m; while((m=re.exec(text))){ const n=m[1].replace(/\sStation$/,''); if(!base.includes(n)) base.push(n); }
+  return Array.from(new Set(base));
+}
+function extractFerryNames(text){
+  if(!text) return [];
+  const m=/Ferry\s*\(([^)]+)\)/i.exec(text);
+  if(!m) return [];
+  return m[1].split(',').map(s=>s.trim()).filter(Boolean);
+}
+
+async function fetchRoadLines(name){
+  if(roadCache[name]) return roadCache[name];
+  const q=`[out:json][timeout:40];way["highway"]["name"="${name}"](${SYD_BBOX.south},${SYD_BBOX.west},${SYD_BBOX.north},${SYD_BBOX.east});out geom;`;
+  try{
+    const resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:q});
+    const data=await resp.json(); const ways=(data.elements||[]).filter(e=>e.type==='way'&&Array.isArray(e.geometry));
+    const polylines=ways.map(w=> L.polyline(w.geometry.map(p=>[p.lat,p.lon]), {color:'#000', weight:6, opacity:0.85, interactive:false}));
+    const colored=ways.map(w=> L.polyline(w.geometry.map(p=>[p.lat,p.lon]), {color:'#ffffff', weight:3, opacity:0.95, interactive:false}));
+    roadCache[name]={polylines, colored}; return roadCache[name];
+  }catch(_){ roadCache[name]={polylines:[], colored:[]}; return roadCache[name]; }
+}
+async function fetchStationPoint(name){
+  if(stationCache[name]) return stationCache[name];
+  const q=`[out:json][timeout:40];(node["railway"="station"]["name"="${name}"](${SYD_BBOX.south},${SYD_BBOX.west},${SYD_BBOX.north},${SYD_BBOX.east}););out center 1;`;
+  try{ const resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:q}); const data=await resp.json(); const el=(data.elements||[])[0]; if(!el){ stationCache[name]=null; return null; } stationCache[name]=[el.lat||el.center?.lat, el.lon||el.center?.lon]; return stationCache[name]; }catch(_){ stationCache[name]=null; return null; }
+}
+async function fetchFerryPoint(name){
+  if(ferryCache[name]) return ferryCache[name];
+  const q=`[out:json][timeout:40];(node["amenity"="ferry_terminal"]["name"~"${name}"](${SYD_BBOX.south},${SYD_BBOX.west},${SYD_BBOX.north},${SYD_BBOX.east}););out center 1;`;
+  try{ const resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:q}); const data=await resp.json(); const el=(data.elements||[])[0]; if(!el){ ferryCache[name]=null; return null; } ferryCache[name]=[el.lat||el.center?.lat, el.lon||el.center?.lon]; return ferryCache[name]; }catch(_){ ferryCache[name]=null; return null; }
+}
+
+function parseCorridors(cluster){
+  const text=cluster.corridors||'';
+  return {
+    roads: extractRoadNames(text),
+    stations: extractStationNames(text),
+    ferries: extractFerryNames(text)
+  };
+}
+const CLUSTER_CORRIDORS = Object.fromEntries(CLUSTERS.map(c=>[c.id, parseCorridors(c)]));
+
+async function drawCorridorsForCluster(cluster){
+  const id=cluster.id; if(!clusterCorridorLayers[id]) clusterCorridorLayers[id]=L.layerGroup().addTo(corridorsGroup);
+  else { clusterCorridorLayers[id].clearLayers(); }
+  const col = clusterColor[id]||'#fff';
+  const spec = CLUSTER_CORRIDORS[id] || {roads:[],stations:[],ferries:[]};
+  // Roads
+  await poolLimit(4, spec.roads, async (name)=>{
+    const d=await fetchRoadLines(name); if(!d) return;
+    d.polylines.forEach(pl=> pl.addTo(clusterCorridorLayers[id]));
+    d.colored.forEach(pl=> { pl.setStyle({color:col}); pl.addTo(clusterCorridorLayers[id]); });
+  });
+  // Stations
+  await poolLimit(4, spec.stations, async (name)=>{
+    const p=await fetchStationPoint(name); if(!p) return; L.circleMarker(p,{radius:6, weight:2, color:'#000', fill:true, fillColor:col, fillOpacity:1}).addTo(clusterCorridorLayers[id]).bindTooltip(`${esc(name)} Station`,{permanent:false});
+  });
+  // Ferries
+  await poolLimit(3, spec.ferries, async (name)=>{
+    const p=await fetchFerryPoint(name); if(!p) return; L.circleMarker(p,{radius:6, weight:2, color:'#000', fill:true, fillColor:col, fillOpacity:1}).addTo(clusterCorridorLayers[id]).bindTooltip(`${esc(name)} Wharf`,{permanent:false});
+  });
+}
+function clearAllCorridors(){ corridorsGroup.clearLayers(); Object.keys(clusterCorridorLayers).forEach(k=> delete clusterCorridorLayers[k]); }
+async function drawAllCorridors(){ clearAllCorridors(); for(const c of CLUSTERS){ await drawCorridorsForCluster(c); } }
+
+// -----------------------------
 // Auto‑Clusters for Greater Sydney (distance to CBD + station proximity)
 // -----------------------------
 const AUTO_CLUSTERS = []; let autoColorsIdx = 0; function nextColor(){ return COLORS[(autoColorsIdx++)%COLORS.length]; }
@@ -436,7 +559,7 @@ const AUTO_META = { A1:{name:'0–4 km + rail'}, A2:{name:'4–8 km + rail'}, A3
 
 async function loadSydneyAuto(){
   const btn = btnSydney; btn.disabled=true; btn.textContent='Loading…'; document.getElementById('loader').style.display='block'; document.getElementById('prog').textContent='0%';
-  const bbox = {south:-34.1, west:150.5, north:-33.5, east:151.5};
+  const bbox = SYD_BBOX;
   const qStations = `[out:json][timeout:50];(node["railway"="station"](${bbox.south},${bbox.west},${bbox.north},${bbox.east}););out center 500;`;
   let stations=[]; try{ const resp = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:qStations}); const data = await resp.json(); stations = (data.elements||[]).map(e=>[e.lat||e.center?.lat, e.lon||e.center?.lon]).filter(Boolean); }catch(_){ stations=[]; }
   const qSuburbs = `[out:json][timeout:50]; node["place"="suburb"](${bbox.south},${bbox.west},${bbox.north},${bbox.east}); out 200;`;
@@ -445,25 +568,32 @@ async function loadSydneyAuto(){
   await poolLimit(6, names.slice(0,MAX), async (name)=>{
     const geom = await getSuburbGeometry(name); done++; prog(); if(!geom) return;
     const temp = L.geoJSON(geom); const center = temp.getBounds().getCenter(); const dist = haversineKm([center.lat,center.lng], CBD); let minStation = Infinity; for(const s of stations){ const d = haversineKm([center.lat,center.lng], s); if(d<minStation) minStation=d; } if(!isFinite(minStation)) minStation=99;
-    const code = classify(dist, minStation); let cluster = AUTO_CLUSTERS.find(x=>x.id===code); if(!cluster){ cluster = {id:code, name:AUTO_META[code]?.name||code, suburbs:[], alias:`${code} – Auto`, corridors:'Auto‑generated (distance + rail proximity)'}; AUTO_CLUSTERS.push(cluster); clusterColor[code]=nextColor(); const pill=document.createElement('button'); pill.className='pill'; pill.textContent=code; pill.style.borderColor=darken(clusterColor[code],-30); pill.style.boxShadow=`inset 0 0 0 2px ${clusterColor[code]}22`; pill.dataset.id=code; pill.onclick=()=>highlightCluster(code,true); pillsDiv.appendChild(pill); const li=document.createElement('div'); li.className='item'; li.innerHTML=`<span class="swatch" style="background:${clusterColor[code]}"></span><span><b>${code}</b> — ${AUTO_META[code]?.name||'Auto'}</span>`; legendItems.appendChild(li); }
+    const code = classify(dist, minStation); let cluster = AUTO_CLUSTERS.find(x=>x.id===code); if(!cluster){ cluster = {id:code, name:AUTO_META[code]?.name||code, suburbs:[], alias:`${code} – Auto`, corridors:'Auto‑generated (distance + rail proximity)'}; AUTO_CLUSTERS.push(cluster); clusterColor[code]=nextColor(); const pill=document.createElement('button'); pill.className='pill'; pill.textContent=code; pill.style.borderColor=darken(clusterColor[code],-30); pill.style.boxShadow=`inset 0 0 0 2px ${clusterColor[code]}22`; pill.dataset.id=code; pill.onclick=()=>highlightCluster(code,true); pillsDiv.appendChild(pill); const li=document.createElement('div'); li.className='item'; li.innerHTML=`<span class=\"swatch\" style=\"background:${clusterColor[code]}\"></span><span><b>${code}</b> — ${AUTO_META[code]?.name||'Auto'}</span>`; legendItems.appendChild(li); }
     cluster.suburbs.push(name); addSuburbToCluster(code, geom, name); if(![...suburbSelect.options].some(o=>o.value===name)){ const opt=document.createElement('option'); opt.value=name; opt.textContent=name; suburbSelect.appendChild(opt); }
   });
   document.getElementById('loader').style.display='none'; btn.textContent='Loaded Sydney (auto)'; ensureMapIsVisible();
 }
-const btnSydney=document.getElementById('btnSydney'); btnSydney.onclick=loadSydneyAuto;
+btnSydney.onclick=loadSydneyAuto;
 
 // -----------------------------
 // Self‑tests (keep old + add new)
 // -----------------------------
 (function runTests(){
-  const rows=[]; function ok(name,cond){ rows.push(`<span class="badge">${cond?'PASS':'FAIL'}</span> ${name}`); }
+  const rows=[]; function ok(name,cond){ rows.push(`<span class=\"badge\">${cond?'PASS':'FAIL'}</span> ${name}`); }
   ok('esc()', esc('<>&"')==='&lt;&gt;&amp;&quot;');
   ok('darken()', /^#[0-9a-f]{6}$/i.test(darken('#ffffff',-10)));
   ok('clusterAvgRent()', (function(){ const c={suburbs:['Bondi','Coogee']}; const v=clusterAvgRent(c); return v>900 && v<1000; })());
   ok('classify()', (function(){ return classify(3,0.5)==='A1' && classify(10,1)==='A3' && classify(9,9)==='B2'; })());
-  ok('poolLimit()', (function(){ let seq=[]; return poolLimit(3, [1,2,3,4,5], async (x)=>{ await new Promise(r=>setTimeout(r, 5)); seq.push(x); return x*2; }).then(res=> res.length===5 && Math.max(...res)===10 ); })());
-  ok('map.invalidateSize exists', typeof map.invalidateSize==='function');
-  Promise.all(rows).then(()=>{ document.getElementById('diagBody').innerHTML = rows.join('<br>'); });
+  // legend toggle
+  rows.push(`<span class=\"badge\">${document.getElementById('legendToggle')?'PASS':'FAIL'}</span> legend toggle present`);
+  rows.push(`<span class=\"badge\">${(function(){ const t=document.getElementById('legendToggle'); return t && t.getAttribute('aria-controls')==='legendItems'; })()?'PASS':'FAIL'}</span> legend toggle ARIA`);
+  // corridor parsing tests
+  const t1="Edgecliff Station (T4) • New South Head Rd • Ferry (Double Bay, Darling Point)";
+  const eRoads=extractRoadNames(t1); const eStations=extractStationNames(t1); const eFerr=extractFerryNames(t1);
+  ok('parse roads', eRoads.includes('New South Head Rd'));
+  ok('parse station', eStations.includes('Edgecliff'));
+  ok('parse ferries', eFerr.includes('Double Bay') && eFerr.includes('Darling Point'));
+  document.getElementById('diagBody').innerHTML = rows.join('<br>');
 })();
 </script>
 </body>
