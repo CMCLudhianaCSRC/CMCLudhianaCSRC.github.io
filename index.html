@@ -3,536 +3,598 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Forensics Quiz Scoreboard 2025</title>
+  <title>DooraVisionAssistant for VA’s (DVA) — Single‑File Demo</title>
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin="anonymous"
+  />
   <style>
-    /* ---------- THEME ---------- */
     :root{
-      --accent: #6366f1; /* default (MAIN) */
-      --bg: #0b1220;
-      --surface: #0f172a;
-      --surface-2: #111827;
-      --text: #e5e7eb;
-      --muted: #94a3b8;
-      --ok: #22c55e;
-      --warn: #f59e0b;
-      --bad: #ef4444;
-      --shadow: 0 10px 30px rgba(0,0,0,.3);
-      --radius: 18px;
+      --bg:#0b0d10; --panel:#12151a; --panel-2:#161a21; --text:#e7ecf3; --muted:#9fb0c3; --accent:#6aa7ff; --border:#1e2633;
     }
-    body.theme-RED    { --accent:#ef4444; }
-    body.theme-GREEN  { --accent:#22c55e; }
-    body.theme-BLUE   { --accent:#3b82f6; }
-    body.theme-YELLOW { --accent:#f59e0b; }
-
-    /* ---------- LAYOUT ---------- */
-    html,body{height:100%;}
-    body{
-      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      color:var(--text);
-      background:
-        radial-gradient(1200px 600px at 10% -10%, color-mix(in oklab, var(--accent) 35%, transparent), transparent),
-        radial-gradient(1200px 600px at 110% 10%, color-mix(in oklab, var(--accent) 20%, transparent), transparent),
-        linear-gradient(180deg, #0b1220, #0a0f1a 60%, #090e18);
-    }
-    .wrap{max-width:1200px; margin:24px auto; padding:16px;}
-
-    .card{background:linear-gradient(180deg, color-mix(in oklab, var(--surface) 95%, transparent), var(--surface)); border:1px solid #1f2937; box-shadow:var(--shadow); border-radius:var(--radius);} 
-    .pad{padding:18px;}
-
-    .titlebar{
-      text-align:center; padding:24px 12px 12px; position:relative;
-    }
-    .titlebar h1{ margin:0; font-size: clamp(20px, 3vw, 34px); letter-spacing:.3px; }
-    .subtitle{ color:var(--muted); font-size:14px; margin-top:6px; }
-
-    .view-buttons{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:14px 0 6px; }
-    .btn{
-      appearance:none; border:1px solid #263041; background:linear-gradient(180deg, color-mix(in oklab, var(--surface-2) 92%, transparent), var(--surface-2));
-      color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600; letter-spacing:.2px; transition:200ms ease;
-    }
-    .btn:hover{ transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.25); }
-    .btn.active, .btn.primary{ border-color: color-mix(in oklab, var(--accent) 60%, #263041); outline:1px solid color-mix(in oklab, var(--accent) 45%, transparent); }
-
-    .toolbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:center; margin:16px 0; }
-    .toolbar .btn{ padding:9px 12px; }
-    .accent{ background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 25%, var(--surface-2)), color-mix(in oklab, var(--accent) 15%, var(--surface-2))); border-color: color-mix(in oklab, var(--accent) 60%, #263041); }
-
-    .pill{ font-size:12px; padding:6px 10px; border-radius:999px; background:color-mix(in oklab, var(--accent) 15%, #0f172a); border:1px solid color-mix(in oklab, var(--accent) 45%, #1f2937); }
-
-    .grid{ overflow:auto; border-top:1px solid #1f2937; }
-    table{ width:100%; border-collapse:separate; border-spacing:0; }
-    thead th{ position:sticky; top:0; backdrop-filter: blur(6px); background:linear-gradient(180deg, color-mix(in oklab, var(--surface) 92%, transparent), var(--surface)); border-bottom:1px solid #1f2937; padding:12px; font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:#b6c2d2; }
-    tbody td{ border-bottom:1px solid #162033; padding:10px; }
-    tbody tr:hover td{ background:linear-gradient(180deg, color-mix(in oklab, var(--accent) 6%, transparent), transparent); }
-
-    .team-input{ width:100%; background:#0b1220; color:var(--text); border:1px solid #1f2937; border-radius:10px; padding:9px 10px; }
-    .score-cell{ display:grid; grid-template-rows:auto auto; gap:6px; }
-    .score-input{ width:80px; max-width:100%; text-align:center; background:#0b1220; color:var(--text); border:1px solid #1f2937; border-radius:10px; padding:8px; }
-    .mini-row{ display:flex; justify-content:center; gap:6px; }
-    .mini{ font-size:12px; padding:6px 10px; border-radius:8px; border:1px solid #283246; background:#0e1624; color:#cbd5e1; cursor:pointer; }
-
-    .total-badge{ display:inline-block; padding:6px 10px; border-radius:12px; background: color-mix(in oklab, var(--accent) 12%, #0f172a); border:1px solid color-mix(in oklab, var(--accent) 40%, #1f2937); font-weight:700; }
-    .house-chip{ font-weight:700; letter-spacing:.04em; }
-
-    .footer{ display:flex; gap:10px; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-top:14px; color:var(--muted); font-size:12px; }
-    .right{ display:flex; gap:8px; align-items:center; }
-
-    .hidden{ display:none !important; }
-
-    /* Responsive tweaks */
-    @media (max-width:700px){
-      .score-input{ width:64px; }
-      thead th, tbody td{ padding:8px; }
-    }
+    *{box-sizing:border-box}
+    html,body,#app{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Helvetica,Arial}
+    #app{display:grid;grid-template-columns:380px 1fr;grid-template-rows:100%;}
+    @media (max-width: 920px){#app{grid-template-columns:100%;grid-template-rows:auto 1fr}}
+    aside{background:linear-gradient(180deg,var(--panel),var(--panel-2));border-right:1px solid var(--border);padding:16px;overflow:auto}
+    h1{font-size:18px;margin:0 0 8px}
+    h2{font-size:15px;margin:16px 0 8px;color:var(--muted);font-weight:600}
+    .hint{font-size:12px;color:var(--muted)}
+    .row{display:flex;gap:8px;align-items:center}
+    .section{padding:12px;border:1px solid var(--border);border-radius:12px;background:#0f1318}
+    #map{height:100%;width:100%}
+    .leaflet-container{background:#0a0c10}
+    .legend{position:absolute;bottom:12px;left:12px;background:#0f1318;border:1px solid var(--border);border-radius:12px;color:var(--text);padding:10px 12px;z-index:500;max-width:60vw}
+    .legend h4{margin:0 0 6px;font-size:12px;color:var(--muted)}
+    .legend .item{display:flex;align-items:center;gap:8px;margin:2px 0;flex-wrap:wrap}
+    .swatch{width:12px;height:12px;border-radius:3px;border:2px solid rgba(0,0,0,.35);display:inline-block}
+    .cluster-pills{display:flex;flex-wrap:wrap;gap:6px}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:#0e1217;border:1px solid var(--border);color:var(--text);border-radius:999px;cursor:pointer;font-weight:600}
+    .pill.active{outline:2px solid rgba(106,167,255,.25)}
+    .info h3{margin:.2rem 0 .25rem;font-size:16px}
+    .info .kv{display:grid;grid-template-columns:120px 1fr;gap:8px;margin:4px 0}
+    .kv b{color:#b8c7da}
+    .suburbs{display:flex;flex-wrap:wrap;gap:6px}
+    .sep{height:1px;background:var(--border);margin:12px 0}
+    .foot{margin-top:10px;font-size:12px;color:#8ea0b7}
+    .loader{position:absolute;top:12px;left:12px;background:#0f1318;border:1px solid var(--border);border-radius:10px;padding:8px 10px;color:var(--text);font-size:12px;z-index:600}
+    /* suburb labels */
+    .suburb-label{background:transparent;border:none;color:#e7ecf3;font-weight:700;font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.8),0 0 6px rgba(0,0,0,.6);pointer-events:none;white-space:nowrap}
+    /* tables & callouts */
+    .table-wrap{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#0e1217;margin:8px 0}
+    table.table{width:100%;border-collapse:collapse}
+    table.table th,table.table td{padding:8px 10px;border-bottom:1px solid #15202b;vertical-align:top}
+    table.table tr:last-child th,table.table tr:last-child td{border-bottom:none}
+    table.table th{text-align:left;color:#b8c7da;width:120px;font-weight:600}
+    .table-compact th,.table-compact td{padding:6px 8px;font-size:13px}
+    .callout{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#0d131a;box-shadow:inset 0 0 0 1px #00000020}
+    .badge{display:inline-block;padding:2px 6px;border-radius:999px;background:#0b1220;border:1px solid #243043;color:#9fb0c3;font-size:11px}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <div class="titlebar">
-        <h1 id="appTitle">Forensics Quiz Scoreboard 2025 — <span id="viewLabel">MAIN</span></h1>
-        <div class="subtitle">Overall scoreboard (MAIN). Switch to a House to manage its teams & scores. Everything auto‑saves.</div>
-        <div class="view-buttons pad">
-          <button class="btn primary" data-view="MAIN" id="btnMain">Main Scoreboard</button>
-          <button class="btn" data-view="RED"   id="btnRED"><span class="house-chip">RED</span></button>
-          <button class="btn" data-view="GREEN" id="btnGREEN"><span class="house-chip">GREEN</span></button>
-          <button class="btn" data-view="BLUE"  id="btnBLUE"><span class="house-chip">BLUE</span></button>
-          <button class="btn" data-view="YELLOW"id="btnYELLOW"><span class="house-chip">YELLOW</span></button>
-        </div>
-      </div>
+<div id="app">
+  <aside>
+    <h1>DooraVisionAssistant for VA’s (DVA)</h1>
+    <div class="hint">All clusters use <b>actual suburb outlines from the start</b>. Click an <b>E‑code</b> or choose a suburb to highlight — others will fade.</div>
 
-      <div class="pad">
-        <div class="toolbar">
-          <button class="btn accent" id="addTeamBtn">+ Add Team</button>
-          <button class="btn" id="addRoundBtn">+ Add Round</button>
-          <button class="btn" id="removeRoundBtn">− Remove Last Round</button>
-          <button class="btn" id="resetViewBtn">Reset Current View</button>
-          <button class="btn" id="clearAllBtn">Clear All Data</button>
-          <span class="pill">Rounds: <strong id="roundCount">0</strong></span>
-          <label class="btn" for="importFile">Import JSON</label>
-          <input id="importFile" type="file" accept="application/json" class="hidden" />
-          <button class="btn" id="exportBtn">Export JSON</button>
-          <label class="btn" for="toggleSort"><input type="checkbox" id="toggleSort"/> Sort by Total</label>
-        </div>
+    <div class="section" style="margin-top:10px">
+      <h2>Find / Highlight</h2>
+      <div class="row" style="width:100%;">
+        <select id="suburbSelect" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:#0e1217;color:var(--text)">
+          <option value="">— Select a suburb —</option>
+        </select>
       </div>
-
-      <div class="grid pad" id="tableWrap">
-        <!-- table injected here -->
-      </div>
-
-      <div class="pad footer">
-        <div>Tip: Click a House (RED/GREEN/BLUE/YELLOW) to switch theme + filter teams. MAIN shows all teams.</div>
-        <div class="right"><span>Theme:</span> <span class="pill" id="themeName">MAIN</span></div>
+      <div id="clusterPills" class="cluster-pills" style="margin-top:8px"></div>
+      <div class="row" style="margin-top:8px;gap:6px;flex-wrap:wrap">
+        <button id="btnClear" class="pill">Clear highlight</button>
+        <button id="btnReset" class="pill">Reset view</button>
+        <button id="btnSydney" class="pill" title="Load Greater Sydney with auto‑clusters">Load Sydney (auto)</button>
       </div>
     </div>
-  </div>
 
-  <script>
-    /* ===============================
-       SCOREBOARD — MULTI‑HOUSE (LOCALSTORAGE + Supabase-ready)
-       Works on GitHub Pages (no server)
-       =============================== */
+    <div id="info" class="section info" style="margin-top:12px">
+      <h2 style="margin-top:0">Information</h2>
+      <div id="infoBody" class="hint">Pick a cluster to see corridors, <b>To‑City times</b>, <b>avg rent</b>, and <b>environment basics</b> (schools, parks, libraries). Suburb names appear at the center when highlighted.</div>
+    </div>
 
-    const LS_KEY = 'forensics_scoreboard_v3';
+    <div class="section" id="diag" style="margin-top:12px">
+      <h2>Diagnostics</h2>
+      <div id="diagBody" class="hint">Running self‑tests…</div>
+    </div>
 
-    /** @typedef {{id:string,name:string,house:'RED'|'GREEN'|'BLUE'|'YELLOW',scores:number[]}} Team */
-    /** @typedef {{rounds:number, teams:Team[], settings:{title:string,lastView:string, sortByTotal:boolean}}} State */
+    <div class="foot">Boundaries via OpenStreetMap; amenities via Overpass. Rent values are demo estimates for 2‑bed units — verify with live listings.</div>
+  </aside>
+  <main style="position:relative">
+    <div id="map"></div>
+    <div class="legend" id="legend">
+      <h4>Clusters</h4>
+      <div id="legendItems"></div>
+    </div>
+    <div id="loader" class="loader" style="display:none">Loading suburb outlines… <span id="prog">0%</span></div>
+  </main>
+</div>
 
-    /** @type {State} */
-    let state = null;
-    let currentView = 'MAIN';
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<script>
+// -----------------------------
+// Data (from City Index doc)
+// -----------------------------
+const CLUSTERS = [
+  {id:"E1", name:"North East", suburbs:["Darling Point","Double Bay"],
+   corridors:"Edgecliff Station (T4) • New South Head Rd • Ferry (Double Bay, Darling Point)",
+   alias:"E1 – North East", connects:["E2","ICE1"]},
+  {id:"E2", name:"Upper North East", suburbs:["Point Piper","Bellevue Hill"],
+   corridors:"Victoria Rd • Old South Head Rd • Access to Edgecliff (T4) & Bondi Junction (bus)",
+   alias:"E2 – Upper North East", connects:["E1","E3","E7"]},
+  {id:"E3", name:"North East Headland", suburbs:["Vaucluse","Dover Heights","Rose Bay","Watsons Bay"],
+   corridors:"Old South Head Rd • Ferry (Rose Bay) • Route to Bondi Junction",
+   alias:"E3 – North East Headland", connects:["E2","E4"]},
+  {id:"E4", name:"Bondi North", suburbs:["North Bondi","Bondi Beach"],
+   corridors:"Bondi Beach corridor to Bondi Junction (T4) via Bondi Rd (frequent buses)",
+   alias:"E4 – Bondi North", connects:["E3","E5","E7"]},
+  {id:"E5", name:"Bondi South", suburbs:["Bondi","Tamarama"],
+   corridors:"Bondi Rd to Bondi Junction (T4) • Coastal links to Tamarama & Bronte",
+   alias:"E5 – Bondi South", connects:["E4","E7","E8"]},
+  {id:"E6", name:"All Bondi (Roll‑up)", suburbs:["North Bondi","Bondi Beach","Bondi Junction","Bondi"],
+   corridors:"Combined Bondi & Junction area • Bondi Rd • Bondi Junction Station (T4)",
+   alias:"E6 – All Bondi", connects:["E4","E5","E7","E8"]},
+  {id:"E7", name:"Bondi Junction Belt", suburbs:["Bondi Junction","Waverley","Queens Park"],
+   corridors:"Bondi Junction Station (T4) interchange • direct city & beach routes; retail hub",
+   alias:"E7 – Bondi Junction Belt", connects:["E2","E4","E5","E10"]},
+  {id:"E8", name:"Bronte Strip", suburbs:["Bronte","Clovelly"],
+   corridors:"Bronte & Macpherson Sts • Bus links to Bondi Junction & city • Coastal walk to Coogee",
+   alias:"E8 – Bronte Strip", connects:["E5","E7","E9"]},
+  {id:"E9", name:"Coastal South", suburbs:["Randwick","Coogee","South Coogee"],
+   corridors:"L2/L3 Light Rail (Anzac Pde) • Bus to Coogee Beach & city",
+   alias:"E9 – Coastal South", connects:["E8","E10","E11"]},
+  {id:"E10", name:"Central South", suburbs:["Kensington","Kingsford","Daceyville"],
+   corridors:"Anzac Parade (L3) • Regular bus to city & Bondi Junction",
+   alias:"E10 – Central South", connects:["E7","E9","E11"]},
+  {id:"E11", name:"South East", suburbs:["Maroubra","Pagewood","Eastgardens","Botany","Hillsdale","Banksmeadow"],
+   corridors:"Anzac Parade • Maroubra Rd — main bus corridors to city & Bondi Junction",
+   alias:"E11 – South East", connects:["E9","E10","E12","IS1"]},
+  {id:"E12", name:"Far South East", suburbs:["Malabar","Little Bay","Chifley","La Perouse","Phillip Bay","Matraville","Port Botany"],
+   corridors:"Bunnerong & Military Rds • Direct bus to city & Maroubra • Coastal parks & Port Botany",
+   alias:"E12 – Far South East", connects:["E11","IS1"]},
+  {id:"IS1", name:"North Inner South", suburbs:["Mascot","Rosebery","Eastlakes"],
+   corridors:"Airport line (T8) via Mascot Station (~10 min to city) • Botany Rd",
+   alias:"IS1 – North Inner South", connects:["IS2","E11"]},
+  {id:"IS2", name:"Mid Inner South", suburbs:["Waterloo","Zetland"],
+   corridors:"Green Square Station (T8) • Botany Rd to city & airport",
+   alias:"IS2 – Mid Inner South", connects:["IS1","IS3","E10"]},
+  {id:"IS3", name:"South Inner City", suburbs:["Redfern","Waterloo"],
+   corridors:"Redfern Station (T8/T2) • Cleveland St buses • Close to Central",
+   alias:"IS3 – South Inner City", connects:["IS2","IS4"]},
+  {id:"IS4", name:"Inner City Fringe", suburbs:["Surry Hills","Redfern"],
+   corridors:"Central Station interchange • Devonshire St light rail link",
+   alias:"IS4 – Inner City Fringe", connects:["IS3","ICE1"]},
+  {id:"ICE1", name:"City Fringe East", suburbs:["Paddington","Edgecliff","Woollahra"],
+   corridors:"Edgecliff Station (T4) • Oxford St bus corridor to CBD & Bondi Junction",
+   alias:"ICE1 – City Fringe East", connects:["IS4","E1","E7"]}
+];
 
-    const $ = sel => document.querySelector(sel);
-    const $$ = sel => Array.from(document.querySelectorAll(sel));
+// Approx To‑City times (bold in UI)
+const CITY_TIMES = {
+  E1:{train:"7–10 min from Edgecliff (T4)", bus:"20–35 min (via New South Head Rd)"},
+  E2:{train:"7–12 min via Edgecliff/Bondi Jn (T4)", bus:"25–40 min"},
+  E3:{train:"15–25 min (bus to Bondi Jn + T4)", bus:"35–55 min"},
+  E4:{train:"10–12 min from Bondi Jn (T4)", bus:"35–50 min"},
+  E5:{train:"10–14 min from Bondi Jn (T4)", bus:"35–55 min"},
+  E6:{train:"10–14 min from Bondi Jn (T4)", bus:"35–55 min"},
+  E7:{train:"10–12 min from Bondi Jn (T4)", bus:"25–45 min"},
+  E8:{train:"12–18 min (bus to Bondi Jn + T4)", bus:"35–55 min"},
+  E9:{train:"30–45 min (L2/L3 to CBD)", bus:"35–55 min"},
+  E10:{train:"28–40 min (L3 to CBD)", bus:"35–60 min"},
+  E11:{train:"20–35 min (bus to Mascot/Green Sq + T8)", bus:"40–70 min"},
+  E12:{train:"25–45 min (bus to Mascot/Green Sq + T8)", bus:"45–75 min"},
+  IS1:{train:"6–12 min from Mascot/Green Sq (T8)", bus:"20–40 min"},
+  IS2:{train:"5–9 min from Green Sq (T8)", bus:"15–30 min"},
+  IS3:{train:"2–5 min from Redfern (T2/T8)", bus:"10–25 min"},
+  IS4:{train:"0–3 min from Central (all lines)", bus:"10–25 min"},
+  ICE1:{train:"7–10 min from Edgecliff (T4)", bus:"15–30 min via Oxford St"}
+};
 
-    function uid(){ return 't' + Math.random().toString(36).slice(2,9); }
+// Approx median weekly rent (A$) — rough placeholders for 2‑bed units.
+// Replace with your live feed or CSV later if needed.
+const RENT_DATA = {
+  "Darling Point":1200,"Double Bay":1100,"Point Piper":1600,"Bellevue Hill":1050,
+  "Vaucluse":1500,"Dover Heights":1300,"Rose Bay":1100,"Watsons Bay":1600,
+  "North Bondi":1100,"Bondi Beach":1000,"Bondi":950,"Tamarama":1100,
+  "Bondi Junction":900,"Waverley":950,"Queens Park":1000,
+  "Bronte":1100,"Clovelly":1000,"Randwick":900,"Coogee":950,"South Coogee":1000,
+  "Kensington":850,"Kingsford":850,"Daceyville":750,
+  "Maroubra":800,"Pagewood":900,"Eastgardens":850,"Botany":800,
+  "Hillsdale":750,"Banksmeadow":800,"Malabar":850,"Little Bay":900,
+  "Chifley":800,"La Perouse":900,"Phillip Bay":900,"Matraville":800,"Port Botany":800,
+  "Mascot":850,"Rosebery":900,"Eastlakes":780,"Waterloo":900,"Zetland":950,
+  "Redfern":950,"Surry Hills":1000,"Paddington":1000,"Edgecliff":1000,"Woollahra":1100
+};
+function formatAUD(x){ if(x==null||isNaN(x)) return '—'; return 'A$'+Math.round(x).toLocaleString('en-AU'); }
+function clusterAvgRent(cluster){
+  const vals = cluster.suburbs.map(s=>RENT_DATA[s]).filter(v=>typeof v==='number');
+  if(!vals.length) return null; return vals.reduce((a,b)=>a+b,0)/vals.length;
+}
 
-    function load(){
-      try{
-        const raw = localStorage.getItem(LS_KEY);
-        if(raw){
-          state = JSON.parse(raw);
-          // Data guards
-          state.rounds = Math.max(1, Number(state.rounds||1));
-          state.teams = Array.isArray(state.teams) ? state.teams : [];
-          state.settings = Object.assign({title:'Forensics Quiz Scoreboard 2025', lastView:'MAIN', sortByTotal:false}, state.settings||{});
-        } else {
-          state = { rounds: 5, teams: [], settings: { title:'Forensics Quiz Scoreboard 2025', lastView:'MAIN', sortByTotal:false } };
-        }
-      }catch(e){
-        console.error('Load failed, resetting.', e);
-        state = { rounds: 5, teams: [], settings: { title:'Forensics Quiz Scoreboard 2025', lastView:'MAIN', sortByTotal:false } };
-      }
-      currentView = state.settings.lastView || 'MAIN';
-      applyTheme(currentView);
+// One‑liner descriptors for VA script
+const CLUSTER_TONES = {
+  E1:"Harbourside prestige near Edgecliff; leafy streets and ferry access.",
+  E2:"Quiet, elevated pockets with quick access to Bondi Junction and Edgecliff.",
+  E3:"Headland and bays — scenic outlooks, coastal walks, premium homes.",
+  E4:"North Bondi & Bondi Beach — surf, cafés, weekend buzz; quick hop to Junction.",
+  E5:"South Bondi & Tamarama — coastal lifestyle with easy T4 access via buses.",
+  E6:"Greater Bondi catchment — mix of beachside apartments and Junction convenience.",
+  E7:"Bondi Junction hub — Westfield, transport interchange, strong retail core.",
+  E8:"Bronte/Clovelly — quieter beaches and parks, village feel, near Junction.",
+  E9:"Randwick/Coogee — near UNSW & hospitals; beach and light rail to CBD.",
+  E10:"Kensington/Kingsford — UNSW corridor; light rail, student energy, eateries.",
+  E11:"Maroubra to Botany — family pockets, larger blocks, access to Anzac Pde.",
+  E12:"Little Bay/Malabar — coastal reserves, quieter suburban feel, bus to CBD.",
+  IS1:"Mascot/Rosebery — airport line, new apartment precincts, quick city links.",
+  IS2:"Green Square/Waterloo — urban renewal, T8 line, cafés and convenience.",
+  IS3:"Redfern/Waterloo — close to Central; heritage meets new developments.",
+  IS4:"Surry Hills fringe — walkable to CBD; dining, terraces, creative scene.",
+  ICE1:"Paddington/Edgecliff/Woollahra — boutiques, terraces, quick T4 to city."
+};
+function buildVAScript(cluster, counts, rent){
+  const tone = CLUSTER_TONES[cluster.id]||'';
+  const bits = [];
+  if(tone) bits.push(tone);
+  if(counts){ const s = counts.schools, p = counts.parks, l = counts.libraries; bits.push(`${s} schools, ${p} parks, ${l} libraries in the area (OSM data).`); }
+  if(rent){ bits.push(`Typical ${cluster.suburbs.length>1? 'area' : 'suburb'} weekly rent around <b>${formatAUD(rent)}/wk</b> for 2‑bed units (rough guide).`); }
+  const tt = CITY_TIMES[cluster.id]; if(tt){ bits.push(`To the city: <b>Train ${tt.train}</b>; <b>Bus ${tt.bus}</b>.`); }
+  return bits.join(' ');
+}
+
+const COLORS = ["#4f46e5","#ef4444","#22c55e","#eab308","#06b6d4","#a855f7","#f97316","#14b8a6","#f43f5e","#3b82f6","#8b5cf6","#84cc16","#fb7185","#f59e0b","#10b981","#60a5fa","#e879f9","#34d399","#f87171","#fbbf24"];
+function darken(hex, amt=-30){const c=hex.replace('#','');const num=parseInt(c,16);let r=(num>>16)+amt,g=((num>>8)&255)+amt,b=(num&255)+amt;r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b));return '#'+(r<<16|g<<8|b).toString(16).padStart(6,'0');}
+function esc(s){return String(s||'').replace(/[&<>\"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));}
+
+// Map init
+const map = L.map('map', { zoomControl:true, preferCanvas:true }).setView([-33.87,151.21], 11.6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
+
+// Groups/layers
+const clusterLayers = {}; // id -> {color, layers: L.GeoJSON[], bounds: LatLngBounds}
+const clusterColor = {};
+const poiGroup = L.layerGroup().addTo(map);
+const labelsGroup = L.layerGroup().addTo(map);
+
+// Build cluster color map + pills + legend + suburb dropdown
+const pillsDiv=document.getElementById('clusterPills');
+const legendItems=document.getElementById('legendItems');
+const suburbSelect=document.getElementById('suburbSelect');
+CLUSTERS.forEach((c,i)=>{ clusterColor[c.id]=COLORS[i%COLORS.length]; });
+CLUSTERS.forEach(c=>{
+  const pill=document.createElement('button'); pill.className='pill'; pill.textContent=c.id; pill.style.borderColor=darken(clusterColor[c.id],-30);
+  pill.style.boxShadow=`inset 0 0 0 2px ${clusterColor[c.id]}22`;
+  pill.dataset.id=c.id; pill.onclick=()=>highlightCluster(c.id,true);
+  pillsDiv.appendChild(pill);
+  const li=document.createElement('div'); li.className='item';
+  li.innerHTML=`<span class="swatch" style="background:${clusterColor[c.id]}"></span><span><b>${c.id}</b> — ${c.name}</span>`;
+  legendItems.appendChild(li);
+});
+(function fillSuburbDropdown(){
+  const all = Array.from(new Set(CLUSTERS.flatMap(c=>c.suburbs))).sort();
+  all.forEach(s=>{ const opt=document.createElement('option'); opt.value=s; opt.textContent=s; suburbSelect.appendChild(opt); });
+})();
+
+// --- Suburb boundary fetch via OpenStreetMap (Nominatim), cached ---
+const suburbPolyCache = {};
+async function getSuburbGeometry(name){
+  if(suburbPolyCache[name]) return suburbPolyCache[name];
+  const key='poly_'+name;
+  try{ const cached=localStorage.getItem(key); if(cached){ const g=JSON.parse(cached); suburbPolyCache[name]=g; return g; } }catch(_){ }
+  const q = encodeURIComponent(name+', Sydney, NSW, Australia');
+  const url = `https://nominatim.openstreetmap.org/search?format=geojson&polygon_geojson=1&limit=1&q=${q}`;
+  const resp = await fetch(url, {headers:{'Accept':'application/geo+json'}});
+  if(!resp.ok){ suburbPolyCache[name]=null; return null; }
+  const data = await resp.json();
+  let feat = data?.features?.[0];
+  if(Array.isArray(data?.features)){
+    const exact = data.features.find(f=> (f.properties?.display_name||'').toLowerCase().includes(name.toLowerCase()));
+    if(exact) feat = exact;
+  }
+  const geom = feat?.geometry || null;
+  suburbPolyCache[name]=geom;
+  try{ localStorage.setItem(key, JSON.stringify(geom)); }catch(_){ }
+  return geom;
+}
+
+// Draw helpers
+function addSuburbToCluster(clusterId, geom, suburbName){
+  if(!geom) return null;
+  const color = clusterColor[clusterId] || '#888';
+  const layer = L.geoJSON(geom, { style: { color: darken(color,-20), weight: 2, fillColor: color, fillOpacity: 0.35, opacity: 0.9 } });
+  layer.options.suburbName = suburbName || '';
+  layer.addTo(map);
+  layer.on('click',()=>highlightCluster(clusterId,true));
+  if(!clusterLayers[clusterId]) clusterLayers[clusterId] = { color, layers: [], bounds: null };
+  clusterLayers[clusterId].layers.push(layer);
+  const b = layer.getBounds();
+  clusterLayers[clusterId].bounds = clusterLayers[clusterId].bounds ? clusterLayers[clusterId].bounds.extend(b) : b;
+  return layer;
+}
+
+function setClusterStyle(clusterId, active){
+  const cfg = clusterLayers[clusterId]; if(!cfg) return;
+  cfg.layers.forEach(l=> l.setStyle(active ? { fillOpacity:0.6, weight:3, color:darken(cfg.color,-10) } : { fillOpacity:0.12, weight:1, color:darken(cfg.color,-40) }));
+  if(active) cfg.layers.forEach(l=> l.bringToFront());
+}
+
+// Init: fetch ALL suburb outlines and draw immediately when each arrives (original clusters)
+(async function initOutlines(){
+  const loader = document.getElementById('loader'); const prog = document.getElementById('prog');
+  const allSuburbs = Array.from(new Set(CLUSTERS.flatMap(c=>c.suburbs)));
+  loader.style.display='block';
+  for(let i=0;i<allSuburbs.length;i++){
+    const s = allSuburbs[i];
+    const geom = await getSuburbGeometry(s);
+    CLUSTERS.forEach(c=>{ if(c.suburbs.includes(s)) addSuburbToCluster(c.id, geom, s); });
+    prog.textContent = Math.round(((i+1)/allSuburbs.length)*100)+'%';
+  }
+  loader.style.display='none';
+  const groups = Object.values(clusterLayers).flatMap(c=>c.layers);
+  if(groups.length){ const g = L.featureGroup(groups); map.fitBounds(g.getBounds(), {padding:[20,20]}); }
+})();
+
+// Highlight logic + info + amenities + labels
+let highlighted=null;
+function highlightCluster(id, fit=false){
+  highlighted=id;
+  Object.keys(clusterLayers).forEach(cid=> setClusterStyle(cid, cid===id));
+  document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('active', p.dataset.id===id));
+  labelsGroup.clearLayers();
+  const c = CLUSTERS.find(x=>x.id===id) || AUTO_CLUSTERS.find(x=>x.id===id);
+  if(c){
+    renderInfoForCluster(c);
+    if(fit && clusterLayers[id]?.bounds){ map.fitBounds(clusterLayers[id].bounds, {padding:[30,30]}); }
+    fetchAmenitiesForCluster(c);
+    drawLabelsForCluster(c);
+  }
+}
+
+function drawLabelsForCluster(c){
+  const cfg = clusterLayers[c.id]; if(!cfg) return;
+  cfg.layers.forEach(l=>{
+    const center = l.getBounds().getCenter();
+    const name = l.options.suburbName || 'Suburb';
+    const icon = L.divIcon({className:'suburb-label', html:esc(name), iconSize:[0,0], iconAnchor:[0,0]});
+    L.marker(center, {icon, interactive:false}).addTo(labelsGroup);
+  });
+}
+
+function clearHighlight(){
+  highlighted=null; document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  Object.keys(clusterLayers).forEach(cid=> setClusterStyle(cid, true));
+  poiGroup.clearLayers();
+  labelsGroup.clearLayers();
+  setInfo('Pick a cluster to see corridors, To‑City times, average rent, and environment basics.');
+}
+
+// Suburb selection → highlight its cluster
+suburbSelect.addEventListener('change', ()=>{
+  const s = suburbSelect.value; if(!s) return;
+  const c = (CLUSTERS.find(c=> c.suburbs.includes(s)) || AUTO_CLUSTERS.find(c=> c.suburbs.includes(s)));
+  if(c){ highlightCluster(c.id, true);
+    const cfg = clusterLayers[c.id]; if(cfg && cfg.layers.length){
+      const layer = cfg.layers.find(l=> (l.options.suburbName||'')===s) || cfg.layers[0];
+      const center = layer.getBounds().getCenter();
+      const blip = L.circleMarker(center, {radius:8, weight:2, color:'#fff', fill:true, fillOpacity:0.9, opacity:0.9});
+      blip.addTo(map); setTimeout(()=>{ map.removeLayer(blip); }, 1200);
+    }
+  }
+});
+
+// Controls
+const btnClear=document.getElementById('btnClear');
+const btnReset=document.getElementById('btnReset');
+const btnSydney=document.getElementById('btnSydney');
+btnClear.onclick=clearHighlight;
+btnReset.onclick=()=>{ clearHighlight(); const groups = Object.values(clusterLayers).flatMap(c=>c.layers); if(groups.length){ const g=L.featureGroup(groups); map.fitBounds(g.getBounds(),{padding:[20,20]}); } };
+
+// Info rendering
+const infoBody = document.getElementById('infoBody');
+function setInfo(html){ infoBody.innerHTML=html; }
+function renderInfoForCluster(c){
+  const city = CITY_TIMES[c.id]||{};
+  const suburbTags = c.suburbs.map(s=>`<span class=\"pill\" style=\"padding:4px 8px\">${esc(s)}</span>`).join(' ');
+  const connectTags = (c.connects||[]).map(id=>`<span class=\"pill\" data-go=\"${id}\" style=\"padding:4px 8px\">${id}</span>`).join(' ');
+  const rentVal = clusterAvgRent(c);
+  setInfo(`
+    <h3>${esc(c.id)} — ${esc(c.name)}</h3>
+    <div class=\"table-wrap\"><table class=\"table\">
+      <tr><th>Alias</th><td>${esc(c.alias||c.name)}</td></tr>
+      <tr><th>To City</th><td><b>Train:</b> ${esc(city.train||'—')}<br><b>Bus:</b> ${esc(city.bus||'—')}</td></tr>
+      <tr><th>Avg Rent</th><td><b>${formatAUD(rentVal)}</b>/wk <span class=\"hint\">2‑bed est.; verify with live listings.</span></td></tr>
+      <tr><th>Corridors</th><td>${esc(c.corridors||'—')}</td></tr>
+      <tr><th>Connects</th><td>${connectTags||'<span class=\"hint\">—</span>'}</td></tr>
+    </table></div>
+
+    <div class=\"table-wrap\"><table class=\"table\">
+      <tr><th>Suburbs</th><td class=\"suburbs\">${suburbTags}</td></tr>
+    </table></div>
+
+    <h3 style=\"margin-top:10px\">Environment & Amenities</h3>
+    <div class=\"row\" style=\"gap:8px;align-items:flex-start;flex-wrap:wrap\">
+      <div class=\"table-wrap\" style=\"flex:1 1 140px;max-width:200px\">
+        <table class=\"table table-compact\">
+          <tr><th>Schools</th><td id=\"envCountSchools\">—</td></tr>
+          <tr><th>Parks</th><td id=\"envCountParks\">—</td></tr>
+          <tr><th>Libraries</th><td id=\"envCountLibraries\">—</td></tr>
+        </table>
+      </div>
+      <div class=\"table-wrap\" style=\"flex:2 1 260px\">
+        <table class=\"table table-compact\">
+          <thead><tr><th style=\"width:70%\">Name</th><th>Type</th></tr></thead>
+          <tbody id=\"envTbody\"><tr><td colspan=\"2\" class=\"hint\">Fetching schools, parks, libraries…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class=\"sep\"></div>
+    <div class=\"callout\" id=\"envScript\">Building a short talking summary…</div>
+  `);
+}
+
+infoBody.addEventListener('click',(e)=>{
+  const go = e.target.closest('[data-go]'); if(go){ highlightCluster(go.dataset.go,true); }
+});
+
+// --- Amenities via Overpass API (schools, parks, libraries) ---
+async function fetchAmenitiesForCluster(cluster){
+  poiGroup.clearLayers();
+  const cfg = clusterLayers[cluster.id]; if(!cfg || !cfg.layers.length){
+    const tb=document.getElementById('envTbody'); if(tb) tb.innerHTML='<tr><td colspan="2" class="hint">—</td></tr>';
+    return; }
+  let bounds = cfg.bounds; if(!bounds){ cfg.layers.forEach(l=>{ bounds = bounds? bounds.extend(l.getBounds()) : l.getBounds(); }); cfg.bounds = bounds; }
+  if(!bounds){ const tb=document.getElementById('envTbody'); if(tb) tb.innerHTML='<tr><td colspan="2" class="hint">—</td></tr>'; return; }
+  const west=bounds.getWest(), south=bounds.getSouth(), east=bounds.getEast(), north=bounds.getNorth();
+  const query = `[
+    out:json][timeout:25];(
+      node["amenity"="school"](${south},${west},${north},${east});
+      way["amenity"="school"](${south},${west},${north},${east});
+      rel["amenity"="school"](${south},${west},${north},${east});
+      node["amenity"="library"](${south},${west},${north},${east});
+      way["amenity"="library"](${south},${west},${north},${east});
+      rel["amenity"="library"](${south},${west},${north},${east});
+      node["leisure"="park"](${south},${west},${north},${east});
+      way["leisure"="park"](${south},${west},${north},${east});
+      rel["leisure"="park"](${south},${west},${north},${east});
+    );out center 60;`;
+  try{
+    const resp = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body: query});
+    if(!resp.ok) throw new Error('Overpass error');
+    const data = await resp.json();
+    const els = data.elements||[];
+    const items = els.map(e=>({ id:e.id, type:e.tags?.amenity||e.tags?.leisure||'poi', name:e.tags?.name||'(unnamed)', lat:(e.lat||e.center?.lat), lng:(e.lon||e.center?.lon) })).filter(x=>x.lat && x.lng);
+
+    const schools = items.filter(x=>x.type==='school');
+    const libraries = items.filter(x=>x.type==='library');
+    const parks = items.filter(x=>x.type==='park');
+
+    [...schools,...libraries,...parks].slice(0,150).forEach(it=>{ L.marker([it.lat,it.lng]).addTo(poiGroup).bindTooltip(`${esc(it.name)} — ${esc(it.type)}`); });
+
+    // Counts table
+    const cs=document.getElementById('envCountSchools'); if(cs) cs.textContent = schools.length;
+    const cp=document.getElementById('envCountParks'); if(cp) cp.textContent = parks.length;
+    const cl=document.getElementById('envCountLibraries'); if(cl) cl.textContent = libraries.length;
+
+    // Top list table
+    const tb=document.getElementById('envTbody');
+    if(tb){
+      const rows = items.slice(0,12).map(it=>`<tr><td>${esc(it.name)}</td><td class=\"hint\">${esc(it.type)}</td></tr>`).join('');
+      tb.innerHTML = rows || '<tr><td colspan="2" class="hint">No items found in OSM.</td></tr>';
     }
 
-    function save(){
-      try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
-      catch(e){ console.warn('Save failed', e); }
+    // VA talking script
+    const rentVal = clusterAvgRent(cluster);
+    const counts = {schools:schools.length, parks:parks.length, libraries:libraries.length};
+    const script = buildVAScript(cluster, counts, rentVal);
+    const es=document.getElementById('envScript'); if(es) es.innerHTML = script;
+  }catch(err){
+    const tb=document.getElementById('envTbody'); if(tb) tb.innerHTML='<tr><td colspan="2" class="hint">Could not load amenities right now.</td></tr>';
+  }
+}
+
+// -----------------------------
+// Auto‑Clusters for Greater Sydney (distance to CBD + station proximity)
+// -----------------------------
+const AUTO_CLUSTERS = [];
+let autoColorsIdx = 0;
+function nextColor(){ return COLORS[(autoColorsIdx++)%COLORS.length]; }
+
+function haversineKm(a,b){
+  const toRad=(x)=>x*Math.PI/180; const R=6371;
+  const dLat=toRad(b[0]-a[0]); const dLon=toRad(b[1]-a[1]);
+  const lat1=toRad(a[0]); const lat2=toRad(b[0]);
+  const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+const CBD=[-33.873,151.206];
+function classify(distKm, stationKm){
+  if(distKm<=4 && stationKm<=1.2) return 'A1';
+  if(distKm<=8 && stationKm<=1.2) return 'A2';
+  if(distKm<=12 && stationKm<=2.0) return 'A3';
+  if(distKm<=20 && stationKm<=3.0) return 'A4';
+  if(distKm>20 && stationKm<=4.0) return 'A5';
+  if(distKm<=8) return 'B1';
+  if(distKm<=15) return 'B2';
+  return 'B3';
+}
+const AUTO_META = {
+  A1:{name:'0–4 km + rail'}, A2:{name:'4–8 km + rail'}, A3:{name:'8–12 km + rail'}, A4:{name:'12–20 km + rail'}, A5:{name:'20km+ + rail'},
+  B1:{name:'≤8 km bus‑only'}, B2:{name:'8–15 km bus‑only'}, B3:{name:'15km+ bus‑only'}
+};
+
+async function loadSydneyAuto(){
+  const btn = btnSydney; btn.disabled=true; btn.textContent='Loading…';
+  document.getElementById('loader').style.display='block';
+  document.getElementById('prog').textContent='0%';
+
+  // 1) Fetch all train stations within Greater Sydney bbox once
+  const bbox = {south:-34.1, west:150.5, north:-33.5, east:151.5};
+  const qStations = `[
+    out:json][timeout:50];(
+      node["railway"="station"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+    );out center 500;`;
+  let stations=[];
+  try{
+    const resp = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:qStations});
+    const data = await resp.json();
+    stations = (data.elements||[]).map(e=>[e.lat||e.center?.lat, e.lon||e.center?.lon]).filter(Boolean);
+  }catch(_){}
+
+  // 2) Get a list of suburb names via Overpass (place=suburb nodes), then resolve polygons via Nominatim (cached)
+  const qSuburbs = `[
+    out:json][timeout:50];
+    node["place"="suburb"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+    out 200;`;
+  let names=[];
+  try{
+    const resp = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:qSuburbs});
+    const data = await resp.json();
+    names = Array.from(new Set((data.elements||[]).map(e=>e.tags?.name).filter(Boolean))).sort();
+  }catch(_){ names=[]; }
+
+  // Safety cap to avoid hammering Nominatim; you can raise this later
+  const MAX = Math.min(220, names.length);
+  let done=0;
+  function prog(){ document.getElementById('prog').textContent = Math.round((done/MAX)*100)+'%'; }
+
+  for(let i=0;i<MAX;i++){
+    const name = names[i];
+    const geom = await getSuburbGeometry(name);
+    done++; prog();
+    if(!geom) continue;
+    // Compute centroid from bounds for heuristics
+    const temp = L.geoJSON(geom); const center = temp.getBounds().getCenter();
+    const dist = haversineKm([center.lat,center.lng], CBD);
+    let minStation = Infinity;
+    for(const s of stations){ const d = haversineKm([center.lat,center.lng], s); if(d<minStation) minStation=d; }
+    if(!isFinite(minStation)) minStation=99;
+    const code = classify(dist, minStation);
+    let cluster = AUTO_CLUSTERS.find(x=>x.id===code);
+    if(!cluster){
+      cluster = {id:code, name:AUTO_META[code]?.name||code, suburbs:[], alias:`${code} – Auto`, corridors:'Auto‑generated (distance + rail proximity)'};
+      AUTO_CLUSTERS.push(cluster);
+      // add pill + legend
+      clusterColor[code]=nextColor();
+      const pill=document.createElement('button'); pill.className='pill'; pill.textContent=code; pill.style.borderColor=darken(clusterColor[code],-30);
+      pill.style.boxShadow=`inset 0 0 0 2px ${clusterColor[code]}22`; pill.dataset.id=code; pill.onclick=()=>highlightCluster(code,true);
+      pillsDiv.appendChild(pill);
+      const li=document.createElement('div'); li.className='item';
+      li.innerHTML=`<span class="swatch" style="background:${clusterColor[code]}"></span><span><b>${code}</b> — ${AUTO_META[code]?.name||'Auto'}</span>`;
+      legendItems.appendChild(li);
     }
-
-    const saveDebounced = (function(){
-      let t=null; return function(){ clearTimeout(t); t=setTimeout(()=>window.save(), 250); };
-    })();
-
-    function applyTheme(view){
-      const themeName = (view==='MAIN') ? 'MAIN' : view;
-      document.body.classList.remove('theme-RED','theme-GREEN','theme-BLUE','theme-YELLOW');
-      if(view!=='MAIN') document.body.classList.add('theme-'+view);
-      document.getElementById('themeName').textContent = themeName;
-      document.getElementById('viewLabel').textContent = themeName;
-      $$('.view-buttons .btn').forEach(b=> b.classList.toggle('active', b.dataset.view===view));
-      document.getElementById('appTitle').innerHTML = `${state.settings.title} — <span id="viewLabel">${themeName}</span>`;
+    cluster.suburbs.push(name);
+    addSuburbToCluster(code, geom, name);
+    // Add to dropdown if not present
+    if(![...suburbSelect.options].some(o=>o.value===name)){
+      const opt=document.createElement('option'); opt.value=name; opt.textContent=name; suburbSelect.appendChild(opt);
     }
+  }
 
-    function visibleTeams(){
-      if(currentView==='MAIN') return [...state.teams];
-      return state.teams.filter(t=>t.house===currentView);
-    }
+  document.getElementById('loader').style.display='none';
+  btn.textContent='Loaded Sydney (auto)';
+}
+btnSydney.onclick=loadSydneyAuto;
 
-    function ensureScoresLength(){
-      // Ensure each team has scores array length === state.rounds
-      state.teams.forEach(t=>{
-        t.scores = Array.isArray(t.scores) ? t.scores : [];
-        if(t.scores.length < state.rounds){
-          while(t.scores.length < state.rounds) t.scores.push(0);
-        } else if(t.scores.length > state.rounds){
-          t.scores = t.scores.slice(0, state.rounds);
-        }
-      });
-    }
-
-    function sum(arr){ return arr.reduce((a,b)=> a + (Number(b)||0), 0); }
-
-    function render(){
-      ensureScoresLength();
-      const teams = visibleTeams();
-      if(document.getElementById('toggleSort').checked){ teams.sort((a,b)=> sum(b.scores)-sum(a.scores)); }
-
-      const thead = [`<thead><tr><th style="min-width:220px;text-align:left">Team</th>`];
-      for(let i=0;i<state.rounds;i++) thead.push(`<th>R${i+1}</th>`);
-      thead.push(`<th>Total</th><th style="width:1%"></th></tr></thead>`);
-
-      const rows = teams.map(team=>{
-        const scoreCells = team.scores.map((val, idx)=>
-          `<td>
-            <div class="score-cell">
-              <input class="score-input" type="number" min="0" step="1" value="${val}" data-team="${team.id}" data-round="${idx}" />
-              <div class="mini-row">
-                <button class="mini" data-act="dec" data-team="${team.id}" data-round="${idx}">−</button>
-                <button class="mini" data-act="inc" data-team="${team.id}" data-round="${idx}">+</button>
-              </div>
-            </div>
-          </td>`).join('');
-        const total = sum(team.scores);
-        return `<tr>
-          <td>
-            <input class="team-input" type="text" value="${escapeHtml(team.name)}" data-team-name="${team.id}" />
-            <div class="subtitle" style="font-size:11px;margin-top:6px">House: <span class="house-chip">${team.house}</span></div>
-          </td>
-          ${scoreCells}
-          <td><span class="total-badge">${total}</span></td>
-          <td><button class="mini" data-act="removeTeam" data-team="${team.id}">Delete</button></td>
-        </tr>`
-      }).join('');
-
-      const tfoot = `
-        <tfoot><tr>
-          <th style="text-align:left">Totals</th>
-          ${Array.from({length:state.rounds}).map((_,i)=>`<th>${sum(teams.map(t=> Number(t.scores[i])||0))}</th>`).join('')}
-          <th>${sum(teams.map(t=> sum(t.scores)))}</th>
-          <th></th>
-        </tr></tfoot>`;
-
-      const html = `<table>${thead.join('')}${rows?`<tbody>${rows}</tbody>`:`<tbody><tr><td colspan="${state.rounds+3}" style="text-align:center;color:var(--muted);padding:22px">No teams yet in this view. Click <strong>+ Add Team</strong> to begin.</td></tr></tbody>`}${tfoot}</table>`;
-
-      document.getElementById('tableWrap').innerHTML = html;
-      document.getElementById('roundCount').textContent = String(state.rounds);
-      saveDebounced();
-    }
-
-    function addTeamPrompt(){
-      let defaultName = `Team ${state.teams.length+1}`;
-      const name = prompt('Team name?', defaultName);
-      if(!name) return;
-      let house = currentView;
-      if(currentView==='MAIN'){
-        house = prompt('House for this team? (RED / GREEN / BLUE / YELLOW)', 'RED');
-        if(!house) return; house = house.toUpperCase().trim();
-        if(!['RED','GREEN','BLUE','YELLOW'].includes(house)){ alert('Please enter one of: RED, GREEN, BLUE, YELLOW'); return; }
-      }
-      state.teams.push({ id: uid(), name: name.trim(), house, scores: Array.from({length: state.rounds}, ()=>0) });
-      render();
-    }
-
-    function removeTeam(teamId){
-      const team = state.teams.find(t=>t.id===teamId);
-      if(!team) return;
-      if(!confirm(`Delete team "${team.name}"?`)) return;
-      state.teams = state.teams.filter(t=>t.id!==teamId);
-      render();
-    }
-
-    function addRound(){ state.rounds = Math.min(100, state.rounds + 1); render(); }
-    function removeRound(){ if(state.rounds>1){ state.rounds -= 1; render(); } }
-
-    function resetCurrentView(){
-      const teams = visibleTeams();
-      if(!teams.length){ alert('No teams in this view.'); return; }
-      if(!confirm('Reset ALL scores in the current view to 0?')) return;
-      const ids = new Set(teams.map(t=>t.id));
-      state.teams.forEach(t=>{ if(ids.has(t.id)) t.scores = t.scores.map(()=>0); });
-      render();
-    }
-
-    function clearAll(){
-      if(!confirm('Completely clear ALL teams & scores? This cannot be undone.')) return;
-      state.teams = [];
-      state.rounds = 5;
-      render();
-    }
-
-    function setView(view){
-      currentView = view;
-      state.settings.lastView = view;
-      applyTheme(view);
-      render();
-    }
-
-    function exportJSON(){
-      const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'forensics_scoreboard.json';
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=> URL.revokeObjectURL(a.href), 5000);
-    }
-
-    function importJSON(file){
-      const reader = new FileReader();
-      reader.onload = e => {
-        try{
-          const obj = JSON.parse(String(e.target.result));
-          if(!obj || typeof obj !== 'object') throw new Error('Invalid JSON');
-          // simple validation
-          obj.rounds = Math.max(1, Number(obj.rounds||1));
-          obj.teams = Array.isArray(obj.teams) ? obj.teams : [];
-          obj.settings = Object.assign({title:'Forensics Quiz Scoreboard 2025', lastView:'MAIN', sortByTotal:false}, obj.settings||{});
-          state = obj;
-          currentView = state.settings.lastView || 'MAIN';
-          applyTheme(currentView);
-          render();
-        }catch(err){ alert('Import failed: '+err.message); }
-      };
-      reader.readAsText(file);
-    }
-
-    function attachEvents(){
-      // View switching
-      $$('.view-buttons .btn').forEach(btn=>{
-        btn.addEventListener('click', ()=> setView(btn.dataset.view));
-      });
-
-      document.getElementById('addTeamBtn').addEventListener('click', addTeamPrompt);
-      document.getElementById('addRoundBtn').addEventListener('click', addRound);
-      document.getElementById('removeRoundBtn').addEventListener('click', removeRound);
-      document.getElementById('resetViewBtn').addEventListener('click', resetCurrentView);
-      document.getElementById('clearAllBtn').addEventListener('click', clearAll);
-      document.getElementById('exportBtn').addEventListener('click', exportJSON);
-      document.getElementById('importFile').addEventListener('change', (e)=>{
-        const f = e.target.files && e.target.files[0]; if(f) importJSON(f);
-        e.target.value = '';
-      });
-      document.getElementById('toggleSort').addEventListener('change', (e)=>{ state.settings.sortByTotal = e.target.checked; render(); });
-
-      // Delegated events inside table
-      document.getElementById('tableWrap').addEventListener('input', (e)=>{
-        const el = e.target;
-        if(el.matches('[data-team-name]')){
-          const team = state.teams.find(t=> t.id === el.dataset.teamName);
-          if(team){ team.name = el.value.slice(0, 60); saveDebounced(); }
-        }
-        if(el.matches('.score-input')){
-          const team = state.teams.find(t=> t.id === el.dataset.team);
-          const idx = Number(el.dataset.round);
-          if(team && !Number.isNaN(idx)){
-            const v = clampInt(el.value, 0, 9999);
-            team.scores[idx] = v; // sanitized
-            // Update total badge cell without full re-render
-            const row = el.closest('tr');
-            if(row){
-              const total = sum(team.scores);
-              const badge = row.querySelector('.total-badge'); if(badge) badge.textContent = String(total);
-              // update column totals footer
-              updateFooterTotals();
-            }
-            saveDebounced();
-          }
-        }
-      });
-
-      document.getElementById('tableWrap').addEventListener('click', (e)=>{
-        const el = e.target;
-        if(!(el instanceof HTMLElement)) return;
-        if(el.dataset.act === 'inc' || el.dataset.act === 'dec'){
-          const team = state.teams.find(t=> t.id === el.dataset.team);
-          const idx = Number(el.dataset.round);
-          if(!team) return;
-          let val = Number(team.scores[idx]||0);
-          val += (el.dataset.act==='inc' ? 1 : -1);
-          if(val<0) val = 0; if(val>9999) val = 9999;
-          team.scores[idx] = val;
-          // reflect in the paired input field
-          const input = el.parentElement?.previousElementSibling;
-          if(input && input.classList.contains('score-input')) input.value = String(val);
-          // Update totals minimally
-          const row = el.closest('tr');
-          if(row){ const badge = row.querySelector('.total-badge'); if(badge) badge.textContent = String(sum(team.scores)); }
-          updateFooterTotals();
-          saveDebounced();
-        }
-        if(el.dataset.act === 'removeTeam'){
-          removeTeam(el.dataset.team);
-        }
-      });
-    }
-
-    function updateFooterTotals(){
-      const table = document.querySelector('#tableWrap table'); if(!table) return;
-      const teams = visibleTeams();
-      // Update per-round totals
-      const foot = table.tFoot; if(!foot) return;
-      const cells = foot.rows[0].cells; // [0] is label, last is empty
-      for(let i=0;i<state.rounds;i++){
-        const tot = sum(teams.map(t=> Number(t.scores[i])||0));
-        cells[i+1].textContent = String(tot);
-      }
-      cells[state.rounds+1].textContent = String(sum(teams.map(t=> sum(t.scores))));
-    }
-
-    function clampInt(v, min, max){
-      v = Math.round(Number(v||0)); if(Number.isNaN(v)) v = 0; return Math.min(max, Math.max(min, v));
-    }
-
-    function escapeHtml(str){
-      return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
-    }
-
-    // Init
-    load();
-    attachEvents();
-    // Restore sort toggle
-    const sortChk = document.getElementById('toggleSort'); if(sortChk) sortChk.checked = !!state.settings.sortByTotal;
-    setView(currentView || 'MAIN');
-  </script>
-
-  <!-- ================= SUPABASE SYNC MODULE ================= -->
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-    // ---- CONFIG (EDIT THESE) ----
-    const SUPABASE_URL = "https://zrojpvsmsdqduvheglgz.supabase.co"; // [EDIT 1]
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpyb2pwdnNtc2RxZHV2aGVnbGd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0ODg2NjIsImV4cCI6MjA3MzA2NDY2Mn0.Dfz5qQqhKUccBJrH7OS3D-hPPfYIRAYdOx2g_LiCGE4";               // [EDIT 2]
-    const BOARD_ID = "scoreboard_states";                         // [optional]
-    // -----------------------------
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Keep references to original local load/save
-    const originalLoad = window.load;
-    const originalSave = window.save;
-
-    // Track whether we loaded from remote successfully
-    let _loadedRemote = false;
-
-    const defaultState = () => ({
-      rounds: 5,
-      teams: [],
-      settings: { title: "Forensics Quiz Scoreboard 2025", lastView: "MAIN", sortByTotal: false }
-    });
-
-    async function remoteLoad() {
-      try{
-        const { data, error } = await supabase
-          .from("scoreboard_states")
-          .select("payload")
-          .eq("id", BOARD_ID)
-          .maybeSingle(); // Avoid PGRST116 when 0 rows
-
-        if (error) return false; // we'll fallback
-        if (!data || !data.payload) return false; // nothing seeded yet
-
-        window.state = data.payload;
-        window.currentView = (state.settings && state.settings.lastView) || "MAIN";
-        window.applyTheme(currentView);
-        window.render();
-        _loadedRemote = true;
-        return true;
-      }catch{
-        return false;
-      }
-    }
-
-    let remoteSaveTimer = null;
-    function remoteSaveDebounced() {
-      clearTimeout(remoteSaveTimer);
-      remoteSaveTimer = setTimeout(async () => {
-        try{
-          if (!window.state) window.state = defaultState(); // ensure non-null payload
-          await supabase.from("scoreboard_states").upsert({
-            id: BOARD_ID,
-            payload: window.state,
-          });
-        }catch{}
-      }, 300);
-    }
-
-    // Override global load/save so the debouncer calls remote too
-    window.load = async function() {
-      const ok = await remoteLoad();
-      if (!ok) {
-        // If no remote row, prefer localStorage; otherwise seed defaults
-        if (localStorage.getItem(LS_KEY)) {
-          originalLoad();
-        } else {
-          window.state = defaultState();
-          window.currentView = "MAIN";
-          window.applyTheme(currentView);
-          window.render();
-        }
-      }
-    };
-    window.save = function() {
-      try { originalSave(); } catch {}
-      if (!window.state) window.state = defaultState(); // guard against null payload
-      remoteSaveDebounced();
-    };
-
-    // Optional: live sync across devices (enable Realtime on this table in Supabase)
-    try {
-      supabase.channel("scoreboard-sync")
-        .on("postgres_changes",
-          { event: "*", schema: "public", table: "scoreboard_states", filter: `id=eq.${BOARD_ID}` },
-          (payload) => {
-            if (payload.new?.payload) {
-              window.state = payload.new.payload;
-              window.currentView = (state.settings && state.settings.lastView) || "MAIN";
-              window.applyTheme(currentView);
-              window.render();
-            }
-          }
-        ).subscribe();
-    } catch {}
-
-    // Ensure first paint uses remote if available, otherwise seed remote immediately once
-    try {
-      await window.load();
-      if (!_loadedRemote) {
-        // Seed remote with whatever we have locally/defaults to avoid future 0-row selects
-        try { await supabase.from("scoreboard_states").upsert({ id: BOARD_ID, payload: window.state || defaultState() }); } catch {}
-      }
-    } catch {}
-  </script>
+// -----------------------------
+// Self‑tests (basic)
+// -----------------------------
+(function runTests(){
+  const rows=[]; function ok(name,cond){ rows.push(`<span class="badge">${cond?'PASS':'FAIL'}</span> ${name}`); }
+  ok('esc()', esc('<>&"')==='&lt;&gt;&amp;&quot;');
+  ok('darken()', /^#[0-9a-f]{6}$/i.test(darken('#ffffff',-10)));
+  ok('clusterAvgRent()', (function(){ const c={suburbs:['Bondi','Coogee']}; const v=clusterAvgRent(c); return v>900 && v<1000; })());
+  ok('classify()', (function(){ return classify(3,0.5)==='A1' && classify(10,3)==='A3' && classify(9,9)==='B2'; })());
+  document.getElementById('diagBody').innerHTML = rows.join('<br>');
+})();
+</script>
 </body>
 </html>
