@@ -1,600 +1,1511 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>DooraVisionAssistant for VA’s (DVA) — Single‑File Demo</title>
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin="anonymous"
-  />
-  <style>
-    :root{ --bg:#0b0d10; --panel:#12151a; --panel-2:#161a21; --text:#e7ecf3; --muted:#9fb0c3; --accent:#6aa7ff; --border:#1e2633; }
-    *{box-sizing:border-box}
-    html,body{height:100%;}
-    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Helvetica,Arial}
-    #app{height:100svh;display:grid;grid-template-columns:380px 1fr;grid-template-rows:100%;}
-    @media (max-width: 920px){#app{grid-template-columns:100%;grid-template-rows:auto 1fr}}
-    aside{background:linear-gradient(180deg,var(--panel),var(--panel-2));border-right:1px solid var(--border);padding:16px;overflow:auto}
-    h1{font-size:18px;margin:0 0 8px}
-    h2{font-size:15px;margin:16px 0 8px;color:var(--muted);font-weight:600}
-    .hint{font-size:12px;color:var(--muted)}
-    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .section{padding:12px;border:1px solid var(--border);border-radius:12px;background:#0f1318}
-    #map{height:100%;width:100%;min-height:60svh}
-    .leaflet-container{background:#0a0c10}
-    .legend{position:absolute;bottom:12px;left:12px;background:#0f1318;border:1px solid var(--border);border-radius:12px;color:var(--text);padding:10px 12px;z-index:500;max-width:60vw}
-    .legend h4{margin:0 0 6px;font-size:12px;color:var(--muted)}
-    .legend .item{display:flex;align-items:center;gap:8px;margin:2px 0;flex-wrap:wrap}
-    .swatch{width:12px;height:12px;border-radius:3px;border:2px solid rgba(0,0,0,.35);display:inline-block}
-    .cluster-pills{display:flex;flex-wrap:wrap;gap:6px}
-    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:#0e1217;border:1px solid var(--border);color:var(--text);border-radius:999px;cursor:pointer;font-weight:600}
-    .pill.active{outline:2px solid rgba(106,167,255,.25)}
-    .info h3{margin:.2rem 0 .25rem;font-size:16px}
-    .info .kv{display:grid;grid-template-columns:120px 1fr;gap:8px;margin:4px 0}
-    .kv b{color:#b8c7da}
-    .suburbs{display:flex;flex-wrap:wrap;gap:6px}
-    .sep{height:1px;background:var(--border);margin:12px 0}
-    .foot{margin-top:10px;font-size:12px;color:#8ea0b7}
-    .loader{position:absolute;top:12px;left:12px;background:#0f1318;border:1px solid var(--border);border-radius:10px;padding:8px 10px;color:var(--text);font-size:12px;z-index:600}
-    /* suburb labels */
-    .suburb-label{background:transparent;border:none;color:#e7ecf3;font-weight:700;font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.8),0 0 6px rgba(0,0,0,.6);pointer-events:none;white-space:nowrap}
-    /* tables & callouts */
-    .table-wrap{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#0e1217;margin:8px 0}
-    table.table{width:100%;border-collapse:collapse}
-    table.table th,table.table td{padding:8px 10px;border-bottom:1px solid #15202b;vertical-align:top}
-    table.table tr:last-child th,table.table tr:last-child td{border-bottom:none}
-    table.table th{text-align:left;color:#b8c7da;width:120px;font-weight:600}
-    .table-compact th,.table-compact td{padding:6px 8px;font-size:13px}
-    .callout{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#0d131a;box-shadow:inset 0 0 0 1px #00000020}
-    .badge{display:inline-block;padding:2px 6px;border-radius:999px;background:#0b1220;border:1px solid #243043;color:#9fb0c3;font-size:11px}
-    /* legend toggle */
-    .legend .legend-toggle{display:flex;align-items:center;gap:8px;width:100%;background:#0e1217;border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:10px;cursor:pointer;font-weight:700}
-    .legend .legend-toggle .chev{display:inline-block;transition:transform .18s ease}
-    .legend.collapsed .legend-toggle .chev{transform:rotate(-90deg)}
-    .legend .legend-body{margin-top:6px}
-    .legend.collapsed .legend-body{display:none}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>ClinCase — Medical Case Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ─── RESET & BASE ─────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0f2847;
+  --navy2:#1a3a5c;
+  --teal:#1a7a6e;
+  --teal-light:#e6f4f2;
+  --red:#c0392b;
+  --red-light:#fdecea;
+  --gold:#c9973a;
+  --bg:#f5f3ee;
+  --card:#ffffff;
+  --border:#ddd8ce;
+  --text:#1c1c1c;
+  --muted:#6b6560;
+  --radius:12px;
+  --shadow:0 2px 16px rgba(15,40,71,.09);
+}
+[data-theme="dark"]{
+  --bg:#0d1520;
+  --card:#162032;
+  --border:#243447;
+  --text:#e8e4db;
+  --muted:#8a9bb0;
+  --navy:#1e3a5f;
+  --teal-light:#0d2820;
+  --red-light:#2a1010;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  font-size:15px;
+  line-height:1.6;
+  transition:background .3s,color .3s;
+}
+
+/* ─── SCROLLBAR ────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(–border);border-radius:4px}
+
+/* ─── SCREENS ──────────────────────────────────────────── */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* ─── TOP BAR ──────────────────────────────────────────── */
+.topbar{
+background:var(–navy);
+color:#fff;
+padding:14px 18px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+position:sticky;top:0;z-index:100;
+box-shadow:0 2px 12px rgba(0,0,0,.2);
+}
+.topbar-title{font-family:‘Lora’,serif;font-size:1.15rem;font-weight:600;letter-spacing:.3px}
+.topbar-sub{font-size:.72rem;opacity:.6;margin-top:1px}
+.topbar-actions{display:flex;gap:10px;align-items:center}
+.icon-btn{
+background:rgba(255,255,255,.12);border:none;color:#fff;
+width:36px;height:36px;border-radius:50%;cursor:pointer;
+display:flex;align-items:center;justify-content:center;font-size:1rem;
+transition:background .2s;
+}
+.icon-btn:hover{background:rgba(255,255,255,.22)}
+
+/* ─── PROGRESS BAR ─────────────────────────────────────── */
+.progress-wrap{background:var(–card);border-bottom:1px solid var(–border);padding:10px 18px}
+.progress-info{display:flex;justify-content:space-between;font-size:.75rem;color:var(–muted);margin-bottom:6px}
+.progress-track{background:var(–border);border-radius:99px;height:5px}
+.progress-fill{background:var(–teal);height:5px;border-radius:99px;transition:width .4s ease}
+
+/* ─── CONTENT AREA ─────────────────────────────────────── */
+.content{flex:1;padding:18px;overflow-y:auto;padding-bottom:90px}
+
+/* ─── CARDS ────────────────────────────────────────────── */
+.card{
+background:var(–card);border:1px solid var(–border);
+border-radius:var(–radius);padding:18px;margin-bottom:14px;
+box-shadow:var(–shadow);
+}
+.card-title{
+font-family:‘Lora’,serif;font-size:1rem;font-weight:600;
+color:var(–navy);margin-bottom:14px;
+display:flex;align-items:center;gap:8px;
+}
+[data-theme=“dark”] .card-title{color:#7ab3e0}
+.card-title .icon{font-size:1.1rem}
+
+/* ─── FORM ELEMENTS ────────────────────────────────────── */
+.field{margin-bottom:14px}
+.field label{
+display:block;font-size:.78rem;font-weight:600;
+color:var(–muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px;
+}
+.field input,.field textarea,.field select{
+width:100%;padding:10px 13px;
+border:1.5px solid var(–border);border-radius:8px;
+background:var(–bg);color:var(–text);
+font-family:‘DM Sans’,sans-serif;font-size:.93rem;
+transition:border-color .2s,background .2s;
+-webkit-appearance:none;
+}
+.field input:focus,.field textarea:focus,.field select:focus{
+outline:none;border-color:var(–teal);background:var(–card);
+}
+.field textarea{resize:vertical;min-height:80px}
+.field select option{background:var(–card)}
+
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* ─── TOGGLE CHIPS ──────────────────────────────────────── */
+.chips-label{font-size:.78rem;font-weight:600;color:var(–muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.chips-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
+.chip{
+padding:6px 13px;border-radius:99px;font-size:.8rem;font-weight:500;cursor:pointer;
+border:1.5px solid var(–border);background:var(–card);color:var(–text);
+transition:all .18s;user-select:none;
+}
+.chip:hover{border-color:var(–teal);color:var(–teal)}
+.chip.pos{border-color:var(–teal)!important;background:var(–teal-light)!important;color:var(–teal)!important;font-weight:600}
+.chip.neg{border-color:var(–red)!important;background:var(–red-light)!important;color:var(–red)!important}
+.chip.sel{border-color:var(–gold)!important;background:#fef9ee!important;color:var(–gold)!important}
+[data-theme=“dark”] .chip.sel{background:#2a2010!important}
+.system-section{margin-bottom:20px;padding:14px;border:1px solid var(–border);border-radius:10px;background:var(–bg)}
+.system-title{font-weight:600;color:var(–navy);font-size:.9rem;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+[data-theme=“dark”] .system-title{color:#7ab3e0}
+.system-sub{font-size:.75rem;color:var(–muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+
+/* ─── COMPLAINT ROW ────────────────────────────────────── */
+.complaint-row{
+display:flex;align-items:center;gap:8px;
+background:var(–bg);border:1px solid var(–border);
+border-radius:8px;padding:10px 12px;margin-bottom:8px;
+}
+.complaint-row input{flex:1;border:none;background:transparent;font-size:.9rem;color:var(–text);font-family:‘DM Sans’,sans-serif}
+.complaint-row input:focus{outline:none}
+.complaint-dur{width:90px!important;font-size:.82rem!important;text-align:center}
+.del-btn{background:none;border:none;color:var(–muted);cursor:pointer;font-size:1.1rem;padding:2px 4px;flex-shrink:0}
+.del-btn:hover{color:var(–red)}
+.add-btn{
+display:flex;align-items:center;gap:6px;
+background:none;border:1.5px dashed var(–teal);color:var(–teal);
+padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:500;
+width:100%;justify-content:center;transition:background .2s;
+}
+.add-btn:hover{background:var(–teal-light)}
+
+/* ─── BOTTOM NAV ────────────────────────────────────────── */
+.bottom-nav{
+position:fixed;bottom:0;left:0;right:0;
+background:var(–card);border-top:1px solid var(–border);
+padding:12px 18px;display:flex;gap:10px;z-index:99;
+box-shadow:0 -4px 16px rgba(0,0,0,.07);
+}
+.btn{
+flex:1;padding:12px;border-radius:10px;border:none;
+font-family:‘DM Sans’,sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;
+transition:all .18s;
+}
+.btn-primary{background:var(–navy);color:#fff}
+.btn-primary:hover{background:var(–navy2)}
+.btn-secondary{background:var(–bg);color:var(–text);border:1.5px solid var(–border)}
+.btn-secondary:hover{border-color:var(–navy);color:var(–navy)}
+.btn-teal{background:var(–teal);color:#fff}
+.btn-teal:hover{opacity:.9}
+.btn-danger{background:var(–red-light);color:var(–red);border:1.5px solid var(–red)}
+
+/* ─── HOME SCREEN ───────────────────────────────────────── */
+#home-screen{background:var(–navy);color:#fff}
+.home-hero{
+flex:1;display:flex;flex-direction:column;
+align-items:center;justify-content:center;
+padding:40px 24px 20px;text-align:center;
+}
+.home-logo{font-size:3.5rem;margin-bottom:12px}
+.home-title{font-family:‘Lora’,serif;font-size:2rem;font-weight:700;margin-bottom:6px;letter-spacing:-.5px}
+.home-subtitle{font-size:.9rem;opacity:.65;max-width:260px;line-height:1.5}
+.home-institution{font-size:.72rem;opacity:.4;margin-top:8px;text-transform:uppercase;letter-spacing:1px}
+.home-actions{padding:20px 24px 40px;display:flex;flex-direction:column;gap:12px}
+.home-btn{
+padding:16px;border-radius:12px;border:none;
+font-family:‘DM Sans’,sans-serif;font-size:1rem;font-weight:600;
+cursor:pointer;display:flex;align-items:center;gap:12px;
+text-align:left;transition:all .2s;
+}
+.home-btn-primary{background:#fff;color:var(–navy)}
+.home-btn-primary:hover{background:#e8f0fa}
+.home-btn-secondary{background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2)}
+.home-btn-secondary:hover{background:rgba(255,255,255,.18)}
+.home-btn-icon{font-size:1.3rem}
+.home-btn-text small{display:block;font-size:.75rem;opacity:.6;font-weight:400;margin-top:1px}
+.home-dark-toggle{
+position:absolute;top:18px;right:18px;
+background:rgba(255,255,255,.12);border:none;color:#fff;
+width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:1rem;
+}
+
+/* ─── PATIENT LIST ──────────────────────────────────────── */
+.patient-item{
+display:flex;align-items:center;gap:12px;
+padding:14px;background:var(–card);border:1px solid var(–border);
+border-radius:10px;margin-bottom:10px;cursor:pointer;
+transition:border-color .2s,transform .15s;
+}
+.patient-item:hover{border-color:var(–teal);transform:translateX(2px)}
+.patient-avatar{
+width:44px;height:44px;border-radius:50%;
+background:var(–navy);color:#fff;display:flex;align-items:center;justify-content:center;
+font-family:‘Lora’,serif;font-size:1.1rem;font-weight:700;flex-shrink:0;
+}
+.patient-info{flex:1}
+.patient-name{font-weight:600;font-size:.95rem}
+.patient-meta{font-size:.78rem;color:var(–muted);margin-top:2px}
+.patient-actions{display:flex;gap:6px}
+.p-del-btn{background:none;border:none;color:var(–muted);cursor:pointer;font-size:1rem;padding:4px}
+.p-del-btn:hover{color:var(–red)}
+.empty-state{text-align:center;padding:60px 20px;color:var(–muted)}
+.empty-icon{font-size:3rem;margin-bottom:12px}
+
+/* ─── CASE VIEW ─────────────────────────────────────────── */
+.case-section{margin-bottom:22px}
+.case-section-title{
+font-family:‘Lora’,serif;font-size:1rem;font-weight:700;
+color:var(–navy);border-bottom:2px solid var(–navy);
+padding-bottom:5px;margin-bottom:10px;
+}
+[data-theme=“dark”] .case-section-title{color:#7ab3e0;border-color:#7ab3e0}
+.case-row{display:flex;flex-wrap:wrap;gap:4px 20px;margin-bottom:6px}
+.case-kv{font-size:.88rem}
+.case-kv b{color:var(–muted);font-weight:500}
+.case-body{font-size:.9rem;line-height:1.7}
+.case-body ul{padding-left:18px}
+.case-body ul li{margin-bottom:3px}
+.finding-pos{color:var(–teal);font-weight:500}
+.finding-neg{color:var(–muted)}
+.sys-block{margin-bottom:10px}
+.sys-block-title{font-weight:600;font-size:.88rem;color:var(–text);margin-bottom:4px}
+
+/* ─── PRINT STYLES ──────────────────────────────────────── */
+@media print{
+.topbar,.bottom-nav,.progress-wrap,.no-print{display:none!important}
+body{background:#fff!important;color:#000!important}
+.content{padding:0!important}
+.card{box-shadow:none!important;border:1px solid #ccc!important;break-inside:avoid}
+.case-section-title{color:#000!important;border-color:#000!important}
+#case-view-screen .content{padding-bottom:0!important}
+}
+
+/* ─── TOAST ─────────────────────────────────────────────── */
+.toast{
+position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);
+background:#222;color:#fff;padding:10px 20px;border-radius:8px;
+font-size:.85rem;opacity:0;transition:all .3s;pointer-events:none;z-index:999;
+white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ─── DIAGNOSIS SECTION ─────────────────────────────────── */
+.dx-chip{
+display:inline-block;padding:4px 12px;border-radius:99px;
+font-size:.8rem;margin:3px;border:1px solid var(–teal);
+background:var(–teal-light);color:var(–teal);
+}
+.dx-chip-prov{border-color:var(–gold);background:#fef9ee;color:var(–gold)}
+[data-theme=“dark”] .dx-chip-prov{background:#2a2010}
+.dx-chip-diff{border-color:var(–muted);background:var(–bg);color:var(–muted)}
+.dx-chip-final{border-color:var(–teal);background:var(–teal-light);color:var(–teal);font-weight:700}
+
+/* ─── STEP SECTION HEADER ───────────────────────────────── */
+.step-header{
+background:linear-gradient(135deg,var(–navy) 0%,var(–navy2) 100%);
+color:#fff;padding:16px 18px;margin-bottom:18px;border-radius:var(–radius);
+}
+.step-header h2{font-family:‘Lora’,serif;font-size:1.1rem;margin-bottom:2px}
+.step-header p{font-size:.78rem;opacity:.65}
+
+/* ─── VITALS GRID ───────────────────────────────────────── */
+.vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ─── SEARCH ────────────────────────────────────────────── */
+.search-wrap{position:relative;margin-bottom:14px}
+.search-wrap input{
+width:100%;padding:10px 13px 10px 38px;
+border:1.5px solid var(–border);border-radius:8px;
+background:var(–card);color:var(–text);
+font-family:‘DM Sans’,sans-serif;font-size:.9rem;
+}
+.search-wrap input:focus{outline:none;border-color:var(–teal)}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(–muted)}
+
+/* ─── SECTION NOTE ──────────────────────────────────────── */
+.section-note{
+font-size:.78rem;color:var(–muted);
+background:var(–bg);border-left:3px solid var(–teal);
+padding:8px 12px;border-radius:0 6px 6px 0;margin-bottom:14px;
+}
+</style>
+
 </head>
 <body>
-<div id="app">
-  <aside>
-    <h1>DooraVisionAssistant for VA’s (DVA)</h1>
-    <div class="hint">All clusters use <b>actual suburb outlines from the start</b>. Click an <b>E‑code</b> or choose a suburb to highlight — others will fade.</div>
 
-    <div class="section" style="margin-top:10px">
-      <h2>Find / Highlight</h2>
-      <div class="row" style="width:100%;">
-        <select id="suburbSelect" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:#0e1217;color:var(--text)">
-          <option value="">— Select a suburb —</option>
-        </select>
-      </div>
-      <div id="clusterPills" class="cluster-pills" style="margin-top:8px"></div>
-      <div class="row" style="margin-top:8px;gap:6px">
-        <button id="btnClear" class="pill">Clear highlight</button>
-        <button id="btnReset" class="pill">Reset view</button>
-        <button id="btnSydney" class="pill" title="Load Greater Sydney with auto‑clusters">Load Sydney (auto)</button>
-        <button id="btnCorrAuto" class="pill" data-on="1" title="When on, highlighting a cluster also shows its corridors/stations">Auto Corridors: ON</button>
-        <button id="btnCorrAll" class="pill" title="Show all clusters’ corridors/stations at once">Show All Corridors</button>
-      </div>
-    </div>
+<!-- ═══════════════════════════════════════════════════════
+     HOME SCREEN
+════════════════════════════════════════════════════════ -->
 
-    <div id="info" class="section info" style="margin-top:12px">
-      <h2 style="margin-top:0">Information</h2>
-      <div id="infoBody" class="hint">Pick a cluster to see corridors, <b>To‑City times</b>, <b>avg rent</b>, and <b>environment basics</b> (schools, parks, libraries). Suburb names appear at the center when highlighted.</div>
-    </div>
-
-    <div class="section" id="diag" style="margin-top:12px">
-      <h2>Diagnostics</h2>
-      <div id="diagBody" class="hint">Running self‑tests…</div>
-    </div>
-
-    <div class="foot">Boundaries via OpenStreetMap; amenities via Overpass. Rent values are demo estimates for 2‑bed units — verify with live listings.</div>
-  </aside>
-  <main style="position:relative">
-    <div id="map"></div>
-    <div class="legend" id="legend" aria-live="polite">
-      <button id="legendToggle" class="legend-toggle" aria-expanded="true" aria-controls="legendItems" title="Show/Hide cluster keys">
-        <span>Clusters</span> <span class="chev">▾</span>
-      </button>
-      <div id="legendItems" class="legend-body"></div>
-    </div>
-    <div id="loader" class="loader" style="display:none">Loading suburb outlines… <span id="prog">0%</span></div>
-  </main>
+<div id="home-screen" class="screen active">
+  <button class="home-dark-toggle" onclick="toggleDark()" id="dark-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+  <div class="home-hero">
+    <div class="home-logo">🏥</div>
+    <div class="home-title">ClinCase</div>
+    <div class="home-subtitle">Structured clinical case-taking based on CMC Ludhiana protocol</div>
+    <div class="home-institution">Christian Medical College, Ludhiana</div>
+  </div>
+  <div class="home-actions">
+    <button class="home-btn home-btn-primary" onclick="startNewPatient()">
+      <span class="home-btn-icon">📋</span>
+      <span class="home-btn-text">New Patient<small>Begin structured case history</small></span>
+    </button>
+    <button class="home-btn home-btn-secondary" onclick="showScreen('patients-screen')">
+      <span class="home-btn-icon">🗂</span>
+      <span class="home-btn-text">Saved Patients<small id="saved-count-label">Loading…</small></span>
+    </button>
+  </div>
 </div>
 
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<!-- ═══════════════════════════════════════════════════════
+     PATIENTS LIST SCREEN
+════════════════════════════════════════════════════════ -->
+
+<div id="patients-screen" class="screen">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Saved Patients</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" onclick="toggleDark()">🌙</button>
+      <button class="icon-btn" onclick="showScreen('home-screen')">🏠</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="patient-search" placeholder="Search by name, age, diagnosis…" oninput="renderPatientList()"/>
+    </div>
+    <div id="patient-list"></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="btn btn-teal" onclick="startNewPatient()">+ New Patient</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FORM SCREEN (multi-step)
+════════════════════════════════════════════════════════ -->
+
+<div id="form-screen" class="screen">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="form-step-title">Patient Details</div>
+      <div class="topbar-sub" id="form-step-sub">Step 1 of 11</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" onclick="confirmExit()" title="Exit">✕</button>
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-info">
+      <span id="prog-text">Step 1 / 11</span>
+      <span id="prog-pct">9%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:9%"></div></div>
+  </div>
+  <div class="content" id="form-content"></div>
+  <div class="bottom-nav">
+    <button class="btn btn-secondary" id="btn-back" onclick="prevStep()">← Back</button>
+    <button class="btn btn-primary" id="btn-next" onclick="nextStep()">Next →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     CASE VIEW SCREEN
+════════════════════════════════════════════════════════ -->
+
+<div id="case-view-screen" class="screen">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Case Sheet</div>
+      <div class="topbar-sub" id="case-view-name"></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn no-print" onclick="printCase()" title="Download PDF">🖨</button>
+      <button class="icon-btn no-print" onclick="goBackFromCase()">← Back</button>
+    </div>
+  </div>
+  <div class="content" id="case-view-content"></div>
+  <div class="bottom-nav no-print">
+    <button class="btn btn-secondary" onclick="goBackFromCase()">← Back</button>
+    <button class="btn btn-teal" onclick="printCase()">🖨 Download PDF</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-// -----------------------------
-// Data (from City Index doc)
-// -----------------------------
-const CLUSTERS = [
-  {id:"E1", name:"North East", suburbs:["Darling Point","Double Bay"],
-   corridors:"Edgecliff Station (T4) • New South Head Rd • Ferry (Double Bay, Darling Point)",
-   alias:"E1 – North East", connects:["E2","ICE1"]},
-  {id:"E2", name:"Upper North East", suburbs:["Point Piper","Bellevue Hill"],
-   corridors:"Victoria Rd • Old South Head Rd • Access to Edgecliff (T4) & Bondi Junction (bus)",
-   alias:"E2 – Upper North East", connects:["E1","E3","E7"]},
-  {id:"E3", name:"North East Headland", suburbs:["Vaucluse","Dover Heights","Rose Bay","Watsons Bay"],
-   corridors:"Old South Head Rd • Ferry (Rose Bay) • Route to Bondi Junction",
-   alias:"E3 – North East Headland", connects:["E2","E4"]},
-  {id:"E4", name:"Bondi North", suburbs:["North Bondi","Bondi Beach"],
-   corridors:"Bondi Beach corridor to Bondi Junction (T4) via Bondi Rd (frequent buses)",
-   alias:"E4 – Bondi North", connects:["E3","E5","E7"]},
-  {id:"E5", name:"Bondi South", suburbs:["Bondi","Tamarama"],
-   corridors:"Bondi Rd to Bondi Junction (T4) • Coastal links to Tamarama & Bronte",
-   alias:"E5 – Bondi South", connects:["E4","E7","E8"]},
-  {id:"E6", name:"All Bondi (Roll‑up)", suburbs:["North Bondi","Bondi Beach","Bondi Junction","Bondi"],
-   corridors:"Combined Bondi & Junction area • Bondi Rd • Bondi Junction Station (T4)",
-   alias:"E6 – All Bondi", connects:["E4","E5","E7","E8"]},
-  {id:"E7", name:"Bondi Junction Belt", suburbs:["Bondi Junction","Waverley","Queens Park"],
-   corridors:"Bondi Junction Station (T4) interchange • direct city & beach routes; retail hub",
-   alias:"E7 – Bondi Junction Belt", connects:["E2","E4","E5","E10"]},
-  {id:"E8", name:"Bronte Strip", suburbs:["Bronte","Clovelly"],
-   corridors:"Bronte & Macpherson Sts • Bus links to Bondi Junction & city • Coastal walk to Coogee",
-   alias:"E8 – Bronte Strip", connects:["E5","E7","E9"]},
-  {id:"E9", name:"Coastal South", suburbs:["Randwick","Coogee","South Coogee"],
-   corridors:"L2/L3 Light Rail (Anzac Pde) • Bus to Coogee Beach & city",
-   alias:"E9 – Coastal South", connects:["E8","E10","E11"]},
-  {id:"E10", name:"Central South", suburbs:["Kensington","Kingsford","Daceyville"],
-   corridors:"Anzac Parade (L3) • Regular bus to city & Bondi Junction",
-   alias:"E10 – Central South", connects:["E7","E9","E11"]},
-  {id:"E11", name:"South East", suburbs:["Maroubra","Pagewood","Eastgardens","Botany","Hillsdale","Banksmeadow"],
-   corridors:"Anzac Parade • Maroubra Rd — main bus corridors to city & Bondi Junction",
-   alias:"E11 – South East", connects:["E9","E10","E12","IS1"]},
-  {id:"E12", name:"Far South East", suburbs:["Malabar","Little Bay","Chifley","La Perouse","Phillip Bay","Matraville","Port Botany"],
-   corridors:"Bunnerong & Military Rds • Direct bus to city & Maroubra • Coastal parks & Port Botany",
-   alias:"E12 – Far South East", connects:["E11","IS1"]},
-  {id:"IS1", name:"North Inner South", suburbs:["Mascot","Rosebery","Eastlakes"],
-   corridors:"Airport line (T8) via Mascot Station (~10 min to city) • Botany Rd",
-   alias:"IS1 – North Inner South", connects:["IS2","E11"]},
-  {id:"IS2", name:"Mid Inner South", suburbs:["Waterloo","Zetland"],
-   corridors:"Green Square Station (T8) • Botany Rd to city & airport",
-   alias:"IS2 – Mid Inner South", connects:["IS1","IS3","E10"]},
-  {id:"IS3", name:"South Inner City", suburbs:["Redfern","Waterloo"],
-   corridors:"Redfern Station (T8/T2) • Cleveland St buses • Close to Central",
-   alias:"IS3 – South Inner City", connects:["IS2","IS4"]},
-  {id:"IS4", name:"Inner City Fringe", suburbs:["Surry Hills","Redfern"],
-   corridors:"Central Station interchange • Devonshire St light rail link",
-   alias:"IS4 – Inner City Fringe", connects:["IS3","ICE1"]},
-  {id:"ICE1", name:"City Fringe East", suburbs:["Paddington","Edgecliff","Woollahra"],
-   corridors:"Edgecliff Station (T4) • Oxford St bus corridor to CBD & Bondi Junction",
-   alias:"ICE1 – City Fringe East", connects:["IS4","E1","E7"]}
+/* ════════════════════════════════════════════════════════
+   DATA MODEL & STORAGE
+════════════════════════════════════════════════════════ */
+let patients = JSON.parse(localStorage.getItem('clincase_patients') || '[]');
+let currentPatient = {};
+let currentStep = 0;
+let editingId = null;
+let caseViewSource = 'patients'; // 'patients' or 'form'
+
+function savePatients(){
+  localStorage.setItem('clincase_patients', JSON.stringify(patients));
+}
+
+function genId(){
+  return 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+}
+
+/* ════════════════════════════════════════════════════════
+   SCREEN MANAGEMENT
+════════════════════════════════════════════════════════ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='patients-screen') renderPatientList();
+  if(id==='home-screen') updateHomeCounts();
+}
+
+function updateHomeCounts(){
+  const n = patients.length;
+  document.getElementById('saved-count-label').textContent =
+    n===0 ? 'No saved patients yet' : n===1 ? '1 patient saved' : `${n} patients saved`;
+}
+
+/* ════════════════════════════════════════════════════════
+   DARK MODE
+════════════════════════════════════════════════════════ */
+let dark = localStorage.getItem('clincase_dark')==='1';
+function toggleDark(){
+  dark=!dark;
+  document.documentElement.setAttribute('data-theme', dark?'dark':'');
+  localStorage.setItem('clincase_dark', dark?'1':'0');
+  document.getElementById('dark-toggle-btn').textContent = dark?'☀️':'🌙';
+}
+if(dark){
+  document.documentElement.setAttribute('data-theme','dark');
+  document.getElementById('dark-toggle-btn').textContent='☀️';
+}
+
+/* ════════════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════════════ */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+/* ════════════════════════════════════════════════════════
+   STEP DEFINITIONS
+════════════════════════════════════════════════════════ */
+const STEPS = [
+  {title:'Patient Details',        sub:'Demographics & identifiers'},
+  {title:'Chief Complaints',       sub:'Reason for presentation'},
+  {title:'History of Present Illness', sub:'Detailed symptom narrative'},
+  {title:'Systemic Review — CVS & Respiratory', sub:'Cardiovascular & Lung symptoms'},
+  {title:'Systemic Review — GI & Urinary', sub:'Gastrointestinal & Renal symptoms'},
+  {title:'Systemic Review — CNS, Endocrine & Others', sub:'Neurological, hormonal & MSK'},
+  {title:'Past History & Family History', sub:'Medical background'},
+  {title:'Personal, Social & Dietary History', sub:'Lifestyle & habits'},
+  {title:'General Examination',    sub:'Vitals & systemic findings'},
+  {title:'Systemic Examination',   sub:'CVS, Resp, Abdomen, CNS'},
+  {title:'Diagnosis',              sub:'Provisional, differential & final'},
 ];
+const TOTAL_STEPS = STEPS.length;
 
-// Approx To‑City times (bold in UI)
-const CITY_TIMES = {
-  E1:{train:"7–10 min from Edgecliff (T4)", bus:"20–35 min (via New South Head Rd)"},
-  E2:{train:"7–12 min via Edgecliff/Bondi Jn (T4)", bus:"25–40 min"},
-  E3:{train:"15–25 min (bus to Bondi Jn + T4)", bus:"35–55 min"},
-  E4:{train:"10–12 min from Bondi Jn (T4)", bus:"35–50 min"},
-  E5:{train:"10–14 min from Bondi Jn (T4)", bus:"35–55 min"},
-  E6:{train:"10–14 min from Bondi Jn (T4)", bus:"35–55 min"},
-  E7:{train:"10–12 min from Bondi Jn (T4)", bus:"25–45 min"},
-  E8:{train:"12–18 min (bus to Bondi Jn + T4)", bus:"35–55 min"},
-  E9:{train:"30–45 min (L2/L3 to CBD)", bus:"35–55 min"},
-  E10:{train:"28–40 min (L3 to CBD)", bus:"35–60 min"},
-  E11:{train:"20–35 min (bus to Mascot/Green Sq + T8)", bus:"40–70 min"},
-  E12:{train:"25–45 min (bus to Mascot/Green Sq + T8)", bus:"45–75 min"},
-  IS1:{train:"6–12 min from Mascot/Green Sq (T8)", bus:"20–40 min"},
-  IS2:{train:"5–9 min from Green Sq (T8)", bus:"15–30 min"},
-  IS3:{train:"2–5 min from Redfern (T2/T8)", bus:"10–25 min"},
-  IS4:{train:"0–3 min from Central (all lines)", bus:"10–25 min"},
-  ICE1:{train:"7–10 min from Edgecliff (T4)", bus:"15–30 min via Oxford St"}
+/* ════════════════════════════════════════════════════════
+   SYMPTOM LISTS BY SYSTEM
+════════════════════════════════════════════════════════ */
+const SYS_SYMPTOMS = {
+  cvs:[
+    'Breathlessness on heavy exertion','Breathlessness on moderate exertion',
+    'Breathlessness at rest','PND (Paroxysmal Nocturnal Dyspnoea)','Orthopnoea',
+    'Swelling of feet','Swelling of face / periorbital oedema','Sacral oedema',
+    'Anginal chest pain','Palpitations (sudden onset)','Palpitations (gradual onset)',
+    'History of MI','Embolic phenomena','Syncope / pre-syncope',
+  ],
+  resp:[
+    'Cough (dry)','Cough (productive)','Purulent sputum','Frothy pink sputum',
+    'Haemoptysis','Chest pain (pleuritic)','Breathlessness','Wheezing',
+    'Weight loss','Night sweats','Fever',
+  ],
+  gi:[
+    'Loss of appetite','Weight loss','Abdominal pain','Abdominal mass',
+    'Nausea','Vomiting','Haematemesis','Melaena','Dysphagia (solids)',
+    'Dysphagia (liquids)','Heartburn / GERD','Abdominal distension',
+    'Flatulence','Change in bowel habits','Diarrhoea (with blood / mucus)',
+    'Constipation','Jaundice','Dark urine','Pale stools','Itching',
+    'Rectal bleeding (fresh)','Tenesmus',
+  ],
+  urine:[
+    'Frequency of micturition','Nocturia','Oliguria','Polyuria','Anuria',
+    'Haematuria','Burning micturition','Loin pain','Renal colic','Pyuria',
+    'Passage of gravel','Retention of urine','Urinary incontinence',
+    'Oedema feet','Puffiness of face',
+  ],
+  cns:[
+    'Headache (throbbing)','Headache (non-throbbing)','Altered consciousness',
+    'Seizures (focal)','Seizures (generalised)','Post-ictal paresis','Aura',
+    'Memory impairment','Speech disturbance (aphasia)','Dysarthria',
+    'Visual disturbance / diplopia','Facial deviation / weakness',
+    'Dysphagia (neurological)','Limb weakness (UL proximal)',
+    'Limb weakness (UL distal)','Limb weakness (LL)','Sensory loss',
+    'Paraesthesia / numbness','Unsteadiness of gait',
+    'Bladder / bowel disturbance (autonomic)','Postural giddiness',
+  ],
+  endocrine:[
+    'Excessive weight gain','Excessive weight loss','Tremors','Polyuria',
+    'Polydipsia','Polyphagia','Heat intolerance','Cold intolerance',
+    'Palpitations','Goitre','Eye prominence (exophthalmos)',
+    'Change in voice','Pigmentation','Fatigue / asthenia',
+    'Delayed wound healing','Recurrent furuncles / carbuncles',
+    'Menstrual disturbances','Libido changes / impotence',
+  ],
+  locomotor:[
+    'Joint pain','Joint swelling','Morning stiffness (>30 min)','Muscle weakness',
+    'Skin rash (associated)','Backache','Deformity',
+  ],
+  bleeding:[
+    'Bleeding from gums','Petechiae','Purpuric spots','Ecchymoses',
+    'Easy bruising','Prolonged bleeding from trivial wounds','Bleeding from multiple sites',
+  ],
 };
 
-// Approx median weekly rent (A$) — rough placeholders for 2‑bed units.
-const RENT_DATA = { "Darling Point":1200,"Double Bay":1100,"Point Piper":1600,"Bellevue Hill":1050,
-  "Vaucluse":1500,"Dover Heights":1300,"Rose Bay":1100,"Watsons Bay":1600,
-  "North Bondi":1100,"Bondi Beach":1000,"Bondi":950,"Tamarama":1100,
-  "Bondi Junction":900,"Waverley":950,"Queens Park":1000,
-  "Bronte":1100,"Clovelly":1000,"Randwick":900,"Coogee":950,"South Coogee":1000,
-  "Kensington":850,"Kingsford":850,"Daceyville":750,
-  "Maroubra":800,"Pagewood":900,"Eastgardens":850,"Botany":800,
-  "Hillsdale":750,"Banksmeadow":800,"Malabar":850,"Little Bay":900,
-  "Chifley":800,"La Perouse":900,"Phillip Bay":900,"Matraville":800,"Port Botany":800,
-  "Mascot":850,"Rosebery":900,"Eastlakes":780,"Waterloo":900,"Zetland":950,
-  "Redfern":950,"Surry Hills":1000,"Paddington":1000,"Edgecliff":1000,"Woollahra":1100 };
-function formatAUD(x){ if(x==null||isNaN(x)) return '—'; return 'A$'+Math.round(x).toLocaleString('en-AU'); }
-function clusterAvgRent(cluster){ const vals = cluster.suburbs.map(s=>RENT_DATA[s]).filter(v=>typeof v==='number'); if(!vals.length) return null; return vals.reduce((a,b)=>a+b,0)/vals.length; }
-
-// One‑liner descriptors for VA script
-const CLUSTER_TONES = {
-  E1:"Harbourside prestige near Edgecliff; leafy streets and ferry access.",
-  E2:"Quiet, elevated pockets with quick access to Bondi Junction and Edgecliff.",
-  E3:"Headland and bays — scenic outlooks, coastal walks, premium homes.",
-  E4:"North Bondi & Bondi Beach — surf, cafés, weekend buzz; quick hop to Junction.",
-  E5:"South Bondi & Tamarama — coastal lifestyle with easy T4 access via buses.",
-  E6:"Greater Bondi catchment — mix of beachside apartments and Junction convenience.",
-  E7:"Bondi Junction hub — Westfield, transport interchange, strong retail core.",
-  E8:"Bronte/Clovelly — quieter beaches and parks, village feel, near Junction.",
-  E9:"Randwick/Coogee — near UNSW & hospitals; beach and light rail to CBD.",
-  E10:"Kensington/Kingsford — UNSW corridor; light rail, student energy, eateries.",
-  E11:"Maroubra to Botany — family pockets, larger blocks, access to Anzac Pde.",
-  E12:"Little Bay/Malabar — coastal reserves, quieter suburban feel, bus to CBD.",
-  IS1:"Mascot/Rosebery — airport line, new apartment precincts, quick city links.",
-  IS2:"Green Square/Waterloo — urban renewal, T8 line, cafés and convenience.",
-  IS3:"Redfern/Waterloo — close to Central; heritage meets new developments.",
-  IS4:"Surry Hills fringe — walkable to CBD; dining, terraces, creative scene.",
-  ICE1:"Paddington/Edgecliff/Woollahra — boutiques, terraces, quick T4 to city."
-};
-
-// Utils
-const COLORS=["#4f46e5","#ef4444","#22c55e","#eab308","#06b6d4","#a855f7","#f97316","#14b8a6","#f43f5e","#3b82f6","#8b5cf6","#84cc16","#fb7185","#f59e0b","#10b981","#60a5fa","#e879f9","#34d399","#f87171","#fbbf24"];
-function darken(hex, amt=-30){const c=hex.replace('#','');const num=parseInt(c,16);let r=(num>>16)+amt,g=((num>>8)&255)+amt,b=(num&255)+amt;r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b));return '#'+(r<<16|g<<8|b).toString(16).padStart(6,'0');}
-function esc(s){return String(s||'').replace(/[&<>\"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));}
-function ensureMapIsVisible(){ requestAnimationFrame(()=>map.invalidateSize()); setTimeout(()=>map.invalidateSize(), 180); }
-
-// Map init
-const map = L.map('map', { zoomControl:true, preferCanvas:true }).setView([-33.87,151.21], 11.6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
-window.addEventListener('resize', ensureMapIsVisible);
-window.addEventListener('orientationchange', ensureMapIsVisible);
-window.addEventListener('visibilitychange', ()=>{ if(!document.hidden) ensureMapIsVisible(); });
-
-// Groups/layers
-const clusterLayers = {}; // id -> {color, layers: L.GeoJSON[], bounds: LatLngBounds}
-const clusterColor = {};
-const poiGroup = L.layerGroup().addTo(map);
-const labelsGroup = L.layerGroup().addTo(map);
-const corridorsGroup = L.layerGroup().addTo(map);
-
-// Pills + legend + suburb dropdown
-const pillsDiv=document.getElementById('clusterPills');
-const legendItems=document.getElementById('legendItems');
-const suburbSelect=document.getElementById('suburbSelect');
-CLUSTERS.forEach((c,i)=>{ clusterColor[c.id]=COLORS[i%COLORS.length]; });
-CLUSTERS.forEach(c=>{
-  const pill=document.createElement('button'); pill.className='pill'; pill.textContent=c.id; pill.style.borderColor=darken(clusterColor[c.id],-30);
-  pill.style.boxShadow=`inset 0 0 0 2px ${clusterColor[c.id]}22`; pill.dataset.id=c.id; pill.onclick=()=>highlightCluster(c.id,true);
-  pillsDiv.appendChild(pill);
-  const li=document.createElement('div'); li.className='item';
-  li.innerHTML=`<span class=\"swatch\" style=\"background:${clusterColor[c.id]}\"></span><span><b>${c.id}</b> — ${c.name}</span>`;
-  legendItems.appendChild(li);
-});
-// Legend open/close toggle with persistence
-(function legendToggleInit(){
-  const legendEl=document.getElementById('legend');
-  const toggle=document.getElementById('legendToggle');
-  const pref=localStorage.getItem('legend_open');
-  const isOpen = pref!== 'false';
-  if(!isOpen){ legendEl.classList.add('collapsed'); toggle.setAttribute('aria-expanded','false'); }
-  toggle.addEventListener('click',()=>{
-    const collapsed = legendEl.classList.toggle('collapsed');
-    const expanded = !collapsed;
-    toggle.setAttribute('aria-expanded', String(expanded));
-    localStorage.setItem('legend_open', String(expanded));
-    ensureMapIsVisible();
-  });
-})();
-(function fillSuburbDropdown(){ const all = Array.from(new Set(CLUSTERS.flatMap(c=>c.suburbs))).sort(); all.forEach(s=>{ const opt=document.createElement('option'); opt.value=s; opt.textContent=s; suburbSelect.appendChild(opt); }); })();
-
-// --- Concurrency‑limited pool ---
-async function poolLimit(limit, items, iterator){
-  const results=new Array(items.length); let i=0;
-  const workers=Array.from({length:Math.min(limit,items.length)}, async function run(){
-    while(true){ const cur=i++; if(cur>=items.length) break; results[cur]=await iterator(items[cur],cur); }
-  });
-  await Promise.all(workers); return results;
-}
-
-// --- Suburb boundary fetch via OpenStreetMap (Nominatim), cached ---
-const suburbPolyCache = {};
-async function getSuburbGeometry(name){
-  if(suburbPolyCache[name]) return suburbPolyCache[name];
-  const key='poly_'+name;
-  try{ const cached=localStorage.getItem(key); if(cached){ const g=JSON.parse(cached); suburbPolyCache[name]=g; return g; } }catch(_){ }
-  const q = encodeURIComponent(name+', Sydney, NSW, Australia');
-  const url = `https://nominatim.openstreetmap.org/search?format=geojson&polygon_geojson=1&limit=1&q=${q}`;
-  try{
-    const resp = await fetch(url, {headers:{'Accept':'application/geo+json'}});
-    if(!resp.ok){ suburbPolyCache[name]=null; return null; }
-    const data = await resp.json();
-    let feat = data?.features?.[0];
-    if(Array.isArray(data?.features)){
-      const exact = data.features.find(f=> (f.properties?.display_name||'').toLowerCase().includes(name.toLowerCase()));
-      if(exact) feat = exact;
-    }
-    const geom = feat?.geometry || null;
-    suburbPolyCache[name]=geom;
-    try{ localStorage.setItem(key, JSON.stringify(geom)); }catch(_){ }
-    return geom;
-  }catch(e){ suburbPolyCache[name]=null; return null; }
-}
-
-// Draw helpers (always black border)
-function addSuburbToCluster(clusterId, geom, suburbName){
-  if(!geom) return null;
-  const color = clusterColor[clusterId] || '#888';
-  const layer = L.geoJSON(geom, { style: { color: '#000', weight: 2.2, fillColor: color, fillOpacity: 0.35, opacity: 1 } });
-  layer.options.suburbName = suburbName || '';
-  layer.addTo(map);
-  layer.on('click',()=>highlightCluster(clusterId,true));
-  if(!clusterLayers[clusterId]) clusterLayers[clusterId] = { color, layers: [], bounds: null };
-  clusterLayers[clusterId].layers.push(layer);
-  const b = layer.getBounds();
-  clusterLayers[clusterId].bounds = clusterLayers[clusterId].bounds ? clusterLayers[clusterId].bounds.extend(b) : b;
-  return layer;
-}
-
-function setClusterStyle(clusterId, active){
-  const cfg = clusterLayers[clusterId]; if(!cfg) return;
-  cfg.layers.forEach(l=> l.setStyle(active ? { fillOpacity:0.6, weight:3, color:'#000' } : { fillOpacity:0.16, weight:2.2, color:'#000' }));
-  if(active) cfg.layers.forEach(l=> l.bringToFront());
-}
-
-// Init: fetch ALL suburb outlines (original clusters) with concurrency
-(async function initOutlines(){
-  const loader = document.getElementById('loader'); const prog = document.getElementById('prog');
-  const allSuburbs = Array.from(new Set(CLUSTERS.flatMap(c=>c.suburbs)));
-  loader.style.display='block'; let done=0;
-  await poolLimit(6, allSuburbs, async (s)=>{
-    const geom = await getSuburbGeometry(s);
-    CLUSTERS.forEach(c=>{ if(c.suburbs.includes(s)) addSuburbToCluster(c.id, geom, s); });
-    done++; prog.textContent = Math.round((done/allSuburbs.length)*100)+'%';
-  });
-  loader.style.display='none';
-  const groups = Object.values(clusterLayers).flatMap(c=>c.layers);
-  if(groups.length){ const g = L.featureGroup(groups); try{ map.fitBounds(g.getBounds(), {padding:[20,20]}); }catch(_){} }
-  ensureMapIsVisible();
-})();
-
-// Highlight logic + info + amenities + labels
-let highlighted=null;
-function highlightCluster(id, fit=false){
-  highlighted=id;
-  Object.keys(clusterLayers).forEach(cid=> setClusterStyle(cid, cid===id));
-  document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('active', p.dataset.id===id));
-  labelsGroup.clearLayers();
-  const c = (CLUSTERS.find(x=>x.id===id) || AUTO_CLUSTERS.find(x=>x.id===id));
-  if(c){
-    renderInfoForCluster(c);
-    if(fit && clusterLayers[id]?.bounds){ try{ map.fitBounds(clusterLayers[id].bounds, {padding:[30,30]}); }catch(_){} }
-    fetchAmenitiesForCluster(c);
-    drawLabelsForCluster(c);
-    // Corridors/stations overlay if enabled
-    if(corrAutoOn && !showAllCorr){
-      clearAllCorridors();
-      drawCorridorsForCluster(c);
-    }
-    ensureMapIsVisible();
+/* ════════════════════════════════════════════════════════
+   BUILD STEP HTML
+════════════════════════════════════════════════════════ */
+function buildStep(step){
+  switch(step){
+    case 0: return buildPatientDetails();
+    case 1: return buildChiefComplaints();
+    case 2: return buildHOPI();
+    case 3: return buildSysReview1();
+    case 4: return buildSysReview2();
+    case 5: return buildSysReview3();
+    case 6: return buildPastFamily();
+    case 7: return buildPersonalSocial();
+    case 8: return buildGeneralExam();
+    case 9: return buildSysExam();
+    case 10: return buildDiagnosis();
+    default: return '<p>Unknown step</p>';
   }
 }
 
-function drawLabelsForCluster(c){ const cfg = clusterLayers[c.id]; if(!cfg) return; cfg.layers.forEach(l=>{ const center = l.getBounds().getCenter(); const name = l.options.suburbName || 'Suburb'; const icon = L.divIcon({className:'suburb-label', html:esc(name), iconSize:[0,0], iconAnchor:[0,0]}); L.marker(center, {icon, interactive:false}).addTo(labelsGroup); }); }
-
-function clearHighlight(){ highlighted=null; document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active')); Object.keys(clusterLayers).forEach(cid=> setClusterStyle(cid, true)); poiGroup.clearLayers(); labelsGroup.clearLayers(); setInfo('Pick a cluster to see corridors, To‑City times, average rent, and environment basics.'); ensureMapIsVisible(); if(!showAllCorr) clearAllCorridors(); }
-
-// Suburb selection → highlight its cluster
-suburbSelect.addEventListener('change', ()=>{
-  const s = suburbSelect.value; if(!s) return; const c = (CLUSTERS.find(c=> c.suburbs.includes(s)) || AUTO_CLUSTERS.find(c=> c.suburbs.includes(s))); if(c){ highlightCluster(c.id, true); const cfg = clusterLayers[c.id]; if(cfg && cfg.layers.length){ const layer = cfg.layers.find(l=> (l.options.suburbName||'')===s) || cfg.layers[0]; const center = layer.getBounds().getCenter(); const blip = L.circleMarker(center, {radius:8, weight:2, color:'#fff', fill:true, fillOpacity:0.9, opacity:0.9}); blip.addTo(map); setTimeout(()=>{ map.removeLayer(blip); }, 1200); } }
-});
-
-// Controls
-const btnClear=document.getElementById('btnClear');
-const btnReset=document.getElementById('btnReset');
-const btnSydney=document.getElementById('btnSydney');
-const btnCorrAuto=document.getElementById('btnCorrAuto');
-const btnCorrAll=document.getElementById('btnCorrAll');
-btnClear.onclick=clearHighlight;
-btnReset.onclick=()=>{ clearHighlight(); const groups = Object.values(clusterLayers).flatMap(c=>c.layers); if(groups.length){ const g=L.featureGroup(groups); try{ map.fitBounds(g.getBounds(),{padding:[20,20]}); }catch(_){} } ensureMapIsVisible(); };
-let corrAutoOn=true; let showAllCorr=false;
-btnCorrAuto.onclick=()=>{ corrAutoOn=!corrAutoOn; btnCorrAuto.dataset.on=corrAutoOn?"1":"0"; btnCorrAuto.textContent = `Auto Corridors: ${corrAutoOn? 'ON':'OFF'}`; if(!corrAutoOn && !showAllCorr) clearAllCorridors(); if(corrAutoOn && highlighted && !showAllCorr){ const c=(CLUSTERS.find(x=>x.id===highlighted)||AUTO_CLUSTERS.find(x=>x.id===highlighted)); if(c) drawCorridorsForCluster(c); } };
-btnCorrAll.onclick=()=>{ showAllCorr=!showAllCorr; btnCorrAll.textContent = showAllCorr? 'Hide All Corridors' : 'Show All Corridors'; if(showAllCorr){ drawAllCorridors(); } else { clearAllCorridors(); if(corrAutoOn && highlighted){ const c=(CLUSTERS.find(x=>x.id===highlighted)||AUTO_CLUSTERS.find(x=>x.id===highlighted)); if(c) drawCorridorsForCluster(c); } } };
-
-// Info rendering
-const infoBody = document.getElementById('infoBody');
-function setInfo(html){ infoBody.innerHTML=html; }
-function buildVAScript(cluster, counts, rent){
-  const tone = CLUSTER_TONES[cluster.id]||''; const bits = []; if(tone) bits.push(tone);
-  if(counts){ const s = counts.schools, p = counts.parks, l = counts.libraries; bits.push(`${s} schools, ${p} parks, ${l} libraries in the area (OSM data).`); }
-  if(rent){ bits.push(`Typical ${cluster.suburbs.length>1? 'area' : 'suburb'} weekly rent around <b>${formatAUD(rent)}/wk</b> for 2‑bed units (rough guide).`); }
-  const tt = CITY_TIMES[cluster.id]; if(tt){ bits.push(`To the city: <b>Train ${tt.train}</b>; <b>Bus ${tt.bus}</b>.`); }
-  return bits.join(' ');
-}
-function renderInfoForCluster(c){
-  const city = CITY_TIMES[c.id]||{}; const suburbTags = c.suburbs.map(s=>`<span class=\"pill\" style=\"padding:4px 8px\">${esc(s)}</span>`).join(' '); const connectTags = (c.connects||[]).map(id=>`<span class=\"pill\" data-go=\"${id}\" style=\"padding:4px 8px\">${id}</span>`).join(' '); const rentVal = clusterAvgRent(c);
-  setInfo(`
-    <h3>${esc(c.id)} — ${esc(c.name)}</h3>
-    <div class=\"table-wrap\"><table class=\"table\">
-      <tr><th>Alias</th><td>${esc(c.alias||c.name)}</td></tr>
-      <tr><th>To City</th><td><b>Train:</b> ${esc(city.train||'—')}<br><b>Bus:</b> ${esc(city.bus||'—')}</td></tr>
-      <tr><th>Avg Rent</th><td><b>${formatAUD(rentVal)}</b>/wk <span class=\"hint\">2‑bed est.; verify with live listings.</span></td></tr>
-      <tr><th>Corridors</th><td>${esc(c.corridors||'—')}</td></tr>
-      <tr><th>Connects</th><td>${connectTags||'<span class=\"hint\">—</span>'}</td></tr>
-    </table></div>
-
-    <div class=\"table-wrap\"><table class=\"table\">
-      <tr><th>Suburbs</th><td class=\"suburbs\">${suburbTags}</td></tr>
-    </table></div>
-
-    <h3 style=\"margin-top:10px\">Environment & Amenities</h3>
-    <div class=\"row\" style=\"gap:8px;align-items:flex-start;flex-wrap:wrap\">
-      <div class=\"table-wrap\" style=\"flex:1 1 140px;max-width:200px\">
-        <table class=\"table table-compact\">
-          <tr><th>Schools</th><td id=\"envCountSchools\">—</td></tr>
-          <tr><th>Parks</th><td id=\"envCountParks\">—</td></tr>
-          <tr><th>Libraries</th><td id=\"envCountLibraries\">—</td></tr>
-        </table>
-      </div>
-      <div class=\"table-wrap\" style=\"flex:2 1 260px\">
-        <table class=\"table table-compact\">
-          <thead><tr><th style=\"width:70%\">Name</th><th>Type</th></tr></thead>
-          <tbody id=\"envTbody\"><tr><td colspan=\"2\" class=\"hint\">Fetching schools, parks, libraries…</td></tr></tbody>
-        </table>
-      </div>
+/* ── STEP 0: Patient Details ─────────────────────────── */
+function buildPatientDetails(){
+  const d = currentPatient;
+  return `
+  <div class="step-header"><h2>👤 Patient Details</h2><p>Basic demographic information</p></div>
+  <div class="card">
+    <div class="field"><label>Full Name *</label>
+      <input type="text" id="f-name" placeholder="Patient's full name" value="${d.name||''}"/></div>
+    <div class="field-row">
+      <div class="field"><label>Age</label>
+        <input type="text" id="f-age" placeholder="e.g. 45 years" value="${d.age||''}"/></div>
+      <div class="field"><label>Sex</label>
+        <select id="f-sex">
+          <option value="">Select</option>
+          <option ${d.sex==='Male'?'selected':''}>Male</option>
+          <option ${d.sex==='Female'?'selected':''}>Female</option>
+          <option ${d.sex==='Other'?'selected':''}>Other</option>
+        </select></div>
     </div>
-
-    <div class=\"sep\"></div>
-    <div class=\"callout\" id=\"envScript\">Building a short talking summary…</div>
-  `);
-}
-infoBody.addEventListener('click',(e)=>{ const go = e.target.closest('[data-go]'); if(go){ highlightCluster(go.dataset.go,true); } });
-
-// --- Amenities via Overpass API (schools, parks, libraries) ---
-async function fetchAmenitiesForCluster(cluster){
-  poiGroup.clearLayers(); const cfg = clusterLayers[cluster.id]; if(!cfg || !cfg.layers.length){ const tb=document.getElementById('envTbody'); if(tb) tb.innerHTML='<tr><td colspan="2" class="hint">—</td></tr>'; return; }
-  let bounds = cfg.bounds; if(!bounds){ cfg.layers.forEach(l=>{ bounds = bounds? bounds.extend(l.getBounds()) : l.getBounds(); }); cfg.bounds = bounds; }
-  if(!bounds){ const tb=document.getElementById('envTbody'); if(tb) tb.innerHTML='<tr><td colspan="2" class="hint">—</td></tr>'; return; }
-  const west=bounds.getWest(), south=bounds.getSouth(), east=bounds.getEast(), north=bounds.getNorth();
-  const query = `[
-    out:json][timeout:25];(
-      node["amenity"="school"](${south},${west},${north},${east}); way["amenity"="school"](${south},${west},${north},${east}); rel["amenity"="school"](${south},${west},${north},${east});
-      node["amenity"="library"](${south},${west},${north},${east}); way["amenity"="library"](${south},${west},${north},${east}); rel["amenity"="library"](${south},${west},${north},${east});
-      node["leisure"="park"](${south},${west},${north},${east}); way["leisure"="park"](${south},${west},${north},${east}); rel["leisure"="park"](${south},${west},${north},${east});
-    );out center 60;`;
-  try{
-    const resp = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body: query});
-    if(!resp.ok) throw new Error('Overpass error');
-    const data = await resp.json();
-    const els = data.elements||[];
-    const items = els.map(e=>({ id:e.id, type:e.tags?.amenity||e.tags?.leisure||'poi', name:e.tags?.name||'(unnamed)', lat:(e.lat||e.center?.lat), lng:(e.lon||e.center?.lon) })).filter(x=>x.lat && x.lng);
-    const schools = items.filter(x=>x.type==='school'); const libraries = items.filter(x=>x.type==='library'); const parks = items.filter(x=>x.type==='park');
-    [...schools,...libraries,...parks].slice(0,150).forEach(it=>{ L.marker([it.lat,it.lng]).addTo(poiGroup).bindTooltip(`${esc(it.name)} — ${esc(it.type)}`); });
-    const cs=document.getElementById('envCountSchools'); if(cs) cs.textContent = schools.length; const cp=document.getElementById('envCountParks'); if(cp) cp.textContent = parks.length; const cl=document.getElementById('envCountLibraries'); if(cl) cl.textContent = libraries.length;
-    const tb=document.getElementById('envTbody'); if(tb){ const rows = items.slice(0,12).map(it=>`<tr><td>${esc(it.name)}</td><td class=\"hint\">${esc(it.type)}</td></tr>`).join(''); tb.innerHTML = rows || '<tr><td colspan="2" class="hint">No items found in OSM.</td></tr>'; }
-    const rentVal = clusterAvgRent(cluster); const counts = {schools:schools.length, parks:parks.length, libraries:libraries.length}; const script = buildVAScript(cluster, counts, rentVal); const es=document.getElementById('envScript'); if(es) es.innerHTML = script;
-  }catch(err){ const tb=document.getElementById('envTbody'); if(tb) tb.innerHTML='<tr><td colspan="2" class="hint">Could not load amenities right now.</td></tr>'; }
+    <div class="field"><label>Occupation</label>
+      <input type="text" id="f-occ" placeholder="Occupation" value="${d.occupation||''}"/></div>
+    <div class="field"><label>Address</label>
+      <input type="text" id="f-addr" placeholder="Full address" value="${d.address||''}"/></div>
+    <div class="field-row">
+      <div class="field"><label>Marital Status</label>
+        <select id="f-marital">
+          <option value="">Select</option>
+          <option ${d.marital==='Single'?'selected':''}>Single</option>
+          <option ${d.marital==='Married'?'selected':''}>Married</option>
+          <option ${d.marital==='Widowed'?'selected':''}>Widowed</option>
+          <option ${d.marital==='Divorced'?'selected':''}>Divorced</option>
+        </select></div>
+      <div class="field"><label>Insurance Status</label>
+        <input type="text" id="f-insurance" placeholder="e.g. ESI, CGHS" value="${d.insurance||''}"/></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Date of Admission</label>
+        <input type="date" id="f-doa" value="${d.doa||''}"/></div>
+      <div class="field"><label>Date of Examination</label>
+        <input type="date" id="f-doe" value="${d.doe||new Date().toISOString().split('T')[0]}"/></div>
+    </div>
+    <div class="field"><label>Informant (Name / Relation)</label>
+      <input type="text" id="f-informant" placeholder="e.g. Patient himself / Wife" value="${d.informant||''}"/></div>
+    <div class="field"><label>Identification Mark</label>
+      <input type="text" id="f-idmark" placeholder="Identification mark if any" value="${d.idmark||''}"/></div>
+  </div>`;
 }
 
-// -----------------------------
-// Corridor & Station overlays (from cluster.corridors text)
-// -----------------------------
-const SYD_BBOX={south:-34.1, west:150.5, north:-33.5, east:151.5};
-const roadCache={}, stationCache={}, ferryCache={};
-const clusterCorridorLayers={};
-
-function extractRoadNames(text){
-  if(!text) return [];
-  const roads=[];
-  const re=/\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)*\s(?:Road|Rd|Street|St|Parade|Pde|Ave|Avenue|Drive|Dr|Highway|Hwy|Boulevard|Blvd|Crescent|Cres|Lane|Ln|Way|Place|Quay|Quays|Walk|Mall|Esplanade|Circuit|Kingsway|Motorway|Mwy))\b/g;
-  let m; while((m=re.exec(text))){ roads.push(m[1].replace(/\s+/g,' ').trim()); }
-  // Whitelist canonical names mentioned in the doc that may be hyphenated/abbrev
-  ['Anzac Parade','Old South Head Rd','New South Head Rd','Bondi Rd','Oxford St','Macpherson St','Cleveland St','Maroubra Rd','Victoria Rd','Military Rd','Bunnerong Rd','Botany Rd'].forEach(n=>{ if(text.includes(n) && !roads.includes(n)) roads.push(n); });
-  return Array.from(new Set(roads));
-}
-function extractStationNames(text){
-  if(!text) return [];
-  const base=[];
-  const stationList=['Edgecliff','Bondi Junction','Mascot','Green Square','Redfern','Central'];
-  stationList.forEach(n=>{ if(text.toLowerCase().includes(n.toLowerCase())) base.push(n); });
-  // explicit "Something Station" patterns
-  const re=/(\b[A-Z][A-Za-z]+(?:\s[A-Z][A-Za-z]+)*\sStation\b)/g; let m; while((m=re.exec(text))){ const n=m[1].replace(/\sStation$/,''); if(!base.includes(n)) base.push(n); }
-  return Array.from(new Set(base));
-}
-function extractFerryNames(text){
-  if(!text) return [];
-  const m=/Ferry\s*\(([^)]+)\)/i.exec(text);
-  if(!m) return [];
-  return m[1].split(',').map(s=>s.trim()).filter(Boolean);
+function savePatientDetails(){
+  currentPatient.name = v('f-name');
+  currentPatient.age = v('f-age');
+  currentPatient.sex = v('f-sex');
+  currentPatient.occupation = v('f-occ');
+  currentPatient.address = v('f-addr');
+  currentPatient.marital = v('f-marital');
+  currentPatient.insurance = v('f-insurance');
+  currentPatient.doa = v('f-doa');
+  currentPatient.doe = v('f-doe');
+  currentPatient.informant = v('f-informant');
+  currentPatient.idmark = v('f-idmark');
+  if(!currentPatient.name){showToast('Please enter patient name');return false;}
+  return true;
 }
 
-async function fetchRoadLines(name){
-  if(roadCache[name]) return roadCache[name];
-  const q=`[out:json][timeout:40];way["highway"]["name"="${name}"](${SYD_BBOX.south},${SYD_BBOX.west},${SYD_BBOX.north},${SYD_BBOX.east});out geom;`;
-  try{
-    const resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:q});
-    const data=await resp.json(); const ways=(data.elements||[]).filter(e=>e.type==='way'&&Array.isArray(e.geometry));
-    const polylines=ways.map(w=> L.polyline(w.geometry.map(p=>[p.lat,p.lon]), {color:'#000', weight:6, opacity:0.85, interactive:false}));
-    const colored=ways.map(w=> L.polyline(w.geometry.map(p=>[p.lat,p.lon]), {color:'#ffffff', weight:3, opacity:0.95, interactive:false}));
-    roadCache[name]={polylines, colored}; return roadCache[name];
-  }catch(_){ roadCache[name]={polylines:[], colored:[]}; return roadCache[name]; }
-}
-async function fetchStationPoint(name){
-  if(stationCache[name]) return stationCache[name];
-  const q=`[out:json][timeout:40];(node["railway"="station"]["name"="${name}"](${SYD_BBOX.south},${SYD_BBOX.west},${SYD_BBOX.north},${SYD_BBOX.east}););out center 1;`;
-  try{ const resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:q}); const data=await resp.json(); const el=(data.elements||[])[0]; if(!el){ stationCache[name]=null; return null; } stationCache[name]=[el.lat||el.center?.lat, el.lon||el.center?.lon]; return stationCache[name]; }catch(_){ stationCache[name]=null; return null; }
-}
-async function fetchFerryPoint(name){
-  if(ferryCache[name]) return ferryCache[name];
-  const q=`[out:json][timeout:40];(node["amenity"="ferry_terminal"]["name"~"${name}"](${SYD_BBOX.south},${SYD_BBOX.west},${SYD_BBOX.north},${SYD_BBOX.east}););out center 1;`;
-  try{ const resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:q}); const data=await resp.json(); const el=(data.elements||[])[0]; if(!el){ ferryCache[name]=null; return null; } ferryCache[name]=[el.lat||el.center?.lat, el.lon||el.center?.lon]; return ferryCache[name]; }catch(_){ ferryCache[name]=null; return null; }
+/* ── STEP 1: Chief Complaints ────────────────────────── */
+function buildChiefComplaints(){
+  const complaints = currentPatient.complaints || [{complaint:'',duration:''}];
+  let rows = complaints.map((c,i)=>`
+    <div class="complaint-row" id="cc-row-${i}">
+      <input type="text" placeholder="Complaint ${i+1}" value="${c.complaint||''}" 
+        onchange="updateComplaint(${i},'complaint',this.value)"
+        oninput="updateComplaint(${i},'complaint',this.value)"/>
+      <input type="text" class="complaint-dur" placeholder="Duration" value="${c.duration||''}"
+        onchange="updateComplaint(${i},'duration',this.value)"
+        oninput="updateComplaint(${i},'duration',this.value)"/>
+      <button class="del-btn" onclick="removeComplaint(${i})">🗑</button>
+    </div>`).join('');
+  return `
+  <div class="step-header"><h2>📝 Chief Complaints</h2><p>In patient's own words, chronological order</p></div>
+  <div class="section-note">Enter each complaint with its duration (e.g. "3 days", "2 months"). Listed in chronological order.</div>
+  <div class="card">
+    <div id="complaints-list">${rows}</div>
+    <button class="add-btn" onclick="addComplaint()">+ Add Complaint</button>
+  </div>`;
 }
 
-function parseCorridors(cluster){
-  const text=cluster.corridors||'';
-  return {
-    roads: extractRoadNames(text),
-    stations: extractStationNames(text),
-    ferries: extractFerryNames(text)
-  };
+function updateComplaint(i,field,val){
+  if(!currentPatient.complaints) currentPatient.complaints=[];
+  if(!currentPatient.complaints[i]) currentPatient.complaints[i]={complaint:'',duration:''};
+  currentPatient.complaints[i][field]=val;
 }
-const CLUSTER_CORRIDORS = Object.fromEntries(CLUSTERS.map(c=>[c.id, parseCorridors(c)]));
-
-async function drawCorridorsForCluster(cluster){
-  const id=cluster.id; if(!clusterCorridorLayers[id]) clusterCorridorLayers[id]=L.layerGroup().addTo(corridorsGroup);
-  else { clusterCorridorLayers[id].clearLayers(); }
-  const col = clusterColor[id]||'#fff';
-  const spec = CLUSTER_CORRIDORS[id] || {roads:[],stations:[],ferries:[]};
-  // Roads
-  await poolLimit(4, spec.roads, async (name)=>{
-    const d=await fetchRoadLines(name); if(!d) return;
-    d.polylines.forEach(pl=> pl.addTo(clusterCorridorLayers[id]));
-    d.colored.forEach(pl=> { pl.setStyle({color:col}); pl.addTo(clusterCorridorLayers[id]); });
-  });
-  // Stations
-  await poolLimit(4, spec.stations, async (name)=>{
-    const p=await fetchStationPoint(name); if(!p) return; L.circleMarker(p,{radius:6, weight:2, color:'#000', fill:true, fillColor:col, fillOpacity:1}).addTo(clusterCorridorLayers[id]).bindTooltip(`${esc(name)} Station`,{permanent:false});
-  });
-  // Ferries
-  await poolLimit(3, spec.ferries, async (name)=>{
-    const p=await fetchFerryPoint(name); if(!p) return; L.circleMarker(p,{radius:6, weight:2, color:'#000', fill:true, fillColor:col, fillOpacity:1}).addTo(clusterCorridorLayers[id]).bindTooltip(`${esc(name)} Wharf`,{permanent:false});
-  });
+function addComplaint(){
+  if(!currentPatient.complaints) currentPatient.complaints=[];
+  currentPatient.complaints.push({complaint:'',duration:''});
+  renderCurrentStep();
 }
-function clearAllCorridors(){ corridorsGroup.clearLayers(); Object.keys(clusterCorridorLayers).forEach(k=> delete clusterCorridorLayers[k]); }
-async function drawAllCorridors(){ clearAllCorridors(); for(const c of CLUSTERS){ await drawCorridorsForCluster(c); } }
-
-// -----------------------------
-// Auto‑Clusters for Greater Sydney (distance to CBD + station proximity)
-// -----------------------------
-const AUTO_CLUSTERS = []; let autoColorsIdx = 0; function nextColor(){ return COLORS[(autoColorsIdx++)%COLORS.length]; }
-function haversineKm(a,b){ const toRad=(x)=>x*Math.PI/180; const R=6371; const dLat=toRad(b[0]-a[0]); const dLon=toRad(b[1]-a[1]); const lat1=toRad(a[0]); const lat2=toRad(b[0]); const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
-const CBD=[-33.873,151.206];
-function classify(distKm, stationKm){ if(distKm<=4 && stationKm<=1.2) return 'A1'; if(distKm<=8 && stationKm<=1.2) return 'A2'; if(distKm<=12 && stationKm<=2.0) return 'A3'; if(distKm<=20 && stationKm<=3.0) return 'A4'; if(distKm>20 && stationKm<=4.0) return 'A5'; if(distKm<=8) return 'B1'; if(distKm<=15) return 'B2'; return 'B3'; }
-const AUTO_META = { A1:{name:'0–4 km + rail'}, A2:{name:'4–8 km + rail'}, A3:{name:'8–12 km + rail'}, A4:{name:'12–20 km + rail'}, A5:{name:'20km+ + rail'}, B1:{name:'≤8 km bus‑only'}, B2:{name:'8–15 km bus‑only'}, B3:{name:'15km+ bus‑only'} };
-
-async function loadSydneyAuto(){
-  const btn = btnSydney; btn.disabled=true; btn.textContent='Loading…'; document.getElementById('loader').style.display='block'; document.getElementById('prog').textContent='0%';
-  const bbox = SYD_BBOX;
-  const qStations = `[out:json][timeout:50];(node["railway"="station"](${bbox.south},${bbox.west},${bbox.north},${bbox.east}););out center 500;`;
-  let stations=[]; try{ const resp = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:qStations}); const data = await resp.json(); stations = (data.elements||[]).map(e=>[e.lat||e.center?.lat, e.lon||e.center?.lon]).filter(Boolean); }catch(_){ stations=[]; }
-  const qSuburbs = `[out:json][timeout:50]; node["place"="suburb"](${bbox.south},${bbox.west},${bbox.north},${bbox.east}); out 200;`;
-  let names=[]; try{ const resp = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:qSuburbs}); const data = await resp.json(); names = Array.from(new Set((data.elements||[]).map(e=>e.tags?.name).filter(Boolean))).sort(); }catch(_){ names=[]; }
-  const MAX = Math.min(220, names.length); let done=0; const prog=()=>{ document.getElementById('prog').textContent = Math.round((done/MAX)*100)+'%'; };
-  await poolLimit(6, names.slice(0,MAX), async (name)=>{
-    const geom = await getSuburbGeometry(name); done++; prog(); if(!geom) return;
-    const temp = L.geoJSON(geom); const center = temp.getBounds().getCenter(); const dist = haversineKm([center.lat,center.lng], CBD); let minStation = Infinity; for(const s of stations){ const d = haversineKm([center.lat,center.lng], s); if(d<minStation) minStation=d; } if(!isFinite(minStation)) minStation=99;
-    const code = classify(dist, minStation); let cluster = AUTO_CLUSTERS.find(x=>x.id===code); if(!cluster){ cluster = {id:code, name:AUTO_META[code]?.name||code, suburbs:[], alias:`${code} – Auto`, corridors:'Auto‑generated (distance + rail proximity)'}; AUTO_CLUSTERS.push(cluster); clusterColor[code]=nextColor(); const pill=document.createElement('button'); pill.className='pill'; pill.textContent=code; pill.style.borderColor=darken(clusterColor[code],-30); pill.style.boxShadow=`inset 0 0 0 2px ${clusterColor[code]}22`; pill.dataset.id=code; pill.onclick=()=>highlightCluster(code,true); pillsDiv.appendChild(pill); const li=document.createElement('div'); li.className='item'; li.innerHTML=`<span class=\"swatch\" style=\"background:${clusterColor[code]}\"></span><span><b>${code}</b> — ${AUTO_META[code]?.name||'Auto'}</span>`; legendItems.appendChild(li); }
-    cluster.suburbs.push(name); addSuburbToCluster(code, geom, name); if(![...suburbSelect.options].some(o=>o.value===name)){ const opt=document.createElement('option'); opt.value=name; opt.textContent=name; suburbSelect.appendChild(opt); }
-  });
-  document.getElementById('loader').style.display='none'; btn.textContent='Loaded Sydney (auto)'; ensureMapIsVisible();
+function removeComplaint(i){
+  if(!currentPatient.complaints||currentPatient.complaints.length<=1) return;
+  currentPatient.complaints.splice(i,1);
+  renderCurrentStep();
 }
-btnSydney.onclick=loadSydneyAuto;
+function saveComplaints(){
+  if(!currentPatient.complaints||currentPatient.complaints.filter(c=>c.complaint.trim()).length===0){
+    showToast('Add at least one complaint');return false;
+  }
+  currentPatient.complaints = currentPatient.complaints.filter(c=>c.complaint.trim());
+  return true;
+}
 
-// -----------------------------
-// Self‑tests (keep old + add new)
-// -----------------------------
-(function runTests(){
-  const rows=[]; function ok(name,cond){ rows.push(`<span class=\"badge\">${cond?'PASS':'FAIL'}</span> ${name}`); }
-  ok('esc()', esc('<>&"')==='&lt;&gt;&amp;&quot;');
-  ok('darken()', /^#[0-9a-f]{6}$/i.test(darken('#ffffff',-10)));
-  ok('clusterAvgRent()', (function(){ const c={suburbs:['Bondi','Coogee']}; const v=clusterAvgRent(c); return v>900 && v<1000; })());
-  ok('classify()', (function(){ return classify(3,0.5)==='A1' && classify(10,1)==='A3' && classify(9,9)==='B2'; })());
-  // legend toggle
-  rows.push(`<span class=\"badge\">${document.getElementById('legendToggle')?'PASS':'FAIL'}</span> legend toggle present`);
-  rows.push(`<span class=\"badge\">${(function(){ const t=document.getElementById('legendToggle'); return t && t.getAttribute('aria-controls')==='legendItems'; })()?'PASS':'FAIL'}</span> legend toggle ARIA`);
-  // corridor parsing tests
-  const t1="Edgecliff Station (T4) • New South Head Rd • Ferry (Double Bay, Darling Point)";
-  const eRoads=extractRoadNames(t1); const eStations=extractStationNames(t1); const eFerr=extractFerryNames(t1);
-  ok('parse roads', eRoads.includes('New South Head Rd'));
-  ok('parse station', eStations.includes('Edgecliff'));
-  ok('parse ferries', eFerr.includes('Double Bay') && eFerr.includes('Darling Point'));
-  document.getElementById('diagBody').innerHTML = rows.join('<br>');
-})();
+/* ── STEP 2: HOPI ────────────────────────────────────── */
+function buildHOPI(){
+  return `
+  <div class="step-header"><h2>📖 History of Present Illness</h2><p>Elaborate each complaint in detail</p></div>
+  <div class="section-note">Describe onset, progression/regression, associated symptoms, and any new symptoms since onset.</div>
+  <div class="card">
+    <div class="field"><label>Narrative (HOPI)</label>
+      <textarea id="f-hopi" rows="8" placeholder="Describe the history of present illness in detail: onset, duration, character, progression, associated symptoms, aggravating/relieving factors…">${currentPatient.hopi||''}</textarea></div>
+
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🔍</span> Etiological History</div>
+    <div class="field"><label>Relevant Etiological Details</label>
+      <textarea id="f-etiology" rows="4" placeholder="e.g. History suggestive of rheumatic fever, TB exposure, occupational history, drug history, trauma, ear discharge…">${currentPatient.etiology||''}</textarea></div>
+  </div>`;
+}
+function saveHOPI(){
+  currentPatient.hopi=v('f-hopi');
+  currentPatient.etiology=v('f-etiology');
+  return true;
+}
+
+/* ── STEP 3: Systemic Review CVS + Resp ──────────────── */
+function buildSysReview1(){
+return `
+
+  <div class="step-header"><h2>🫀 Systemic Review</h2><p>Cardiovascular & Respiratory</p></div>
+  <div class="section-note">Tap symptoms to mark as <b style="color:var(--teal)">Positive (P)</b> or <b style="color:var(--red)">Negative (N)</b>. Unmarked = not asked.</div>
+  ${buildSystemBlock('cvs','🫀 Cardiovascular System','cvs')}
+  ${buildSystemBlock('resp','🫁 Respiratory System','resp')}`;
+}
+
+/* ── STEP 4: Systemic Review GI + Urine ──────────────── */
+function buildSysReview2(){
+return `
+
+  <div class="step-header"><h2>🫃 Systemic Review</h2><p>Gastrointestinal & Urinary</p></div>
+  <div class="section-note">Tap symptoms to mark as <b style="color:var(--teal)">Positive (P)</b> or <b style="color:var(--red)">Negative (N)</b>.</div>
+  ${buildSystemBlock('gi','🫃 Gastrointestinal System','gi')}
+  ${buildSystemBlock('urine','💧 Urinary System','urine')}`;
+}
+
+/* ── STEP 5: Systemic Review CNS + Endocrine + others ── */
+function buildSysReview3(){
+return `
+
+  <div class="step-header"><h2>🧠 Systemic Review</h2><p>CNS, Endocrine, Locomotor & Bleeding</p></div>
+  <div class="section-note">Tap symptoms to mark as <b style="color:var(--teal)">Positive (P)</b> or <b style="color:var(--red)">Negative (N)</b>.</div>
+  ${buildSystemBlock('cns','🧠 Central Nervous System','cns')}
+  ${buildSystemBlock('endocrine','⚗️ Endocrine System','endocrine')}
+  ${buildSystemBlock('locomotor','🦴 Locomotor System','locomotor')}
+  ${buildSystemBlock('bleeding','🩸 Bleeding Disorders','bleeding')}`;
+}
+
+function buildSystemBlock(key,label,sysKey){
+const syms = SYS_SYMPTOMS[sysKey]||[];
+const stored = (currentPatient.systemicReview||{})[key]||{pos:[],neg:[]};
+let chips = syms.map(s=>{
+const isPos = stored.pos.includes(s);
+const isNeg = stored.neg.includes(s);
+const cls = isPos?‘pos’:isNeg?‘neg’:’’;
+const badge = isPos?’ ✓’:isNeg?’ ✗’:’’;
+return `<span class="chip ${cls}" onclick="toggleSymptom('${key}','${escAttr(s)}')">${s}${badge}</span>`;
+}).join(’’);
+return `
+
+  <div class="system-section">
+    <div class="system-title">${label}</div>
+    <div class="chips-label">Tap: unmarked → Positive → Negative → unmarked</div>
+    <div class="chips-wrap" id="chips-${key}">${chips}</div>
+    <div class="field" style="margin-top:10px;margin-bottom:0">
+      <label>Additional notes</label>
+      <textarea rows="2" id="sysnotes-${key}" placeholder="Any additional findings or details…">${(currentPatient.systemicNotes||{})[key]||''}</textarea>
+    </div>
+  </div>`;
+}
+
+function escAttr(s){return s.replace(/’/g,”\’”).replace(/”/g,’"’)}
+
+function toggleSymptom(sysKey, symptom){
+if(!currentPatient.systemicReview) currentPatient.systemicReview={};
+if(!currentPatient.systemicReview[sysKey]) currentPatient.systemicReview[sysKey]={pos:[],neg:[]};
+const sys = currentPatient.systemicReview[sysKey];
+const isPos = sys.pos.includes(symptom);
+const isNeg = sys.neg.includes(symptom);
+if(!isPos && !isNeg){ sys.pos.push(symptom); }
+else if(isPos){ sys.pos=sys.pos.filter(x=>x!==symptom); sys.neg.push(symptom); }
+else { sys.neg=sys.neg.filter(x=>x!==symptom); }
+// Re-render just chips
+const syms = SYS_SYMPTOMS[sysKey]||[];
+const stored = currentPatient.systemicReview[sysKey];
+document.getElementById(‘chips-’+sysKey).innerHTML = syms.map(s=>{
+const ip=stored.pos.includes(s),in_=stored.neg.includes(s);
+const cls=ip?‘pos’:in_?‘neg’:’’;
+const badge=ip?’ ✓’:in_?’ ✗’:’’;
+return `<span class="chip ${cls}" onclick="toggleSymptom('${sysKey}','${escAttr(s)}')">${s}${badge}</span>`;
+}).join(’’);
+}
+
+function saveSysNotes(keys){
+if(!currentPatient.systemicNotes) currentPatient.systemicNotes={};
+keys.forEach(k=>{
+const el=document.getElementById(‘sysnotes-’+k);
+if(el) currentPatient.systemicNotes[k]=el.value;
+});
+}
+
+/* ── STEP 6: Past + Family History ──────────────────── */
+function buildPastFamily(){
+const ph = currentPatient.pastHistory||{};
+return `
+
+  <div class="step-header"><h2>📚 Past & Family History</h2><p>Medical background</p></div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🕐</span> Past History</div>
+    <div class="field"><label>Past Medical History</label>
+      <textarea id="f-ph-medical" rows="3" placeholder="Previous illnesses, hospitalisations, surgeries, blood transfusions…">${ph.medical||''}</textarea></div>
+    <div class="field"><label>Drug Allergy</label>
+      <textarea id="f-ph-allergy" rows="2" placeholder="Known drug allergies (e.g. Penicillin, Sulfonamides, NSAIDs)…">${ph.allergy||''}</textarea></div>
+    <div class="field"><label>Immunisation Status</label>
+      <input type="text" id="f-ph-immunisation" placeholder="e.g. Tetanus, Hepatitis B, COVID-19" value="${ph.immunisation||''}"/></div>
+    <div class="field"><label>Operations / Accidents</label>
+      <input type="text" id="f-ph-ops" placeholder="Previous surgeries or major accidents" value="${ph.ops||''}"/></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">👨‍👩‍👧</span> Family History</div>
+    <div class="section-note">Mark conditions present in first-degree relatives</div>
+    <div class="chips-wrap" id="fh-chips">
+      ${['Diabetes Mellitus','Hypertension','Ischaemic Heart Disease','Tuberculosis',
+         'Bleeding Disorders','Malignancy','Asthma','Renal Disease','Epilepsy','Stroke'].map(c=>{
+        const sel=(currentPatient.familyHistory||[]).includes(c);
+        return `<span class="chip ${sel?'sel':''}" onclick="toggleFH('${escAttr(c)}')">${c}${sel?' ✓':''}</span>`;
+      }).join('')}
+    </div>
+    <div class="field" style="margin-top:12px"><label>Family History Details</label>
+      <textarea id="f-fh-details" rows="2" placeholder="Additional family history details…">${currentPatient.familyHistoryDetails||''}</textarea></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">♀</span> Menstrual History (if applicable)</div>
+    <div class="field"><label>Menstrual History</label>
+      <textarea id="f-menstrual" rows="3" placeholder="Amenorrhoea, oligomenorrhoea, metrorrhagia, menorrhagia, post-menopausal bleeding, last menstrual period…">${currentPatient.menstrualHistory||''}</textarea></div>
+    <div class="field"><label>Obstetric History</label>
+      <textarea id="f-obstetric" rows="2" placeholder="G P A L — pregnancies, deliveries, abortions, complications (chronological)…">${currentPatient.obstetricHistory||''}</textarea></div>
+  </div>`;
+}
+
+function toggleFH(val){
+if(!currentPatient.familyHistory) currentPatient.familyHistory=[];
+const idx=currentPatient.familyHistory.indexOf(val);
+if(idx>=0) currentPatient.familyHistory.splice(idx,1);
+else currentPatient.familyHistory.push(val);
+const items=[‘Diabetes Mellitus’,‘Hypertension’,‘Ischaemic Heart Disease’,‘Tuberculosis’,
+‘Bleeding Disorders’,‘Malignancy’,‘Asthma’,‘Renal Disease’,‘Epilepsy’,‘Stroke’];
+document.getElementById(‘fh-chips’).innerHTML = items.map(c=>{
+const sel=(currentPatient.familyHistory||[]).includes(c);
+return `<span class="chip ${sel?'sel':''}" onclick="toggleFH('${escAttr(c)}')">${c}${sel?' ✓':''}</span>`;
+}).join(’’);
+}
+
+function savePastFamily(){
+currentPatient.pastHistory = {
+medical:v(‘f-ph-medical’),
+allergy:v(‘f-ph-allergy’),
+immunisation:v(‘f-ph-immunisation’),
+ops:v(‘f-ph-ops’),
+};
+currentPatient.familyHistoryDetails = v(‘f-fh-details’);
+currentPatient.menstrualHistory = v(‘f-menstrual’);
+currentPatient.obstetricHistory = v(‘f-obstetric’);
+return true;
+}
+
+/* ── STEP 7: Personal / Social / Dietary ────────────── */
+function buildPersonalSocial(){
+const ps = currentPatient.personalHistory||{};
+return `
+
+  <div class="step-header"><h2>🧑‍🤝‍🧑 Personal & Social History</h2><p>Lifestyle and habits</p></div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🏠</span> Social History</div>
+    <div class="field-row">
+      <div class="field"><label>Economic Status</label>
+        <select id="f-economic">
+          <option value="">Select</option>
+          ${['Lower','Lower-middle','Middle','Upper-middle','Upper'].map(x=>`<option ${ps.economic===x?'selected':''}>${x}</option>`).join('')}
+        </select></div>
+      <div class="field"><label>Education</label>
+        <input type="text" id="f-education" placeholder="Level of education" value="${ps.education||''}"/></div>
+    </div>
+    <div class="field"><label>Family Size / Living Conditions</label>
+      <input type="text" id="f-family-size" placeholder="No. of family members, type of housing" value="${ps.familySize||''}"/></div>
+    <div class="field"><label>Previous / Other Residences</label>
+      <input type="text" id="f-prev-residence" placeholder="Previous residence in India or abroad, recent travel" value="${ps.prevResidence||''}"/></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🚬</span> Habits</div>
+    <div class="section-note">Tap to mark substances used</div>
+    <div class="chips-wrap" id="habits-chips">
+      ${['Smoking','Tobacco (chewing)','Alcohol','Recreational drugs','Paan / Betel nut'].map(h=>{
+        const sel=(currentPatient.habits||[]).includes(h);
+        return `<span class="chip ${sel?'sel':''}" onclick="toggleHabit('${escAttr(h)}')">${h}${sel?' ✓':''}</span>`;
+      }).join('')}
+    </div>
+    <div class="field" style="margin-top:10px"><label>Habit Details (quantity, duration, pack-years etc.)</label>
+      <textarea id="f-habit-details" rows="2" placeholder="e.g. Smoking 10 cigarettes/day × 20 years (20 pack-years)">${currentPatient.habitDetails||''}</textarea></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🍽</span> Dietary History</div>
+    <div class="field"><label>Diet Type</label>
+      <select id="f-diet-type">
+        <option value="">Select</option>
+        ${['Vegetarian','Non-vegetarian','Vegan','Mixed'].map(x=>`<option ${ps.dietType===x?'selected':''}>${x}</option>`).join('')}
+      </select></div>
+    <div class="field"><label>Dietary Adequacy</label>
+      <select id="f-diet-adequacy">
+        <option value="">Select</option>
+        ${['Adequate','Inadequate','Borderline adequate'].map(x=>`<option ${ps.dietAdequacy===x?'selected':''}>${x}</option>`).join('')}
+      </select></div>
+    <div class="field"><label>Dietary Notes</label>
+      <textarea id="f-diet-notes" rows="2" placeholder="Special dietary restrictions, food intolerances, nutritional concerns…">${currentPatient.dietNotes||''}</textarea></div>
+  </div>`;
+}
+
+function toggleHabit(val){
+if(!currentPatient.habits) currentPatient.habits=[];
+const idx=currentPatient.habits.indexOf(val);
+if(idx>=0) currentPatient.habits.splice(idx,1);
+else currentPatient.habits.push(val);
+const items=[‘Smoking’,‘Tobacco (chewing)’,‘Alcohol’,‘Recreational drugs’,‘Paan / Betel nut’];
+document.getElementById(‘habits-chips’).innerHTML = items.map(h=>{
+const sel=(currentPatient.habits||[]).includes(h);
+return `<span class="chip ${sel?'sel':''}" onclick="toggleHabit('${escAttr(h)}')">${h}${sel?' ✓':''}</span>`;
+}).join(’’);
+}
+
+function savePersonalSocial(){
+currentPatient.personalHistory = {
+economic:v(‘f-economic’),
+education:v(‘f-education’),
+familySize:v(‘f-family-size’),
+prevResidence:v(‘f-prev-residence’),
+dietType:v(‘f-diet-type’),
+dietAdequacy:v(‘f-diet-adequacy’),
+};
+currentPatient.habitDetails = v(‘f-habit-details’);
+currentPatient.dietNotes = v(‘f-diet-notes’);
+return true;
+}
+
+/* ── STEP 8: General Examination ─────────────────────── */
+function buildGeneralExam(){
+const ge = currentPatient.generalExam||{};
+return `
+
+  <div class="step-header"><h2>🔍 General Examination</h2><p>Vital signs and general findings</p></div>
+  <div class="card">
+    <div class="card-title"><span class="icon">💓</span> Vital Signs</div>
+    <div class="vitals-grid">
+      <div class="field"><label>Pulse Rate (bpm)</label>
+        <input type="text" id="f-pulse" placeholder="e.g. 78/min" value="${ge.pulse||''}"/></div>
+      <div class="field"><label>BP (mmHg)</label>
+        <input type="text" id="f-bp" placeholder="e.g. 120/80" value="${ge.bp||''}"/></div>
+      <div class="field"><label>Temperature</label>
+        <input type="text" id="f-temp" placeholder="e.g. 37.2°C / Afebrile" value="${ge.temp||''}"/></div>
+      <div class="field"><label>RR (/min)</label>
+        <input type="text" id="f-rr" placeholder="e.g. 16/min" value="${ge.rr||''}"/></div>
+      <div class="field"><label>SpO₂ (%)</label>
+        <input type="text" id="f-spo2" placeholder="e.g. 98% on RA" value="${ge.spo2||''}"/></div>
+      <div class="field"><label>Weight / BMI</label>
+        <input type="text" id="f-weight" placeholder="e.g. 65 kg / BMI 22" value="${ge.weight||''}"/></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🧍</span> General Appearance</div>
+    <div class="field"><label>Consciousness</label>
+      <select id="f-consciousness">
+        <option value="">Select</option>
+        ${['Fully conscious & oriented','Drowsy','Stuporose','Comatose','Delirious'].map(x=>`<option ${ge.consciousness===x?'selected':''}>${x}</option>`).join('')}
+      </select></div>
+    <div class="field"><label>Build & Nutrition</label>
+      <select id="f-build">
+        <option value="">Select</option>
+        ${['Well-built & nourished','Moderately nourished','Poorly nourished','Obese','Cachectic'].map(x=>`<option ${ge.build===x?'selected':''}>${x}</option>`).join('')}
+      </select></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🩺</span> Clinical Signs</div>
+    <div class="section-note">Tap to mark findings — Green = Present, Red = Absent</div>
+    <div class="chips-wrap" id="ge-chips">
+      ${['Pallor','Cyanosis (peripheral)','Cyanosis (central)','Clubbing','Koilonychia',
+         'Jaundice (mild)','Jaundice (moderate)','Jaundice (severe)','Lymphadenopathy',
+         'Oedema (pitting)','Oedema (non-pitting)','Dehydration','Recent weight loss',
+         'Skin rash','Pigmentation','Purpura','Café-au-lait spots','Nodules'].map(s=>{
+        const sys = (currentPatient.genExamFindings||{});
+        const ip=( sys.pos||[]).includes(s),in_=(sys.neg||[]).includes(s);
+        const cls=ip?'pos':in_?'neg':'';
+        const b=ip?' ✓':in_?' ✗':'';
+        return `<span class="chip ${cls}" onclick="toggleGEFinding('${escAttr(s)}')">${s}${b}</span>`;
+      }).join('')}
+    </div>
+    <div class="field" style="margin-top:12px"><label>Lymphadenopathy Details (site, size, consistency)</label>
+      <input type="text" id="f-lymph-details" placeholder="e.g. Right cervical, 1×1 cm, firm, non-tender" value="${ge.lymphDetails||''}"/></div>
+    <div class="field"><label>Oedema Details (site, pitting, distribution)</label>
+      <input type="text" id="f-oedema-details" placeholder="e.g. Bilateral pitting pedal oedema up to ankles" value="${ge.oedemaDetails||''}"/></div>
+    <div class="field"><label>Additional General Exam Notes</label>
+      <textarea id="f-ge-notes" rows="3" placeholder="Any other general examination findings…">${ge.notes||''}</textarea></div>
+  </div>`;
+}
+
+function toggleGEFinding(s){
+if(!currentPatient.genExamFindings) currentPatient.genExamFindings={pos:[],neg:[]};
+const sys=currentPatient.genExamFindings;
+const ip=sys.pos.includes(s),in_=sys.neg.includes(s);
+if(!ip&&!in_) sys.pos.push(s);
+else if(ip){sys.pos=sys.pos.filter(x=>x!==s);sys.neg.push(s);}
+else sys.neg=sys.neg.filter(x=>x!==s);
+const items=[‘Pallor’,‘Cyanosis (peripheral)’,‘Cyanosis (central)’,‘Clubbing’,‘Koilonychia’,
+‘Jaundice (mild)’,‘Jaundice (moderate)’,‘Jaundice (severe)’,‘Lymphadenopathy’,
+‘Oedema (pitting)’,‘Oedema (non-pitting)’,‘Dehydration’,‘Recent weight loss’,
+‘Skin rash’,‘Pigmentation’,‘Purpura’,‘Café-au-lait spots’,‘Nodules’];
+document.getElementById(‘ge-chips’).innerHTML = items.map(sym=>{
+const ip2=(currentPatient.genExamFindings.pos||[]).includes(sym);
+const in2=(currentPatient.genExamFindings.neg||[]).includes(sym);
+const cls=ip2?‘pos’:in2?‘neg’:’’;
+const b=ip2?’ ✓’:in2?’ ✗’:’’;
+return `<span class="chip ${cls}" onclick="toggleGEFinding('${escAttr(sym)}')">${sym}${b}</span>`;
+}).join(’’);
+}
+
+function saveGeneralExam(){
+const ge = currentPatient.generalExam||{};
+currentPatient.generalExam = Object.assign(ge, {
+pulse:v(‘f-pulse’),bp:v(‘f-bp’),temp:v(‘f-temp’),rr:v(‘f-rr’),
+spo2:v(‘f-spo2’),weight:v(‘f-weight’),consciousness:v(‘f-consciousness’),
+build:v(‘f-build’),lymphDetails:v(‘f-lymph-details’),
+oedemaDetails:v(‘f-oedema-details’),notes:v(‘f-ge-notes’),
+});
+return true;
+}
+
+/* ── STEP 9: Systemic Examination ────────────────────── */
+function buildSysExam(){
+const se = currentPatient.sysExam||{};
+return `
+
+  <div class="step-header"><h2>🩺 Systemic Examination</h2><p>CVS, Respiratory, Abdomen & CNS</p></div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🫀</span> Cardiovascular System</div>
+    <div class="field"><label>Pulse Character / JVP / Carotid</label>
+      <input type="text" id="f-se-cvs-pulse" placeholder="e.g. Regular, normal volume, no JVP elevation" value="${se.cvsPulse||''}"/></div>
+    <div class="field"><label>Precordial Examination (Inspection / Palpation)</label>
+      <textarea id="f-se-cvs-precordium" rows="2" placeholder="Apex beat, thrills, heaves, parasternal pulsations…">${se.cvsPrecordium||''}</textarea></div>
+    <div class="field"><label>Auscultation (Heart Sounds / Murmurs)</label>
+      <textarea id="f-se-cvs-auscult" rows="3" placeholder="S1/S2 character, murmurs (grade, character, radiation), added sounds (S3/S4), rubs…">${se.cvsAuscult||''}</textarea></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🫁</span> Respiratory System</div>
+    <div class="field"><label>Inspection / Palpation / Percussion</label>
+      <textarea id="f-se-resp-ipp" rows="3" placeholder="Chest shape, expansion, trachea position, TVF, percussion note (dull/resonant), areas…">${se.respIPP||''}</textarea></div>
+    <div class="field"><label>Auscultation</label>
+      <textarea id="f-se-resp-auscult" rows="3" placeholder="Breath sounds (vesicular/bronchial), intensity, vocal resonance, adventitious sounds (crepitations, rhonchi, rub)…">${se.respAuscult||''}</textarea></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🫃</span> Abdomen</div>
+    <div class="field"><label>Inspection / Auscultation</label>
+      <textarea id="f-se-abd-insp" rows="2" placeholder="Shape, distension, dilated veins, scars, umbilicus, bowel sounds…">${se.abdInsp||''}</textarea></div>
+    <div class="field"><label>Palpation (Organomegaly / Masses)</label>
+      <textarea id="f-se-abd-palp" rows="3" placeholder="Liver (span, edge, texture), spleen (size, Traube's), kidneys, any masses, tenderness, guarding, rigidity, fluid thrill…">${se.abdPalp||''}</textarea></div>
+    <div class="field"><label>Percussion</label>
+      <textarea id="f-se-abd-perc" rows="2" placeholder="Shifting dullness, liver dullness span, splenic dullness…">${se.abdPerc||''}</textarea></div>
+    <div class="field"><label>Rectal / Vaginal Examination</label>
+      <input type="text" id="f-se-rectal" placeholder="Findings or 'Not performed'" value="${se.rectal||'Not performed'}"/></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🧠</span> Nervous System</div>
+    <div class="field"><label>Higher Functions & Speech</label>
+      <textarea id="f-se-cns-higher" rows="2" placeholder="Orientation, memory, calculation, judgment, speech, mood, insight…">${se.cnsHigher||''}</textarea></div>
+    <div class="field"><label>Cranial Nerves</label>
+      <textarea id="f-se-cns-cn" rows="2" placeholder="Notable cranial nerve findings or 'All cranial nerves intact'…">${se.cnsCranial||''}</textarea></div>
+    <div class="field"><label>Motor System</label>
+      <textarea id="f-se-cns-motor" rows="2" placeholder="Tone, power (grade 0-5), abnormal movements, wasting, fasciculations, coordination, gait…">${se.cnsMotor||''}</textarea></div>
+    <div class="field"><label>Reflexes</label>
+      <textarea id="f-se-cns-reflexes" rows="2" placeholder="DTRs (biceps, triceps, supinator, knee, ankle), plantar response, abdominal reflexes…">${se.cnsReflexes||''}</textarea></div>
+    <div class="field"><label>Sensory System</label>
+      <textarea id="f-se-cns-sensory" rows="2" placeholder="Light touch, pain, temperature, vibration, position sense, Romberg's…">${se.cnsSensory||''}</textarea></div>
+    <div class="field"><label>Cerebellar / Extrapyramidal / Meningeal Signs</label>
+      <textarea id="f-se-cns-other" rows="2" placeholder="Cerebellar tests, extrapyramidal signs, neck rigidity, Kernig's/Brudzinski's…">${se.cnsOther||''}</textarea></div>
+  </div>`;
+}
+
+function saveSysExam(){
+currentPatient.sysExam = {
+cvsPulse:v(‘f-se-cvs-pulse’),cvsPrecordium:v(‘f-se-cvs-precordium’),
+cvsAuscult:v(‘f-se-cvs-auscult’),respIPP:v(‘f-se-resp-ipp’),
+respAuscult:v(‘f-se-resp-auscult’),abdInsp:v(‘f-se-abd-insp’),
+abdPalp:v(‘f-se-abd-palp’),abdPerc:v(‘f-se-abd-perc’),rectal:v(‘f-se-rectal’),
+cnsHigher:v(‘f-se-cns-higher’),cnsCranial:v(‘f-se-cns-cn’),
+cnsMotor:v(‘f-se-cns-motor’),cnsReflexes:v(‘f-se-cns-reflexes’),
+cnsSensory:v(‘f-se-cns-sensory’),cnsOther:v(‘f-se-cns-other’),
+};
+return true;
+}
+
+/* ── STEP 10: Diagnosis ──────────────────────────────── */
+function buildDiagnosis(){
+const dx = currentPatient.diagnosis||{};
+return `
+
+  <div class="step-header"><h2>🎯 Diagnosis</h2><p>Provisional, differential and final</p></div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🔶</span> Provisional Diagnosis</div>
+    <div class="section-note">Syndrome → Anatomical → Etiopathological</div>
+    <div class="field"><label>Provisional Diagnosis</label>
+      <textarea id="f-dx-provisional" rows="3" placeholder="e.g. Congestive cardiac failure secondary to dilated cardiomyopathy&#10;Syndrome: CCF&#10;Anatomical: Bilateral cardiac&#10;Etio: DCM">${dx.provisional||''}</textarea></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">📋</span> Differential Diagnoses</div>
+    <div id="ddx-list">
+      ${(currentPatient.ddx||['','']).map((d,i)=>`
+        <div class="complaint-row">
+          <input type="text" placeholder="Differential ${i+1}" value="${d}"
+            oninput="updateDDx(${i},this.value)"/>
+          <button class="del-btn" onclick="removeDDx(${i})">🗑</button>
+        </div>`).join('')}
+    </div>
+    <button class="add-btn" onclick="addDDx()">+ Add Differential</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">✅</span> Final Diagnosis</div>
+    <div class="field"><label>Final Diagnosis</label>
+      <textarea id="f-dx-final" rows="3" placeholder="Final confirmed diagnosis after investigations…">${dx.final||''}</textarea></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🧪</span> Investigations</div>
+    <div class="field"><label>Laboratory & Imaging Findings</label>
+      <textarea id="f-investigations" rows="4" placeholder="Hb, WBC, platelets, LFT, RFT, CXR, ECG, Echo, USG, CT findings…">${currentPatient.investigations||''}</textarea></div>
+  </div>`;
+}
+
+function updateDDx(i,v){
+if(!currentPatient.ddx) currentPatient.ddx=[’’,’’];
+currentPatient.ddx[i]=v;
+}
+function addDDx(){
+if(!currentPatient.ddx) currentPatient.ddx=[’’,’’];
+currentPatient.ddx.push(’’);
+renderCurrentStep();
+}
+function removeDDx(i){
+if(!currentPatient.ddx||currentPatient.ddx.length<=1) return;
+currentPatient.ddx.splice(i,1);
+renderCurrentStep();
+}
+function saveDiagnosis(){
+currentPatient.diagnosis = {
+provisional:v(‘f-dx-provisional’),
+final:v(‘f-dx-final’),
+};
+currentPatient.investigations = v(‘f-investigations’);
+if(!currentPatient.ddx) currentPatient.ddx=[];
+currentPatient.ddx = currentPatient.ddx.filter(d=>d&&d.trim());
+return true;
+}
+
+/* ════════════════════════════════════════════════════════
+STEP NAVIGATION
+════════════════════════════════════════════════════════ */
+function v(id){const el=document.getElementById(id);return el?el.value.trim():’’;}
+
+function saveCurrentStep(){
+switch(currentStep){
+case 0: return savePatientDetails();
+case 1: return saveComplaints();
+case 2: saveHOPI(); return true;
+case 3: saveSysNotes([‘cvs’,‘resp’]); return true;
+case 4: saveSysNotes([‘gi’,‘urine’]); return true;
+case 5: saveSysNotes([‘cns’,‘endocrine’,‘locomotor’,‘bleeding’]); return true;
+case 6: return savePastFamily();
+case 7: savePersonalSocial(); return true;
+case 8: saveGeneralExam(); return true;
+case 9: saveSysExam(); return true;
+case 10: return saveDiagnosis();
+}
+return true;
+}
+
+function renderCurrentStep(){
+document.getElementById(‘form-content’).innerHTML = buildStep(currentStep);
+updateProgress();
+window.scrollTo(0,0);
+document.getElementById(‘form-content’).scrollTop=0;
+}
+
+function updateProgress(){
+const pct = Math.round(((currentStep+1)/TOTAL_STEPS)*100);
+document.getElementById(‘prog-fill’).style.width = pct+’%’;
+document.getElementById(‘prog-text’).textContent = `Step ${currentStep+1} / ${TOTAL_STEPS}`;
+document.getElementById(‘prog-pct’).textContent = pct+’%’;
+document.getElementById(‘form-step-title’).textContent = STEPS[currentStep].title;
+document.getElementById(‘form-step-sub’).textContent = STEPS[currentStep].sub;
+document.getElementById(‘btn-back’).style.display = currentStep===0?‘none’:‘flex’;
+document.getElementById(‘btn-next’).textContent = currentStep===TOTAL_STEPS-1?‘✓ Save Patient’:‘Next →’;
+}
+
+function nextStep(){
+if(!saveCurrentStep()) return;
+if(currentStep===TOTAL_STEPS-1){
+finalizePatient();
+} else {
+currentStep++;
+renderCurrentStep();
+}
+}
+
+function prevStep(){
+saveCurrentStep();
+if(currentStep>0){currentStep–;renderCurrentStep();}
+}
+
+function finalizePatient(){
+// Assign ID + timestamp
+if(!currentPatient.id) currentPatient.id=genId();
+currentPatient.updatedAt = new Date().toISOString();
+if(!currentPatient.createdAt) currentPatient.createdAt=new Date().toISOString();
+// Save or update
+const idx = patients.findIndex(p=>p.id===currentPatient.id);
+if(idx>=0) patients[idx]=currentPatient;
+else patients.unshift(currentPatient);
+savePatients();
+showToast(‘Patient saved successfully!’);
+caseViewSource=‘form’;
+openCaseView(currentPatient);
+}
+
+/* ════════════════════════════════════════════════════════
+START NEW PATIENT
+════════════════════════════════════════════════════════ */
+function startNewPatient(){
+currentPatient = {};
+currentStep = 0;
+editingId = null;
+showScreen(‘form-screen’);
+renderCurrentStep();
+}
+
+function editPatient(id){
+const p = patients.find(x=>x.id===id);
+if(!p) return;
+currentPatient = JSON.parse(JSON.stringify(p));
+currentStep=0;
+editingId=id;
+showScreen(‘form-screen’);
+renderCurrentStep();
+}
+
+function confirmExit(){
+if(confirm(‘Exit case form? Unsaved progress on this step may be lost.’)) showScreen(‘home-screen’);
+}
+
+/* ════════════════════════════════════════════════════════
+PATIENT LIST
+════════════════════════════════════════════════════════ */
+function renderPatientList(){
+const q=(document.getElementById(‘patient-search’)||{}).value||’’;
+const filtered = patients.filter(p=>{
+if(!q) return true;
+const s=(p.name||’’)+(p.age||’’)+(p.sex||’’)+((p.diagnosis||{}).final||’’)+((p.diagnosis||{}).provisional||’’);
+return s.toLowerCase().includes(q.toLowerCase());
+});
+const el=document.getElementById(‘patient-list’);
+if(filtered.length===0){
+el.innerHTML=`<div class="empty-state"><div class="empty-icon">📂</div><p>${q?'No patients match your search.':'No patients saved yet.<br>Start by adding a new patient.'}</p></div>`;
+return;
+}
+el.innerHTML=filtered.map(p=>` <div class="patient-item" onclick="openCaseView(${JSON.stringify(p).replace(/"/g,'&quot;')})"> <div class="patient-avatar">${(p.name||'?')[0].toUpperCase()}</div> <div class="patient-info"> <div class="patient-name">${p.name||'Unnamed'}</div> <div class="patient-meta">${[p.age,p.sex,p.occupation].filter(Boolean).join(' · ')} ${p.doa?'| Admitted: '+formatDate(p.doa):''}</div> <div class="patient-meta" style="color:var(--teal);margin-top:2px">${(p.diagnosis||{}).provisional||'No diagnosis recorded'}</div> </div> <div class="patient-actions" onclick="event.stopPropagation()"> <button class="p-del-btn" onclick="editPatient('${p.id}')" title="Edit">✏️</button> <button class="p-del-btn" onclick="deletePatient('${p.id}')" title="Delete">🗑</button> </div> </div>`).join(’’);
+}
+
+function deletePatient(id){
+if(!confirm(‘Delete this patient? This cannot be undone.’)) return;
+patients=patients.filter(p=>p.id!==id);
+savePatients();
+renderPatientList();
+showToast(‘Patient deleted’);
+}
+
+function formatDate(d){
+if(!d) return ‘’;
+try{const dt=new Date(d);return dt.toLocaleDateString(‘en-IN’,{day:‘numeric’,month:‘short’,year:‘numeric’});}
+catch(e){return d;}
+}
+
+/* ════════════════════════════════════════════════════════
+CASE VIEW — GENERATE FORMATTED CASE SHEET
+════════════════════════════════════════════════════════ */
+function openCaseView(p){
+if(typeof p===‘string’) p=JSON.parse(p);
+showScreen(‘case-view-screen’);
+document.getElementById(‘case-view-name’).textContent = (p.name||‘Unknown’)+’ · Case Sheet’;
+document.getElementById(‘case-view-content’).innerHTML = generateCaseSheet(p);
+}
+
+function goBackFromCase(){
+showScreen(caseViewSource===‘form’?‘patients-screen’:‘patients-screen’);
+caseViewSource=‘patients’;
+}
+
+function printCase(){
+window.print();
+}
+
+function generateCaseSheet(p){
+let html = ‘’;
+
+/* ── Header ── */
+html += `<div class="card"> <div style="text-align:center;padding:8px 0 14px"> <div style="font-family:'Lora',serif;font-size:1.2rem;font-weight:700;color:var(--navy)">CLINICAL CASE SHEET</div> <div style="font-size:.75rem;color:var(--muted);margin-top:2px">Christian Medical College, Ludhiana</div> </div> <div class="case-row"> ${kv('Name', p.name)} ${kv('Age', p.age)} ${kv('Sex', p.sex)} ${kv('Occupation', p.occupation)} ${kv('Marital Status', p.marital)} </div> <div class="case-row" style="margin-top:6px"> ${kv('Date of Admission', formatDate(p.doa))} ${kv('Date of Examination', formatDate(p.doe))} ${kv('Informant', p.informant)} ${kv('ID Mark', p.idmark)} ${kv('Insurance', p.insurance)} </div> ${p.address?`<div style="font-size:.85rem;margin-top:6px"><b style="color:var(--muted);font-weight:500">Address:</b> ${p.address}</div>`:’’}
+
+  </div>`;
+
+/* ── Chief Complaints ── */
+if(p.complaints&&p.complaints.length){
+html+=`<div class="card"><div class="case-section-title">CHIEF COMPLAINTS</div><div class="case-body"><ul>`;
+p.complaints.forEach((c,i)=>{
+html+=`<li><b>${i+1}. ${c.complaint}</b>${c.duration?' — '+c.duration:''}</li>`;
+});
+html+=`</ul></div></div>`;
+}
+
+/* ── HOPI ── */
+if(p.hopi||p.etiology){
+html+=`<div class="card"><div class="case-section-title">HISTORY OF PRESENT ILLNESS</div>`;
+if(p.hopi) html+=`<div class="case-body">${escHtml(p.hopi).replace(/\n/g,'<br/>')}</div>`;
+if(p.etiology) html+=`<div style="margin-top:12px"><div style="font-weight:600;font-size:.88rem;margin-bottom:4px;color:var(--muted)">ETIOLOGICAL HISTORY</div><div class="case-body">${escHtml(p.etiology).replace(/\n/g,'<br/>')}</div></div>`;
+html+=`</div>`;
+}
+
+/* ── Systemic Review ── */
+const sysLabels = {
+cvs:‘Cardiovascular System’,resp:‘Respiratory System’,
+gi:‘Gastrointestinal System’,urine:‘Urinary System’,
+cns:‘Central Nervous System’,endocrine:‘Endocrine System’,
+locomotor:‘Locomotor System’,bleeding:‘Bleeding Disorders’
+};
+const sr = p.systemicReview||{};
+const sn = p.systemicNotes||{};
+const sysKeys = Object.keys(sysLabels);
+const hasSR = sysKeys.some(k=>(sr[k]&&(sr[k].pos.length||sr[k].neg.length))||sn[k]);
+if(hasSR){
+html+=`<div class="card"><div class="case-section-title">SYSTEMIC REVIEW</div>`;
+sysKeys.forEach(k=>{
+const data=sr[k]||{pos:[],neg:[]};
+const notes=sn[k]||’’;
+if(!data.pos.length&&!data.neg.length&&!notes) return;
+html+=`<div class="sys-block"><div class="sys-block-title">${sysLabels[k]}</div>`;
+if(data.pos.length){
+html+=`<div class="case-body" style="margin-bottom:4px"><span style="font-weight:600;color:var(--teal)">Positive: </span>`;
+html+=data.pos.map(s=>`<span class="finding-pos">✓ ${s}</span>`).join(’  ’);
+html+=`</div>`;
+}
+if(data.neg.length){
+html+=`<div class="case-body" style="margin-bottom:4px"><span style="font-weight:600;color:var(--muted)">Negative: </span>`;
+html+=data.neg.map(s=>`<span class="finding-neg">✗ ${s}</span>`).join(’  ’);
+html+=`</div>`;
+}
+if(notes) html+=`<div class="case-body" style="font-style:italic;color:var(--muted)">${escHtml(notes)}</div>`;
+html+=`</div>`;
+});
+html+=`</div>`;
+}
+
+/* ── Past History ── */
+const ph=p.pastHistory||{};
+if(ph.medical||ph.allergy||ph.immunisation||ph.ops||p.menstrualHistory||p.obstetricHistory){
+html+=`<div class="card"><div class="case-section-title">PAST HISTORY</div><div class="case-body">`;
+if(ph.medical) html+=`<p><b>Past Medical History:</b> ${escHtml(ph.medical)}</p>`;
+if(ph.allergy) html+=`<p><b>Drug Allergy:</b> ${escHtml(ph.allergy)}</p>`;
+if(ph.immunisation) html+=`<p><b>Immunisation Status:</b> ${escHtml(ph.immunisation)}</p>`;
+if(ph.ops) html+=`<p><b>Operations / Accidents:</b> ${escHtml(ph.ops)}</p>`;
+if(p.menstrualHistory) html+=`<p><b>Menstrual History:</b> ${escHtml(p.menstrualHistory)}</p>`;
+if(p.obstetricHistory) html+=`<p><b>Obstetric History:</b> ${escHtml(p.obstetricHistory)}</p>`;
+html+=`</div></div>`;
+}
+
+/* ── Family History ── */
+if((p.familyHistory&&p.familyHistory.length)||p.familyHistoryDetails){
+html+=`<div class="card"><div class="case-section-title">FAMILY HISTORY</div><div class="case-body">`;
+if(p.familyHistory&&p.familyHistory.length)
+html+=`<p>${p.familyHistory.map(h=>`<span class="dx-chip">${h}</span>`).join('')}</p>`;
+if(p.familyHistoryDetails) html+=`<p>${escHtml(p.familyHistoryDetails)}</p>`;
+html+=`</div></div>`;
+}
+
+/* ── Personal / Social / Dietary ── */
+const ps=p.personalHistory||{};
+const hasPS=ps.economic||ps.education||ps.familySize||ps.prevResidence||
+(p.habits&&p.habits.length)||p.habitDetails||ps.dietType||ps.dietAdequacy||p.dietNotes;
+if(hasPS){
+html+=`<div class="card"><div class="case-section-title">PERSONAL, SOCIAL & DIETARY HISTORY</div><div class="case-body">`;
+if(ps.economic||ps.education||ps.familySize||ps.prevResidence){
+html+=`<p>`;
+if(ps.economic) html+=`<b>Economic Status:</b> ${escHtml(ps.economic)}. `;
+if(ps.education) html+=`<b>Education:</b> ${escHtml(ps.education)}. `;
+if(ps.familySize) html+=`<b>Family:</b> ${escHtml(ps.familySize)}. `;
+if(ps.prevResidence) html+=`<b>Residence/Travel:</b> ${escHtml(ps.prevResidence)}.`;
+html+=`</p>`;
+}
+if(p.habits&&p.habits.length){
+html+=`<p><b>Habits:</b> ${p.habits.join(', ')}`;
+if(p.habitDetails) html+=` — ${escHtml(p.habitDetails)}`;
+html+=`</p>`;
+}
+if(ps.dietType||ps.dietAdequacy||p.dietNotes){
+html+=`<p><b>Diet:</b> ${[ps.dietType,ps.dietAdequacy].filter(Boolean).join(', ')}`;
+if(p.dietNotes) html+=`. ${escHtml(p.dietNotes)}`;
+html+=`</p>`;
+}
+html+=`</div></div>`;
+}
+
+/* ── General Examination ── */
+const ge=p.generalExam||{};
+const gef=p.genExamFindings||{pos:[],neg:[]};
+html+=`<div class="card"><div class="case-section-title">GENERAL EXAMINATION</div>`;
+// Vitals
+const vitals=[[ge.pulse,‘Pulse’],[ge.bp,‘BP’],[ge.temp,‘Temperature’],[ge.rr,‘RR’],[ge.spo2,‘SpO₂’],[ge.weight,‘Weight/BMI’]].filter(v=>v[0]);
+if(vitals.length){
+html+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">`;
+vitals.forEach(([val,lbl])=>{
+html+=`<div style="background:var(--bg);border-radius:8px;padding:8px 10px;border:1px solid var(--border)"><div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">${lbl}</div><div style="font-weight:600;font-size:.9rem;margin-top:2px">${escHtml(val)}</div></div>`;
+});
+html+=`</div>`;
+}
+html+=`<div class="case-body">`;
+if(ge.consciousness) html+=`<p><b>Consciousness:</b> ${escHtml(ge.consciousness)}</p>`;
+if(ge.build) html+=`<p><b>Build & Nutrition:</b> ${escHtml(ge.build)}</p>`;
+// Positive findings first
+if(gef.pos&&gef.pos.length)
+html+=`<p><b>Present:</b> ${gef.pos.map(s=>`<span class="finding-pos">✓ ${s}</span>`).join(' ')}</p>`;
+if(gef.neg&&gef.neg.length)
+html+=`<p><b>Absent:</b> ${gef.neg.map(s=>`<span class="finding-neg">✗ ${s}</span>`).join(' ')}</p>`;
+if(ge.lymphDetails) html+=`<p><b>Lymphadenopathy:</b> ${escHtml(ge.lymphDetails)}</p>`;
+if(ge.oedemaDetails) html+=`<p><b>Oedema:</b> ${escHtml(ge.oedemaDetails)}</p>`;
+if(ge.notes) html+=`<p>${escHtml(ge.notes)}</p>`;
+html+=`</div></div>`;
+
+/* ── Systemic Examination ── */
+const se=p.sysExam||{};
+const hasCSE=Object.values(se).some(v=>v&&v.trim());
+if(hasCSE){
+html+=`<div class="card"><div class="case-section-title">SYSTEMIC EXAMINATION</div>`;
+const seBlocks=[
+[‘🫀 Cardiovascular System’,[
+[‘Pulse / JVP / Carotid’,se.cvsPulse],
+[‘Precordium (Inspection/Palpation)’,se.cvsPrecordium],
+[‘Auscultation’,se.cvsAuscult],
+]],
+[‘🫁 Respiratory System’,[
+[‘Inspection / Palpation / Percussion’,se.respIPP],
+[‘Auscultation’,se.respAuscult],
+]],
+[‘🫃 Abdomen’,[
+[‘Inspection / Auscultation’,se.abdInsp],
+[‘Palpation’,se.abdPalp],
+[‘Percussion’,se.abdPerc],
+[‘Rectal/Vaginal’,se.rectal],
+]],
+[‘🧠 Nervous System’,[
+[‘Higher Functions’,se.cnsHigher],
+[‘Cranial Nerves’,se.cnsCranial],
+[‘Motor System’,se.cnsMotor],
+[‘Reflexes’,se.cnsReflexes],
+[‘Sensory System’,se.cnsSensory],
+[‘Cerebellar/Extrapyramidal/Meningeal’,se.cnsOther],
+]],
+];
+seBlocks.forEach(([sysTitle, fields])=>{
+const hasAny=fields.some(([,v])=>v&&v.trim());
+if(!hasAny) return;
+html+=`<div class="sys-block"><div class="sys-block-title">${sysTitle}</div><div class="case-body">`;
+fields.forEach(([lbl,val])=>{
+if(val&&val.trim()) html+=`<p><b>${lbl}:</b> ${escHtml(val).replace(/\n/g,'<br/>')}</p>`;
+});
+html+=`</div></div>`;
+});
+html+=`</div>`;
+}
+
+/* ── Investigations ── */
+if(p.investigations){
+html+=`<div class="card"><div class="case-section-title">INVESTIGATIONS</div><div class="case-body">${escHtml(p.investigations).replace(/\n/g,'<br/>')}</div></div>`;
+}
+
+/* ── Diagnosis ── */
+const dx=p.diagnosis||{};
+html+=`<div class="card"><div class="case-section-title">DIAGNOSIS</div><div class="case-body">`;
+if(dx.provisional) html+=`<div class="sys-block"><div class="sys-block-title">Provisional Diagnosis</div><p>${escHtml(dx.provisional).replace(/\n/g,'<br/>')}</p></div>`;
+if(p.ddx&&p.ddx.length){
+html+=`<div class="sys-block"><div class="sys-block-title">Differential Diagnoses</div><ol style="padding-left:18px">`;
+p.ddx.forEach(d=>html+=`<li>${escHtml(d)}</li>`);
+html+=`</ol></div>`;
+}
+if(dx.final) html+=`<div class="sys-block"><div class="sys-block-title" style="color:var(--teal)">✅ Final Diagnosis</div><p style="font-weight:600;font-size:1rem">${escHtml(dx.final).replace(/\n/g,'<br/>')}</p></div>`;
+html+=`</div></div>`;
+
+/* ── Footer ── */
+html+=`<div class="card" style="text-align:center;color:var(--muted);font-size:.75rem;padding:12px">
+Case recorded: ${new Date(p.updatedAt||p.createdAt||Date.now()).toLocaleString(‘en-IN’)}  ·  ClinCase App
+
+  </div>`;
+
+return html;
+}
+
+function kv(label,value){
+if(!value) return ‘’;
+return `<span class="case-kv"><b>${label}:</b> ${escHtml(value)}</span>`;
+}
+
+function escHtml(str){
+if(!str) return ‘’;
+return String(str).replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’).replace(/”/g,’"’);
+}
+
+/* ════════════════════════════════════════════════════════
+INIT
+════════════════════════════════════════════════════════ */
+updateHomeCounts();
 </script>
+
 </body>
 </html>
