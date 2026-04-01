@@ -3,1508 +3,1125 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>ClinCase — Medical Case Sheet</title>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>ClinCase – Medical Case Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
-/* ─── RESET & BASE ─────────────────────────────────────── */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --navy:#0f2847;
-  --navy2:#1a3a5c;
-  --teal:#1a7a6e;
-  --teal-light:#e6f4f2;
-  --red:#c0392b;
-  --red-light:#fdecea;
-  --gold:#c9973a;
-  --bg:#f5f3ee;
-  --card:#ffffff;
-  --border:#ddd8ce;
-  --text:#1c1c1c;
-  --muted:#6b6560;
-  --radius:12px;
-  --shadow:0 2px 16px rgba(15,40,71,.09);
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+–navy: #0f2847;
+–teal: #1a7a6e;
+–teal-lt: #e6f4f2;
+–red: #c0392b;
+–red-lt: #fdecea;
+–gold: #c9973a;
+–bg: #f5f3ee;
+–card: #fff;
+–border: #ddd8ce;
+–txt: #1c1c1c;
+–muted: #6b6560;
+–r: 12px;
 }
-[data-theme="dark"]{
-  --bg:#0d1520;
-  --card:#162032;
-  --border:#243447;
-  --text:#e8e4db;
-  --muted:#8a9bb0;
-  --navy:#1e3a5f;
-  --teal-light:#0d2820;
-  --red-light:#2a1010;
-}
-html{scroll-behavior:smooth}
-body{
-  font-family:'DM Sans',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  font-size:15px;
-  line-height:1.6;
-  transition:background .3s,color .3s;
+body.dark {
+–bg: #0d1520; –card: #162032; –border: #243447;
+–txt: #e8e4db; –muted: #8a9bb0; –navy: #1e3a5f; –teal-lt: #0d2820; –red-lt: #2a1010;
 }
 
-/* ─── SCROLLBAR ────────────────────────────────────────── */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(–border);border-radius:4px}
+body { font-family: ‘DM Sans’, sans-serif; background: var(–bg); color: var(–txt); min-height: 100vh; font-size: 15px; line-height: 1.6; -webkit-tap-highlight-color: transparent; }
 
-/* ─── SCREENS ──────────────────────────────────────────── */
-.screen{display:none;min-height:100vh;flex-direction:column}
-.screen.active{display:flex}
+/* SCREENS */
+.screen { display: none; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
 
-/* ─── TOP BAR ──────────────────────────────────────────── */
-.topbar{
-background:var(–navy);
-color:#fff;
-padding:14px 18px;
-display:flex;
-align-items:center;
-justify-content:space-between;
-position:sticky;top:0;z-index:100;
-box-shadow:0 2px 12px rgba(0,0,0,.2);
-}
-.topbar-title{font-family:‘Lora’,serif;font-size:1.15rem;font-weight:600;letter-spacing:.3px}
-.topbar-sub{font-size:.72rem;opacity:.6;margin-top:1px}
-.topbar-actions{display:flex;gap:10px;align-items:center}
-.icon-btn{
-background:rgba(255,255,255,.12);border:none;color:#fff;
-width:36px;height:36px;border-radius:50%;cursor:pointer;
-display:flex;align-items:center;justify-content:center;font-size:1rem;
-transition:background .2s;
-}
-.icon-btn:hover{background:rgba(255,255,255,.22)}
+/* TOPBAR */
+.bar { background: var(–navy); color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.bar-title { font-family: ‘Lora’, serif; font-size: 1.05rem; font-weight: 700; }
+.bar-sub { font-size: .7rem; opacity: .6; margin-top: 1px; }
+.bar-btns { display: flex; gap: 8px; }
+.ibtn { width: 36px; height: 36px; border-radius: 50%; border: none; background: rgba(255,255,255,.15); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: .95rem; }
+.ibtn:active { background: rgba(255,255,255,.3); }
 
-/* ─── PROGRESS BAR ─────────────────────────────────────── */
-.progress-wrap{background:var(–card);border-bottom:1px solid var(–border);padding:10px 18px}
-.progress-info{display:flex;justify-content:space-between;font-size:.75rem;color:var(–muted);margin-bottom:6px}
-.progress-track{background:var(–border);border-radius:99px;height:5px}
-.progress-fill{background:var(–teal);height:5px;border-radius:99px;transition:width .4s ease}
+/* PROGRESS */
+.prog-wrap { background: var(–card); border-bottom: 1px solid var(–border); padding: 10px 16px; }
+.prog-row { display: flex; justify-content: space-between; font-size: .72rem; color: var(–muted); margin-bottom: 5px; }
+.prog-track { background: var(–border); border-radius: 99px; height: 5px; }
+.prog-fill { background: var(–teal); height: 5px; border-radius: 99px; transition: width .3s; }
 
-/* ─── CONTENT AREA ─────────────────────────────────────── */
-.content{flex:1;padding:18px;overflow-y:auto;padding-bottom:90px}
+/* SCROLL CONTENT */
+.body { flex: 1; overflow-y: auto; padding: 16px 16px 100px; }
 
-/* ─── CARDS ────────────────────────────────────────────── */
-.card{
-background:var(–card);border:1px solid var(–border);
-border-radius:var(–radius);padding:18px;margin-bottom:14px;
-box-shadow:var(–shadow);
-}
-.card-title{
-font-family:‘Lora’,serif;font-size:1rem;font-weight:600;
-color:var(–navy);margin-bottom:14px;
-display:flex;align-items:center;gap:8px;
-}
-[data-theme=“dark”] .card-title{color:#7ab3e0}
-.card-title .icon{font-size:1.1rem}
+/* BOTTOM BAR */
+.foot { position: fixed; bottom: 0; left: 0; right: 0; background: var(–card); border-top: 1px solid var(–border); padding: 12px 16px; display: flex; gap: 10px; z-index: 50; }
+.btn { flex: 1; padding: 13px 10px; border-radius: 10px; border: none; font-family: ‘DM Sans’, sans-serif; font-size: .9rem; font-weight: 600; cursor: pointer; transition: opacity .15s; -webkit-appearance: none; }
+.btn:active { opacity: .8; }
+.btn-navy { background: var(–navy); color: #fff; }
+.btn-ghost { background: var(–bg); color: var(–txt); border: 1.5px solid var(–border); }
+.btn-teal { background: var(–teal); color: #fff; }
 
-/* ─── FORM ELEMENTS ────────────────────────────────────── */
-.field{margin-bottom:14px}
-.field label{
-display:block;font-size:.78rem;font-weight:600;
-color:var(–muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px;
-}
-.field input,.field textarea,.field select{
-width:100%;padding:10px 13px;
-border:1.5px solid var(–border);border-radius:8px;
-background:var(–bg);color:var(–text);
-font-family:‘DM Sans’,sans-serif;font-size:.93rem;
-transition:border-color .2s,background .2s;
--webkit-appearance:none;
-}
-.field input:focus,.field textarea:focus,.field select:focus{
-outline:none;border-color:var(–teal);background:var(–card);
-}
-.field textarea{resize:vertical;min-height:80px}
-.field select option{background:var(–card)}
+/* CARD */
+.card { background: var(–card); border: 1px solid var(–border); border-radius: var(–r); padding: 16px; margin-bottom: 14px; }
+.card-h { font-family: ‘Lora’, serif; font-size: .95rem; font-weight: 700; color: var(–navy); margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+body.dark .card-h { color: #7ab3e0; }
 
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+/* FORM FIELDS */
+.f { margin-bottom: 13px; }
+.f label { display: block; font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(–muted); margin-bottom: 4px; }
+.f input, .f textarea, .f select { width: 100%; padding: 10px 12px; border: 1.5px solid var(–border); border-radius: 8px; background: var(–bg); color: var(–txt); font-family: ‘DM Sans’, sans-serif; font-size: .9rem; -webkit-appearance: none; appearance: none; }
+.f input:focus, .f textarea:focus, .f select:focus { outline: none; border-color: var(–teal); }
+.f textarea { resize: vertical; min-height: 80px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 
-/* ─── TOGGLE CHIPS ──────────────────────────────────────── */
-.chips-label{font-size:.78rem;font-weight:600;color:var(–muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.chips-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
-.chip{
-padding:6px 13px;border-radius:99px;font-size:.8rem;font-weight:500;cursor:pointer;
-border:1.5px solid var(–border);background:var(–card);color:var(–text);
-transition:all .18s;user-select:none;
-}
-.chip:hover{border-color:var(–teal);color:var(–teal)}
-.chip.pos{border-color:var(–teal)!important;background:var(–teal-light)!important;color:var(–teal)!important;font-weight:600}
-.chip.neg{border-color:var(–red)!important;background:var(–red-light)!important;color:var(–red)!important}
-.chip.sel{border-color:var(–gold)!important;background:#fef9ee!important;color:var(–gold)!important}
-[data-theme=“dark”] .chip.sel{background:#2a2010!important}
-.system-section{margin-bottom:20px;padding:14px;border:1px solid var(–border);border-radius:10px;background:var(–bg)}
-.system-title{font-weight:600;color:var(–navy);font-size:.9rem;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-[data-theme=“dark”] .system-title{color:#7ab3e0}
-.system-sub{font-size:.75rem;color:var(–muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+/* STEP HEADER */
+.step-hdr { background: var(–navy); color: #fff; border-radius: var(–r); padding: 16px; margin-bottom: 16px; }
+.step-hdr h2 { font-family: ‘Lora’, serif; font-size: 1.05rem; margin-bottom: 3px; }
+.step-hdr p { font-size: .75rem; opacity: .65; }
 
-/* ─── COMPLAINT ROW ────────────────────────────────────── */
-.complaint-row{
-display:flex;align-items:center;gap:8px;
-background:var(–bg);border:1px solid var(–border);
-border-radius:8px;padding:10px 12px;margin-bottom:8px;
-}
-.complaint-row input{flex:1;border:none;background:transparent;font-size:.9rem;color:var(–text);font-family:‘DM Sans’,sans-serif}
-.complaint-row input:focus{outline:none}
-.complaint-dur{width:90px!important;font-size:.82rem!important;text-align:center}
-.del-btn{background:none;border:none;color:var(–muted);cursor:pointer;font-size:1.1rem;padding:2px 4px;flex-shrink:0}
-.del-btn:hover{color:var(–red)}
-.add-btn{
-display:flex;align-items:center;gap:6px;
-background:none;border:1.5px dashed var(–teal);color:var(–teal);
-padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:500;
-width:100%;justify-content:center;transition:background .2s;
-}
-.add-btn:hover{background:var(–teal-light)}
+/* CHIPS */
+.chip-lbl { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(–muted); margin-bottom: 7px; }
+.chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+.chip { padding: 6px 12px; border-radius: 99px; font-size: .78rem; font-weight: 500; cursor: pointer; border: 1.5px solid var(–border); background: var(–card); color: var(–txt); user-select: none; transition: all .15s; -webkit-tap-highlight-color: transparent; }
+.chip:active { transform: scale(.96); }
+.chip.pos { border-color: var(–teal) !important; background: var(–teal-lt) !important; color: var(–teal) !important; font-weight: 600; }
+.chip.neg { border-color: var(–red) !important; background: var(–red-lt) !important; color: var(–red) !important; }
+.chip.on  { border-color: var(–gold) !important; background: #fef9ee !important; color: var(–gold) !important; font-weight: 600; }
+body.dark .chip.on { background: #2a2010 !important; }
 
-/* ─── BOTTOM NAV ────────────────────────────────────────── */
-.bottom-nav{
-position:fixed;bottom:0;left:0;right:0;
-background:var(–card);border-top:1px solid var(–border);
-padding:12px 18px;display:flex;gap:10px;z-index:99;
-box-shadow:0 -4px 16px rgba(0,0,0,.07);
-}
-.btn{
-flex:1;padding:12px;border-radius:10px;border:none;
-font-family:‘DM Sans’,sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;
-transition:all .18s;
-}
-.btn-primary{background:var(–navy);color:#fff}
-.btn-primary:hover{background:var(–navy2)}
-.btn-secondary{background:var(–bg);color:var(–text);border:1.5px solid var(–border)}
-.btn-secondary:hover{border-color:var(–navy);color:var(–navy)}
-.btn-teal{background:var(–teal);color:#fff}
-.btn-teal:hover{opacity:.9}
-.btn-danger{background:var(–red-light);color:var(–red);border:1.5px solid var(–red)}
+/* COMPLAINT ROW */
+.cc-row { display: flex; align-items: center; gap: 8px; border: 1px solid var(–border); border-radius: 8px; padding: 9px 12px; margin-bottom: 8px; background: var(–bg); }
+.cc-inp { flex: 1; border: none; background: transparent; font-size: .88rem; color: var(–txt); font-family: ‘DM Sans’, sans-serif; }
+.cc-inp:focus { outline: none; }
+.cc-dur { width: 88px !important; font-size: .8rem !important; text-align: center; flex-shrink: 0; border: none !important; background: transparent !important; }
+.cc-dur:focus { outline: none; }
+.del-btn { background: none; border: none; color: var(–muted); cursor: pointer; font-size: 1rem; padding: 2px 5px; flex-shrink: 0; }
+.del-btn:active { color: var(–red); }
 
-/* ─── HOME SCREEN ───────────────────────────────────────── */
-#home-screen{background:var(–navy);color:#fff}
-.home-hero{
-flex:1;display:flex;flex-direction:column;
-align-items:center;justify-content:center;
-padding:40px 24px 20px;text-align:center;
-}
-.home-logo{font-size:3.5rem;margin-bottom:12px}
-.home-title{font-family:‘Lora’,serif;font-size:2rem;font-weight:700;margin-bottom:6px;letter-spacing:-.5px}
-.home-subtitle{font-size:.9rem;opacity:.65;max-width:260px;line-height:1.5}
-.home-institution{font-size:.72rem;opacity:.4;margin-top:8px;text-transform:uppercase;letter-spacing:1px}
-.home-actions{padding:20px 24px 40px;display:flex;flex-direction:column;gap:12px}
-.home-btn{
-padding:16px;border-radius:12px;border:none;
-font-family:‘DM Sans’,sans-serif;font-size:1rem;font-weight:600;
-cursor:pointer;display:flex;align-items:center;gap:12px;
-text-align:left;transition:all .2s;
-}
-.home-btn-primary{background:#fff;color:var(–navy)}
-.home-btn-primary:hover{background:#e8f0fa}
-.home-btn-secondary{background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2)}
-.home-btn-secondary:hover{background:rgba(255,255,255,.18)}
-.home-btn-icon{font-size:1.3rem}
-.home-btn-text small{display:block;font-size:.75rem;opacity:.6;font-weight:400;margin-top:1px}
-.home-dark-toggle{
-position:absolute;top:18px;right:18px;
-background:rgba(255,255,255,.12);border:none;color:#fff;
-width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:1rem;
-}
+/* ADD BUTTON */
+.add-btn { width: 100%; padding: 10px; border: 1.5px dashed var(–teal); border-radius: 8px; background: none; color: var(–teal); font-size: .85rem; font-weight: 600; cursor: pointer; margin-top: 4px; font-family: ‘DM Sans’, sans-serif; }
+.add-btn:active { background: var(–teal-lt); }
 
-/* ─── PATIENT LIST ──────────────────────────────────────── */
-.patient-item{
-display:flex;align-items:center;gap:12px;
-padding:14px;background:var(–card);border:1px solid var(–border);
-border-radius:10px;margin-bottom:10px;cursor:pointer;
-transition:border-color .2s,transform .15s;
-}
-.patient-item:hover{border-color:var(–teal);transform:translateX(2px)}
-.patient-avatar{
-width:44px;height:44px;border-radius:50%;
-background:var(–navy);color:#fff;display:flex;align-items:center;justify-content:center;
-font-family:‘Lora’,serif;font-size:1.1rem;font-weight:700;flex-shrink:0;
-}
-.patient-info{flex:1}
-.patient-name{font-weight:600;font-size:.95rem}
-.patient-meta{font-size:.78rem;color:var(–muted);margin-top:2px}
-.patient-actions{display:flex;gap:6px}
-.p-del-btn{background:none;border:none;color:var(–muted);cursor:pointer;font-size:1rem;padding:4px}
-.p-del-btn:hover{color:var(–red)}
-.empty-state{text-align:center;padding:60px 20px;color:var(–muted)}
-.empty-icon{font-size:3rem;margin-bottom:12px}
+/* SYS SECTION */
+.sys-sec { border: 1px solid var(–border); border-radius: 10px; padding: 14px; margin-bottom: 14px; background: var(–bg); }
+.sys-ttl { font-weight: 600; font-size: .88rem; color: var(–navy); margin-bottom: 10px; }
+body.dark .sys-ttl { color: #7ab3e0; }
 
-/* ─── CASE VIEW ─────────────────────────────────────────── */
-.case-section{margin-bottom:22px}
-.case-section-title{
-font-family:‘Lora’,serif;font-size:1rem;font-weight:700;
-color:var(–navy);border-bottom:2px solid var(–navy);
-padding-bottom:5px;margin-bottom:10px;
-}
-[data-theme=“dark”] .case-section-title{color:#7ab3e0;border-color:#7ab3e0}
-.case-row{display:flex;flex-wrap:wrap;gap:4px 20px;margin-bottom:6px}
-.case-kv{font-size:.88rem}
-.case-kv b{color:var(–muted);font-weight:500}
-.case-body{font-size:.9rem;line-height:1.7}
-.case-body ul{padding-left:18px}
-.case-body ul li{margin-bottom:3px}
-.finding-pos{color:var(–teal);font-weight:500}
-.finding-neg{color:var(–muted)}
-.sys-block{margin-bottom:10px}
-.sys-block-title{font-weight:600;font-size:.88rem;color:var(–text);margin-bottom:4px}
+/* NOTE BOX */
+.note { font-size: .75rem; color: var(–muted); border-left: 3px solid var(–teal); padding: 7px 11px; border-radius: 0 6px 6px 0; background: var(–bg); margin-bottom: 13px; }
 
-/* ─── PRINT STYLES ──────────────────────────────────────── */
-@media print{
-.topbar,.bottom-nav,.progress-wrap,.no-print{display:none!important}
-body{background:#fff!important;color:#000!important}
-.content{padding:0!important}
-.card{box-shadow:none!important;border:1px solid #ccc!important;break-inside:avoid}
-.case-section-title{color:#000!important;border-color:#000!important}
-#case-view-screen .content{padding-bottom:0!important}
-}
+/* HOME SCREEN */
+#scr-home { background: var(–navy); position: relative; }
+.home-hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 24px 24px; text-align: center; color: #fff; }
+.home-logo { font-size: 3.8rem; margin-bottom: 14px; }
+.home-title { font-family: ‘Lora’, serif; font-size: 2rem; font-weight: 700; margin-bottom: 6px; }
+.home-sub { font-size: .88rem; opacity: .65; max-width: 260px; line-height: 1.5; }
+.home-inst { font-size: .68rem; opacity: .35; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
+.home-ftr { padding: 20px 20px 44px; display: flex; flex-direction: column; gap: 12px; }
+.hbtn { padding: 16px 18px; border-radius: 12px; border: none; display: flex; align-items: center; gap: 14px; cursor: pointer; font-family: ‘DM Sans’, sans-serif; text-align: left; width: 100%; }
+.hbtn:active { opacity: .85; }
+.hbtn-w { background: #fff; color: var(–navy); }
+.hbtn-o { background: rgba(255,255,255,.12); color: #fff; border: 1.5px solid rgba(255,255,255,.2); }
+.hbtn-icon { font-size: 1.4rem; flex-shrink: 0; }
+.hbtn-main { font-size: .97rem; font-weight: 600; }
+.hbtn-sub { font-size: .72rem; opacity: .6; margin-top: 1px; font-weight: 400; }
+.dark-pill { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,.15); border: none; color: #fff; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font-size: 1rem; }
 
-/* ─── TOAST ─────────────────────────────────────────────── */
-.toast{
-position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);
-background:#222;color:#fff;padding:10px 20px;border-radius:8px;
-font-size:.85rem;opacity:0;transition:all .3s;pointer-events:none;z-index:999;
-white-space:nowrap;
-}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* PATIENT LIST */
+.pt-item { display: flex; align-items: center; gap: 12px; background: var(–card); border: 1px solid var(–border); border-radius: 10px; padding: 13px; margin-bottom: 10px; cursor: pointer; }
+.pt-item:active { border-color: var(–teal); }
+.pt-av { width: 44px; height: 44px; border-radius: 50%; background: var(–navy); color: #fff; display: flex; align-items: center; justify-content: center; font-family: ‘Lora’, serif; font-size: 1.1rem; font-weight: 700; flex-shrink: 0; }
+.pt-info { flex: 1; min-width: 0; }
+.pt-name { font-weight: 600; font-size: .93rem; }
+.pt-meta { font-size: .75rem; color: var(–muted); margin-top: 2px; }
+.pt-dx { font-size: .75rem; color: var(–teal); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pt-acts { display: flex; gap: 4px; flex-shrink: 0; }
+.pt-act { background: none; border: none; cursor: pointer; font-size: .95rem; padding: 6px; color: var(–muted); }
+.pt-act:active { color: var(–red); }
+.empty { text-align: center; padding: 60px 20px; color: var(–muted); }
+.empty-ico { font-size: 3rem; margin-bottom: 12px; }
+.srch-wrap { position: relative; margin-bottom: 14px; }
+.srch-ico { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.srch-wrap input { width: 100%; padding: 10px 12px 10px 36px; border: 1.5px solid var(–border); border-radius: 8px; background: var(–card); color: var(–txt); font-family: ‘DM Sans’, sans-serif; font-size: .9rem; }
+.srch-wrap input:focus { outline: none; border-color: var(–teal); }
 
-/* ─── DIAGNOSIS SECTION ─────────────────────────────────── */
-.dx-chip{
-display:inline-block;padding:4px 12px;border-radius:99px;
-font-size:.8rem;margin:3px;border:1px solid var(–teal);
-background:var(–teal-light);color:var(–teal);
-}
-.dx-chip-prov{border-color:var(–gold);background:#fef9ee;color:var(–gold)}
-[data-theme=“dark”] .dx-chip-prov{background:#2a2010}
-.dx-chip-diff{border-color:var(–muted);background:var(–bg);color:var(–muted)}
-.dx-chip-final{border-color:var(–teal);background:var(–teal-light);color:var(–teal);font-weight:700}
+/* CASE SHEET */
+.cs-hdr { text-align: center; padding: 6px 0 16px; border-bottom: 2px solid var(–navy); margin-bottom: 14px; }
+.cs-hdr-title { font-family: ‘Lora’, serif; font-size: 1.15rem; font-weight: 700; color: var(–navy); }
+body.dark .cs-hdr-title { color: #7ab3e0; }
+.cs-hdr-sub { font-size: .7rem; color: var(–muted); margin-top: 2px; }
+.cs-sec-title { font-family: ‘Lora’, serif; font-size: .92rem; font-weight: 700; color: var(–navy); border-bottom: 2px solid var(–navy); padding-bottom: 4px; margin-bottom: 10px; }
+body.dark .cs-sec-title { color: #7ab3e0; border-color: #7ab3e0; }
+.cs-body { font-size: .88rem; line-height: 1.75; }
+.cs-body p { margin-bottom: 5px; }
+.cs-body ul, .cs-body ol { padding-left: 18px; }
+.cs-body li { margin-bottom: 3px; }
+.cs-kv { font-size: .85rem; display: inline-block; margin-right: 16px; margin-bottom: 4px; }
+.cs-kv b { color: var(–muted); font-weight: 500; }
+.fpos { color: var(–teal); font-weight: 500; }
+.fneg { color: var(–muted); }
+.sys-blk { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(–border); }
+.sys-blk:last-child { border-bottom: none; margin-bottom: 0; }
+.sys-blk-title { font-weight: 600; font-size: .85rem; margin-bottom: 5px; }
+.vtl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.vtl-box { background: var(–bg); border: 1px solid var(–border); border-radius: 8px; padding: 8px 10px; }
+.vtl-lbl { font-size: .65rem; color: var(–muted); text-transform: uppercase; letter-spacing: .4px; }
+.vtl-val { font-weight: 600; font-size: .88rem; margin-top: 2px; }
+.dx-chip-prov { display: inline-block; padding: 3px 11px; border-radius: 99px; font-size: .78rem; margin: 3px; border: 1px solid var(–gold); background: #fef9ee; color: var(–gold); }
+body.dark .dx-chip-prov { background: #2a2010; }
 
-/* ─── STEP SECTION HEADER ───────────────────────────────── */
-.step-header{
-background:linear-gradient(135deg,var(–navy) 0%,var(–navy2) 100%);
-color:#fff;padding:16px 18px;margin-bottom:18px;border-radius:var(–radius);
-}
-.step-header h2{font-family:‘Lora’,serif;font-size:1.1rem;margin-bottom:2px}
-.step-header p{font-size:.78rem;opacity:.65}
+/* TOAST */
+.toast { position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%) translateY(8px); background: #1c1c1c; color: #fff; padding: 9px 20px; border-radius: 8px; font-size: .82rem; opacity: 0; transition: all .25s; pointer-events: none; z-index: 200; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ─── VITALS GRID ───────────────────────────────────────── */
-.vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-/* ─── SEARCH ────────────────────────────────────────────── */
-.search-wrap{position:relative;margin-bottom:14px}
-.search-wrap input{
-width:100%;padding:10px 13px 10px 38px;
-border:1.5px solid var(–border);border-radius:8px;
-background:var(–card);color:var(–text);
-font-family:‘DM Sans’,sans-serif;font-size:.9rem;
-}
-.search-wrap input:focus{outline:none;border-color:var(–teal)}
-.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(–muted)}
-
-/* ─── SECTION NOTE ──────────────────────────────────────── */
-.section-note{
-font-size:.78rem;color:var(–muted);
-background:var(–bg);border-left:3px solid var(–teal);
-padding:8px 12px;border-radius:0 6px 6px 0;margin-bottom:14px;
+/* PRINT */
+@media print {
+.bar, .foot, .prog-wrap, .no-print { display: none !important; }
+body { background: #fff !important; color: #000 !important; }
+.body { padding: 0 !important; }
+.card { box-shadow: none !important; border: 1px solid #ccc !important; }
+.cs-sec-title, .cs-hdr-title { color: #000 !important; border-color: #000 !important; }
 }
 </style>
 
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════
-     HOME SCREEN
-════════════════════════════════════════════════════════ -->
+<!-- HOME -->
 
-<div id="home-screen" class="screen active">
-  <button class="home-dark-toggle" onclick="toggleDark()" id="dark-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+<div id="scr-home" class="screen active">
+  <button class="dark-pill" id="dark-btn">🌙</button>
   <div class="home-hero">
     <div class="home-logo">🏥</div>
     <div class="home-title">ClinCase</div>
-    <div class="home-subtitle">Structured clinical case-taking based on CMC Ludhiana protocol</div>
-    <div class="home-institution">Christian Medical College, Ludhiana</div>
+    <div class="home-sub">Structured clinical case-taking following CMC Ludhiana protocol</div>
+    <div class="home-inst">Christian Medical College · Ludhiana</div>
   </div>
-  <div class="home-actions">
-    <button class="home-btn home-btn-primary" onclick="startNewPatient()">
-      <span class="home-btn-icon">📋</span>
-      <span class="home-btn-text">New Patient<small>Begin structured case history</small></span>
+  <div class="home-ftr">
+    <button class="hbtn hbtn-w" id="btn-new-home">
+      <span class="hbtn-icon">📋</span>
+      <span><div class="hbtn-main">New Patient</div><div class="hbtn-sub">Start structured case history</div></span>
     </button>
-    <button class="home-btn home-btn-secondary" onclick="showScreen('patients-screen')">
-      <span class="home-btn-icon">🗂</span>
-      <span class="home-btn-text">Saved Patients<small id="saved-count-label">Loading…</small></span>
+    <button class="hbtn hbtn-o" id="btn-view-home">
+      <span class="hbtn-icon">🗂</span>
+      <span><div class="hbtn-main">Saved Patients</div><div class="hbtn-sub" id="saved-lbl">0 patients saved</div></span>
     </button>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════
-     PATIENTS LIST SCREEN
-════════════════════════════════════════════════════════ -->
+<!-- PATIENT LIST -->
 
-<div id="patients-screen" class="screen">
-  <div class="topbar">
-    <div>
-      <div class="topbar-title">Saved Patients</div>
-    </div>
-    <div class="topbar-actions">
-      <button class="icon-btn" onclick="toggleDark()">🌙</button>
-      <button class="icon-btn" onclick="showScreen('home-screen')">🏠</button>
+<div id="scr-list" class="screen">
+  <div class="bar">
+    <div><div class="bar-title">Saved Patients</div></div>
+    <div class="bar-btns">
+      <button class="ibtn" id="list-dark-btn">🌙</button>
+      <button class="ibtn" id="list-home-btn">🏠</button>
     </div>
   </div>
-  <div class="content">
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="patient-search" placeholder="Search by name, age, diagnosis…" oninput="renderPatientList()"/>
+  <div class="body">
+    <div class="srch-wrap">
+      <span class="srch-ico">🔍</span>
+      <input type="text" id="srch" placeholder="Search by name, diagnosis…"/>
     </div>
-    <div id="patient-list"></div>
+    <div id="pt-list"></div>
   </div>
-  <div class="bottom-nav">
-    <button class="btn btn-teal" onclick="startNewPatient()">+ New Patient</button>
+  <div class="foot">
+    <button class="btn btn-teal" id="list-new-btn">+ New Patient</button>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════
-     FORM SCREEN (multi-step)
-════════════════════════════════════════════════════════ -->
+<!-- FORM -->
 
-<div id="form-screen" class="screen">
-  <div class="topbar">
+<div id="scr-form" class="screen">
+  <div class="bar">
     <div>
-      <div class="topbar-title" id="form-step-title">Patient Details</div>
-      <div class="topbar-sub" id="form-step-sub">Step 1 of 11</div>
+      <div class="bar-title" id="form-title">Patient Details</div>
+      <div class="bar-sub" id="form-sub">Step 1 of 11</div>
     </div>
-    <div class="topbar-actions">
-      <button class="icon-btn" onclick="confirmExit()" title="Exit">✕</button>
+    <div class="bar-btns">
+      <button class="ibtn" id="form-exit-btn">✕</button>
     </div>
   </div>
-  <div class="progress-wrap">
-    <div class="progress-info">
-      <span id="prog-text">Step 1 / 11</span>
+  <div class="prog-wrap">
+    <div class="prog-row">
+      <span id="prog-lbl">Step 1 / 11</span>
       <span id="prog-pct">9%</span>
     </div>
-    <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:9%"></div></div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:9%"></div></div>
   </div>
-  <div class="content" id="form-content"></div>
-  <div class="bottom-nav">
-    <button class="btn btn-secondary" id="btn-back" onclick="prevStep()">← Back</button>
-    <button class="btn btn-primary" id="btn-next" onclick="nextStep()">Next →</button>
+  <div class="body" id="form-body"></div>
+  <div class="foot">
+    <button class="btn btn-ghost" id="btn-back">← Back</button>
+    <button class="btn btn-navy" id="btn-next">Next →</button>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════
-     CASE VIEW SCREEN
-════════════════════════════════════════════════════════ -->
+<!-- CASE VIEW -->
 
-<div id="case-view-screen" class="screen">
-  <div class="topbar">
+<div id="scr-case" class="screen">
+  <div class="bar">
     <div>
-      <div class="topbar-title">Case Sheet</div>
-      <div class="topbar-sub" id="case-view-name"></div>
+      <div class="bar-title">Case Sheet</div>
+      <div class="bar-sub" id="case-name-bar"></div>
     </div>
-    <div class="topbar-actions">
-      <button class="icon-btn no-print" onclick="printCase()" title="Download PDF">🖨</button>
-      <button class="icon-btn no-print" onclick="goBackFromCase()">← Back</button>
+    <div class="bar-btns">
+      <button class="ibtn no-print" id="case-print-btn">🖨</button>
+      <button class="ibtn no-print" id="case-back-btn">←</button>
     </div>
   </div>
-  <div class="content" id="case-view-content"></div>
-  <div class="bottom-nav no-print">
-    <button class="btn btn-secondary" onclick="goBackFromCase()">← Back</button>
-    <button class="btn btn-teal" onclick="printCase()">🖨 Download PDF</button>
+  <div class="body" id="case-body"></div>
+  <div class="foot no-print">
+    <button class="btn btn-ghost" id="case-back-btn2">← Back</button>
+    <button class="btn btn-teal" id="case-print-btn2">🖨 PDF</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-/* ════════════════════════════════════════════════════════
-   DATA MODEL & STORAGE
-════════════════════════════════════════════════════════ */
-let patients = JSON.parse(localStorage.getItem('clincase_patients') || '[]');
-let currentPatient = {};
-let currentStep = 0;
-let editingId = null;
-let caseViewSource = 'patients'; // 'patients' or 'form'
+(function() {
+'use strict';
 
-function savePatients(){
-  localStorage.setItem('clincase_patients', JSON.stringify(patients));
+/* ── STATE ── */
+var DB = [];
+try { DB = JSON.parse(localStorage.getItem('cc_pts') || '[]'); } catch(e) { DB = []; }
+var PT = {};
+var STEP = 0;
+var TOTAL = 11;
+var dark = localStorage.getItem('cc_dark') === '1';
+
+/* ── HELPERS ── */
+function $(id) { return document.getElementById(id); }
+function persist() { try { localStorage.setItem('cc_pts', JSON.stringify(DB)); } catch(e) {} }
+function uid() { return 'p' + Date.now() + Math.random().toString(36).slice(2,6); }
+function today() { return new Date().toISOString().split('T')[0]; }
+function fmtDate(d) {
+  if (!d) return '';
+  try { return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
+  catch(e) { return d; }
+}
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function toast(msg) {
+  var t = $('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2200);
+}
+function opt(arr, sel) {
+  return arr.map(function(v) {
+    return '<option value="' + esc(v) + '"' + (sel === v ? ' selected' : '') + '>' + esc(v) + '</option>';
+  }).join('');
+}
+function hdrBlock(icon, title, sub) {
+  return '<div class="step-hdr"><h2>' + icon + ' ' + title + '</h2><p>' + sub + '</p></div>';
+}
+function val(id) { var e = $(id); return e ? e.value.trim() : ''; }
+
+/* ── DARK MODE ── */
+function applyDark() {
+  document.body.classList.toggle('dark', dark);
+  var ico = dark ? '☀️' : '🌙';
+  ['dark-btn','list-dark-btn'].forEach(function(id) {
+    var el = $(id); if (el) el.textContent = ico;
+  });
+}
+applyDark();
+
+function toggleDark() {
+  dark = !dark;
+  localStorage.setItem('cc_dark', dark ? '1' : '0');
+  applyDark();
 }
 
-function genId(){
-  return 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+/* ── SCREEN NAVIGATION ── */
+function go(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  $(id).classList.add('active');
+  if (id === 'scr-list') renderList();
+  if (id === 'scr-home') updateHomeLbl();
 }
 
-/* ════════════════════════════════════════════════════════
-   SCREEN MANAGEMENT
-════════════════════════════════════════════════════════ */
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if(id==='patients-screen') renderPatientList();
-  if(id==='home-screen') updateHomeCounts();
+function updateHomeLbl() {
+  var n = DB.length;
+  $('saved-lbl').textContent = n === 0 ? 'No patients yet' : n === 1 ? '1 patient saved' : n + ' patients saved';
 }
 
-function updateHomeCounts(){
-  const n = patients.length;
-  document.getElementById('saved-count-label').textContent =
-    n===0 ? 'No saved patients yet' : n===1 ? '1 patient saved' : `${n} patients saved`;
+/* ── WIRE STATIC BUTTONS ── */
+$('dark-btn').addEventListener('click', toggleDark);
+$('btn-new-home').addEventListener('click', function() { startNew(); });
+$('btn-view-home').addEventListener('click', function() { go('scr-list'); });
+$('list-dark-btn').addEventListener('click', toggleDark);
+$('list-home-btn').addEventListener('click', function() { go('scr-home'); });
+$('list-new-btn').addEventListener('click', function() { startNew(); });
+$('form-exit-btn').addEventListener('click', function() {
+  if (confirm('Exit form? Unsaved data on this step will be lost.')) go('scr-home');
+});
+$('btn-back').addEventListener('click', function() { prevStep(); });
+$('btn-next').addEventListener('click', function() { nextStep(); });
+$('case-print-btn').addEventListener('click', function() { window.print(); });
+$('case-print-btn2').addEventListener('click', function() { window.print(); });
+$('case-back-btn').addEventListener('click', function() { go('scr-list'); });
+$('case-back-btn2').addEventListener('click', function() { go('scr-list'); });
+$('srch').addEventListener('input', renderList);
+
+/* ── PATIENT CRUD ── */
+function startNew() { PT = {}; STEP = 0; go('scr-form'); renderStep(); }
+
+function editPatient(id) {
+  var p = DB.find(function(x) { return x.id === id; });
+  if (!p) return;
+  PT = JSON.parse(JSON.stringify(p));
+  STEP = 0; go('scr-form'); renderStep();
 }
 
-/* ════════════════════════════════════════════════════════
-   DARK MODE
-════════════════════════════════════════════════════════ */
-let dark = localStorage.getItem('clincase_dark')==='1';
-function toggleDark(){
-  dark=!dark;
-  document.documentElement.setAttribute('data-theme', dark?'dark':'');
-  localStorage.setItem('clincase_dark', dark?'1':'0');
-  document.getElementById('dark-toggle-btn').textContent = dark?'☀️':'🌙';
-}
-if(dark){
-  document.documentElement.setAttribute('data-theme','dark');
-  document.getElementById('dark-toggle-btn').textContent='☀️';
+function deletePatient(id) {
+  if (!confirm('Delete this patient? This cannot be undone.')) return;
+  DB = DB.filter(function(x) { return x.id !== id; });
+  persist(); renderList(); toast('Patient deleted');
 }
 
-/* ════════════════════════════════════════════════════════
-   TOAST
-════════════════════════════════════════════════════════ */
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2400);
+function viewPatient(id) {
+  var p = DB.find(function(x) { return x.id === id; });
+  if (!p) return;
+  $('case-name-bar').textContent = (p.name || 'Unknown') + ' · Case Sheet';
+  $('case-body').innerHTML = buildCaseSheet(p);
+  go('scr-case');
 }
 
-/* ════════════════════════════════════════════════════════
-   STEP DEFINITIONS
-════════════════════════════════════════════════════════ */
-const STEPS = [
-  {title:'Patient Details',        sub:'Demographics & identifiers'},
-  {title:'Chief Complaints',       sub:'Reason for presentation'},
-  {title:'History of Present Illness', sub:'Detailed symptom narrative'},
-  {title:'Systemic Review — CVS & Respiratory', sub:'Cardiovascular & Lung symptoms'},
-  {title:'Systemic Review — GI & Urinary', sub:'Gastrointestinal & Renal symptoms'},
-  {title:'Systemic Review — CNS, Endocrine & Others', sub:'Neurological, hormonal & MSK'},
-  {title:'Past History & Family History', sub:'Medical background'},
-  {title:'Personal, Social & Dietary History', sub:'Lifestyle & habits'},
-  {title:'General Examination',    sub:'Vitals & systemic findings'},
-  {title:'Systemic Examination',   sub:'CVS, Resp, Abdomen, CNS'},
-  {title:'Diagnosis',              sub:'Provisional, differential & final'},
+/* ── RENDER LIST ── */
+function renderList() {
+  var q = ($('srch') || {value:''}).value.toLowerCase();
+  var filtered = DB.filter(function(p) {
+    if (!q) return true;
+    var s = (p.name||'') + (p.age||'') + ((p.dx||{}).provisional||'') + ((p.dx||{}).final||'');
+    return s.toLowerCase().indexOf(q) >= 0;
+  });
+  var el = $('pt-list');
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-ico">📂</div><p>' + (q ? 'No match.' : 'No patients saved yet.') + '</p></div>';
+    return;
+  }
+  el.innerHTML = filtered.map(function(p) {
+    return '<div class="pt-item" data-id="' + p.id + '">' +
+      '<div class="pt-av">' + esc((p.name||'?')[0].toUpperCase()) + '</div>' +
+      '<div class="pt-info">' +
+        '<div class="pt-name">' + esc(p.name||'Unnamed') + '</div>' +
+        '<div class="pt-meta">' + esc([p.age,p.sex,p.occupation].filter(Boolean).join(' · ')) + (p.doa ? ' · Adm: ' + fmtDate(p.doa) : '') + '</div>' +
+        '<div class="pt-dx">' + esc((p.dx||{}).provisional || 'No diagnosis recorded') + '</div>' +
+      '</div>' +
+      '<div class="pt-acts">' +
+        '<button class="pt-act" data-edit="' + p.id + '" title="Edit">✏️</button>' +
+        '<button class="pt-act" data-del="' + p.id + '" title="Delete">🗑</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  el.querySelectorAll('.pt-item').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      if (e.target.closest('.pt-acts')) return;
+      viewPatient(item.dataset.id);
+    });
+  });
+  el.querySelectorAll('[data-edit]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) { e.stopPropagation(); editPatient(btn.dataset.edit); });
+  });
+  el.querySelectorAll('[data-del]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) { e.stopPropagation(); deletePatient(btn.dataset.del); });
+  });
+}
+
+/* ── STEPS METADATA ── */
+var STEPS = [
+  ['Patient Details',          'Demographics & identifiers'],
+  ['Chief Complaints',         'Reason for presentation'],
+  ['History of Present Illness','Detailed symptom narrative'],
+  ['Systemic Review – CVS & Respiratory','Cardiovascular & lung symptoms'],
+  ['Systemic Review – GI & Urinary',     'Gastrointestinal & renal symptoms'],
+  ['Systemic Review – CNS & Others',     'Neurological, endocrine, locomotor'],
+  ['Past & Family History',    'Medical background'],
+  ['Personal & Social History','Lifestyle and habits'],
+  ['General Examination',      'Vitals and clinical signs'],
+  ['Systemic Examination',     'CVS, Resp, Abdomen, CNS'],
+  ['Diagnosis',                'Provisional, differential & final'],
 ];
-const TOTAL_STEPS = STEPS.length;
 
-/* ════════════════════════════════════════════════════════
-   SYMPTOM LISTS BY SYSTEM
-════════════════════════════════════════════════════════ */
-const SYS_SYMPTOMS = {
-  cvs:[
-    'Breathlessness on heavy exertion','Breathlessness on moderate exertion',
-    'Breathlessness at rest','PND (Paroxysmal Nocturnal Dyspnoea)','Orthopnoea',
-    'Swelling of feet','Swelling of face / periorbital oedema','Sacral oedema',
-    'Anginal chest pain','Palpitations (sudden onset)','Palpitations (gradual onset)',
-    'History of MI','Embolic phenomena','Syncope / pre-syncope',
-  ],
-  resp:[
-    'Cough (dry)','Cough (productive)','Purulent sputum','Frothy pink sputum',
-    'Haemoptysis','Chest pain (pleuritic)','Breathlessness','Wheezing',
-    'Weight loss','Night sweats','Fever',
-  ],
-  gi:[
-    'Loss of appetite','Weight loss','Abdominal pain','Abdominal mass',
-    'Nausea','Vomiting','Haematemesis','Melaena','Dysphagia (solids)',
-    'Dysphagia (liquids)','Heartburn / GERD','Abdominal distension',
-    'Flatulence','Change in bowel habits','Diarrhoea (with blood / mucus)',
-    'Constipation','Jaundice','Dark urine','Pale stools','Itching',
-    'Rectal bleeding (fresh)','Tenesmus',
-  ],
-  urine:[
-    'Frequency of micturition','Nocturia','Oliguria','Polyuria','Anuria',
-    'Haematuria','Burning micturition','Loin pain','Renal colic','Pyuria',
-    'Passage of gravel','Retention of urine','Urinary incontinence',
-    'Oedema feet','Puffiness of face',
-  ],
-  cns:[
-    'Headache (throbbing)','Headache (non-throbbing)','Altered consciousness',
-    'Seizures (focal)','Seizures (generalised)','Post-ictal paresis','Aura',
-    'Memory impairment','Speech disturbance (aphasia)','Dysarthria',
-    'Visual disturbance / diplopia','Facial deviation / weakness',
-    'Dysphagia (neurological)','Limb weakness (UL proximal)',
-    'Limb weakness (UL distal)','Limb weakness (LL)','Sensory loss',
-    'Paraesthesia / numbness','Unsteadiness of gait',
-    'Bladder / bowel disturbance (autonomic)','Postural giddiness',
-  ],
-  endocrine:[
-    'Excessive weight gain','Excessive weight loss','Tremors','Polyuria',
-    'Polydipsia','Polyphagia','Heat intolerance','Cold intolerance',
-    'Palpitations','Goitre','Eye prominence (exophthalmos)',
-    'Change in voice','Pigmentation','Fatigue / asthenia',
-    'Delayed wound healing','Recurrent furuncles / carbuncles',
-    'Menstrual disturbances','Libido changes / impotence',
-  ],
-  locomotor:[
-    'Joint pain','Joint swelling','Morning stiffness (>30 min)','Muscle weakness',
-    'Skin rash (associated)','Backache','Deformity',
-  ],
-  bleeding:[
-    'Bleeding from gums','Petechiae','Purpuric spots','Ecchymoses',
-    'Easy bruising','Prolonged bleeding from trivial wounds','Bleeding from multiple sites',
-  ],
+/* ── RENDER STEP ── */
+function renderStep() {
+  $('form-title').textContent = STEPS[STEP][0];
+  $('form-sub').textContent = 'Step ' + (STEP+1) + ' of ' + TOTAL;
+  $('prog-lbl').textContent = 'Step ' + (STEP+1) + ' / ' + TOTAL;
+  var pct = Math.round(((STEP+1)/TOTAL)*100);
+  $('prog-pct').textContent = pct + '%';
+  $('prog-fill').style.width = pct + '%';
+  $('btn-back').style.opacity = STEP === 0 ? '0' : '1';
+  $('btn-back').style.pointerEvents = STEP === 0 ? 'none' : 'auto';
+  $('btn-next').textContent = STEP === TOTAL-1 ? '✓ Save Patient' : 'Next →';
+  $('form-body').innerHTML = buildStep(STEP);
+  $('form-body').scrollTop = 0;
+  wireStepEvents();
+}
+
+/* ── WIRE DYNAMIC EVENTS ── */
+function wireStepEvents() {
+  // Chips
+  $('form-body').querySelectorAll('[data-sys]').forEach(function(c) {
+    c.addEventListener('click', function() { toggleSym(c.dataset.sys, c.dataset.sym); });
+  });
+  $('form-body').querySelectorAll('[data-ge]').forEach(function(c) {
+    c.addEventListener('click', function() { toggleGE(c.dataset.ge); });
+  });
+  $('form-body').querySelectorAll('[data-fh]').forEach(function(c) {
+    c.addEventListener('click', function() { toggleFH(c.dataset.fh); });
+  });
+  $('form-body').querySelectorAll('[data-hab]').forEach(function(c) {
+    c.addEventListener('click', function() { toggleHabit(c.dataset.hab); });
+  });
+  // Complaint add/remove
+  var addCC = $('form-body').querySelector('.add-cc');
+  if (addCC) addCC.addEventListener('click', addComplaint);
+  $('form-body').querySelectorAll('.rm-cc').forEach(function(btn) {
+    btn.addEventListener('click', function() { removeComplaint(parseInt(btn.dataset.i)); });
+  });
+  $('form-body').querySelectorAll('.cc-inp').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      var i = parseInt(inp.dataset.i);
+      ensureCC(i); PT.complaints[i].complaint = inp.value;
+    });
+  });
+  $('form-body').querySelectorAll('.cc-dur').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      var i = parseInt(inp.dataset.i);
+      ensureCC(i); PT.complaints[i].duration = inp.value;
+    });
+  });
+  // DDx add/remove
+  var addDDx = $('form-body').querySelector('.add-ddx');
+  if (addDDx) addDDx.addEventListener('click', addDDxRow);
+  $('form-body').querySelectorAll('.rm-ddx').forEach(function(btn) {
+    btn.addEventListener('click', function() { removeDDx(parseInt(btn.dataset.i)); });
+  });
+  $('form-body').querySelectorAll('.ddx-inp').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      if (!PT.ddx) PT.ddx = [];
+      PT.ddx[parseInt(inp.dataset.i)] = inp.value;
+    });
+  });
+}
+
+/* ── BUILD STEPS ── */
+function buildStep(s) {
+  switch(s) {
+    case 0:  return step0();
+    case 1:  return step1();
+    case 2:  return step2();
+    case 3:  return step3();
+    case 4:  return step4();
+    case 5:  return step5();
+    case 6:  return step6();
+    case 7:  return step7();
+    case 8:  return step8();
+    case 9:  return step9();
+    case 10: return step10();
+  }
+  return '';
+}
+
+/* STEP 0 */
+function step0() {
+  var d = PT;
+  return hdrBlock('👤','Patient Details','Fill in the patient\'s basic information') +
+  '<div class="card">' +
+    '<div class="f"><label>Full Name *</label><input id="i-name" type="text" placeholder="Patient\'s full name" value="' + esc(d.name||'') + '"/></div>' +
+    '<div class="row2">' +
+      '<div class="f"><label>Age</label><input id="i-age" type="text" placeholder="e.g. 45 years" value="' + esc(d.age||'') + '"/></div>' +
+      '<div class="f"><label>Sex</label><select id="i-sex"><option value="">Select</option>' + opt(['Male','Female','Other'], d.sex) + '</select></div>' +
+    '</div>' +
+    '<div class="f"><label>Occupation</label><input id="i-occ" type="text" placeholder="Occupation" value="' + esc(d.occupation||'') + '"/></div>' +
+    '<div class="f"><label>Address</label><input id="i-addr" type="text" placeholder="Full address" value="' + esc(d.address||'') + '"/></div>' +
+    '<div class="row2">' +
+      '<div class="f"><label>Marital Status</label><select id="i-marital"><option value="">Select</option>' + opt(['Single','Married','Widowed','Divorced'], d.marital) + '</select></div>' +
+      '<div class="f"><label>Insurance</label><input id="i-ins" type="text" placeholder="e.g. ESI, CGHS" value="' + esc(d.insurance||'') + '"/></div>' +
+    '</div>' +
+    '<div class="row2">' +
+      '<div class="f"><label>Date of Admission</label><input id="i-doa" type="date" value="' + (d.doa||'') + '"/></div>' +
+      '<div class="f"><label>Date of Examination</label><input id="i-doe" type="date" value="' + (d.doe||today()) + '"/></div>' +
+    '</div>' +
+    '<div class="f"><label>Informant (Name / Relation)</label><input id="i-inf" type="text" placeholder="e.g. Patient himself / Spouse" value="' + esc(d.informant||'') + '"/></div>' +
+    '<div class="f"><label>Identification Mark</label><input id="i-idm" type="text" placeholder="Identification mark" value="' + esc(d.idmark||'') + '"/></div>' +
+  '</div>';
+}
+
+/* STEP 1 */
+function step1() {
+  if (!PT.complaints || !PT.complaints.length) PT.complaints = [{complaint:'',duration:''}];
+  var rows = PT.complaints.map(function(c, i) {
+    return '<div class="cc-row">' +
+      '<input class="cc-inp" data-i="' + i + '" type="text" placeholder="Complaint ' + (i+1) + '" value="' + esc(c.complaint||'') + '"/>' +
+      '<input class="cc-dur" data-i="' + i + '" type="text" placeholder="Duration" value="' + esc(c.duration||'') + '"/>' +
+      '<button class="del-btn rm-cc" data-i="' + i + '">🗑</button>' +
+    '</div>';
+  }).join('');
+  return hdrBlock('📝','Chief Complaints','In patient\'s own words, chronological order') +
+    '<div class="note">Add each complaint with duration e.g. "Fever – 3 days". Listed chronologically.</div>' +
+    '<div class="card"><div id="cc-wrap">' + rows + '</div><button class="add-btn add-cc">+ Add Complaint</button></div>';
+}
+function ensureCC(i) {
+  if (!PT.complaints) PT.complaints = [];
+  while (PT.complaints.length <= i) PT.complaints.push({complaint:'',duration:''});
+}
+function addComplaint() { if(!PT.complaints) PT.complaints=[]; PT.complaints.push({complaint:'',duration:''}); renderStep(); }
+function removeComplaint(i) { if(!PT.complaints||PT.complaints.length<=1) return; PT.complaints.splice(i,1); renderStep(); }
+
+/* STEP 2 */
+function step2() {
+  return hdrBlock('📖','History of Present Illness','Elaborate each complaint in detail') +
+    '<div class="note">Describe onset, character, progression, associated symptoms, aggravating/relieving factors.</div>' +
+    '<div class="card"><div class="f"><label>HOPI Narrative</label>' +
+      '<textarea id="i-hopi" rows="8" placeholder="Patient presented with… Onset was… The symptoms progressed by…">' + esc(PT.hopi||'') + '</textarea></div></div>' +
+
+```
+'<div class="card"><div class="card-h">🔍 Etiological History</div>' +
+  '<div class="f"><label>Relevant Etiological Details</label>' +
+  '<textarea id="i-etio" rows="4" placeholder="e.g. History of rheumatic fever, TB exposure, occupational dust, drug history, trauma…">' + esc(PT.etiology||'') + '</textarea></div></div>';
+```
+
+}
+
+/* SYM LISTS */
+var SYM = {
+cvs: [‘Breathlessness on heavy exertion’,‘Breathlessness on moderate exertion’,‘Breathlessness at rest’,
+‘PND (Paroxysmal Nocturnal Dyspnoea)’,‘Orthopnoea’,‘Swelling of feet’,‘Periorbital oedema’,
+‘Sacral oedema’,‘Anginal chest pain’,‘Palpitations (sudden)’,‘Palpitations (gradual)’,
+‘History of MI’,‘Embolic phenomena’,‘Syncope’],
+resp: [‘Cough (dry)’,‘Cough (productive)’,‘Purulent sputum’,‘Frothy pink sputum’,‘Haemoptysis’,
+‘Pleuritic chest pain’,‘Breathlessness’,‘Wheezing’,‘Weight loss’,‘Night sweats’,‘Fever’],
+gi: [‘Loss of appetite’,‘Weight loss’,‘Abdominal pain’,‘Abdominal mass’,‘Nausea’,‘Vomiting’,
+‘Haematemesis’,‘Melaena’,‘Dysphagia (solids)’,‘Dysphagia (liquids)’,‘Heartburn/GERD’,
+‘Abdominal distension’,‘Flatulence’,‘Altered bowel habits’,‘Diarrhoea’,‘Blood/mucus in stool’,
+‘Constipation’,‘Jaundice’,‘Dark urine’,‘Pale stools’,‘Pruritus’,‘Fresh rectal bleeding’,‘Tenesmus’],
+urine: [‘Frequency of micturition’,‘Nocturia’,‘Oliguria’,‘Polyuria’,‘Anuria’,‘Haematuria’,
+‘Burning micturition’,‘Loin pain’,‘Renal colic’,‘Pyuria’,‘Passage of gravel’,
+‘Retention of urine’,‘Urinary incontinence’,‘Pedal oedema’,‘Facial puffiness’],
+cns: [‘Headache (throbbing)’,‘Headache (non-throbbing)’,‘Altered consciousness’,
+‘Seizures (focal)’,‘Seizures (generalised)’,‘Post-ictal paresis’,‘Aura’,
+‘Memory impairment’,‘Aphasia/speech disturbance’,‘Dysarthria’,‘Diplopia’,‘Facial weakness’,
+‘Neurological dysphagia’,‘UL proximal weakness’,‘UL distal weakness’,
+‘LL weakness’,‘Sensory loss/numbness’,‘Paraesthesia’,‘Unsteady gait’,‘Postural giddiness’],
+endo: [‘Excessive weight gain’,‘Excessive weight loss’,‘Tremors’,‘Polyuria’,‘Polydipsia’,
+‘Polyphagia’,‘Heat intolerance’,‘Cold intolerance’,‘Palpitations’,‘Goitre’,
+‘Exophthalmos’,‘Change in voice’,‘Pigmentation’,‘Fatigue/asthenia’,
+‘Delayed wound healing’,‘Recurrent furuncles’,‘Menstrual disturbance’,‘Impotence/libido change’],
+loco: [‘Joint pain’,‘Joint swelling’,‘Morning stiffness >30 min’,‘Muscle weakness’,
+‘Skin rash (associated)’,‘Backache’,‘Deformity’],
+bleed: [‘Bleeding from gums’,‘Petechiae’,‘Purpuric spots’,‘Ecchymoses’,
+‘Easy bruising’,‘Prolonged bleeding from trivial wounds’,‘Bleeding from multiple sites’],
 };
 
-/* ════════════════════════════════════════════════════════
-   BUILD STEP HTML
-════════════════════════════════════════════════════════ */
-function buildStep(step){
-  switch(step){
-    case 0: return buildPatientDetails();
-    case 1: return buildChiefComplaints();
-    case 2: return buildHOPI();
-    case 3: return buildSysReview1();
-    case 4: return buildSysReview2();
-    case 5: return buildSysReview3();
-    case 6: return buildPastFamily();
-    case 7: return buildPersonalSocial();
-    case 8: return buildGeneralExam();
-    case 9: return buildSysExam();
-    case 10: return buildDiagnosis();
-    default: return '<p>Unknown step</p>';
-  }
-}
-
-/* ── STEP 0: Patient Details ─────────────────────────── */
-function buildPatientDetails(){
-  const d = currentPatient;
-  return `
-  <div class="step-header"><h2>👤 Patient Details</h2><p>Basic demographic information</p></div>
-  <div class="card">
-    <div class="field"><label>Full Name *</label>
-      <input type="text" id="f-name" placeholder="Patient's full name" value="${d.name||''}"/></div>
-    <div class="field-row">
-      <div class="field"><label>Age</label>
-        <input type="text" id="f-age" placeholder="e.g. 45 years" value="${d.age||''}"/></div>
-      <div class="field"><label>Sex</label>
-        <select id="f-sex">
-          <option value="">Select</option>
-          <option ${d.sex==='Male'?'selected':''}>Male</option>
-          <option ${d.sex==='Female'?'selected':''}>Female</option>
-          <option ${d.sex==='Other'?'selected':''}>Other</option>
-        </select></div>
-    </div>
-    <div class="field"><label>Occupation</label>
-      <input type="text" id="f-occ" placeholder="Occupation" value="${d.occupation||''}"/></div>
-    <div class="field"><label>Address</label>
-      <input type="text" id="f-addr" placeholder="Full address" value="${d.address||''}"/></div>
-    <div class="field-row">
-      <div class="field"><label>Marital Status</label>
-        <select id="f-marital">
-          <option value="">Select</option>
-          <option ${d.marital==='Single'?'selected':''}>Single</option>
-          <option ${d.marital==='Married'?'selected':''}>Married</option>
-          <option ${d.marital==='Widowed'?'selected':''}>Widowed</option>
-          <option ${d.marital==='Divorced'?'selected':''}>Divorced</option>
-        </select></div>
-      <div class="field"><label>Insurance Status</label>
-        <input type="text" id="f-insurance" placeholder="e.g. ESI, CGHS" value="${d.insurance||''}"/></div>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Date of Admission</label>
-        <input type="date" id="f-doa" value="${d.doa||''}"/></div>
-      <div class="field"><label>Date of Examination</label>
-        <input type="date" id="f-doe" value="${d.doe||new Date().toISOString().split('T')[0]}"/></div>
-    </div>
-    <div class="field"><label>Informant (Name / Relation)</label>
-      <input type="text" id="f-informant" placeholder="e.g. Patient himself / Wife" value="${d.informant||''}"/></div>
-    <div class="field"><label>Identification Mark</label>
-      <input type="text" id="f-idmark" placeholder="Identification mark if any" value="${d.idmark||''}"/></div>
-  </div>`;
-}
-
-function savePatientDetails(){
-  currentPatient.name = v('f-name');
-  currentPatient.age = v('f-age');
-  currentPatient.sex = v('f-sex');
-  currentPatient.occupation = v('f-occ');
-  currentPatient.address = v('f-addr');
-  currentPatient.marital = v('f-marital');
-  currentPatient.insurance = v('f-insurance');
-  currentPatient.doa = v('f-doa');
-  currentPatient.doe = v('f-doe');
-  currentPatient.informant = v('f-informant');
-  currentPatient.idmark = v('f-idmark');
-  if(!currentPatient.name){showToast('Please enter patient name');return false;}
-  return true;
-}
-
-/* ── STEP 1: Chief Complaints ────────────────────────── */
-function buildChiefComplaints(){
-  const complaints = currentPatient.complaints || [{complaint:'',duration:''}];
-  let rows = complaints.map((c,i)=>`
-    <div class="complaint-row" id="cc-row-${i}">
-      <input type="text" placeholder="Complaint ${i+1}" value="${c.complaint||''}" 
-        onchange="updateComplaint(${i},'complaint',this.value)"
-        oninput="updateComplaint(${i},'complaint',this.value)"/>
-      <input type="text" class="complaint-dur" placeholder="Duration" value="${c.duration||''}"
-        onchange="updateComplaint(${i},'duration',this.value)"
-        oninput="updateComplaint(${i},'duration',this.value)"/>
-      <button class="del-btn" onclick="removeComplaint(${i})">🗑</button>
-    </div>`).join('');
-  return `
-  <div class="step-header"><h2>📝 Chief Complaints</h2><p>In patient's own words, chronological order</p></div>
-  <div class="section-note">Enter each complaint with its duration (e.g. "3 days", "2 months"). Listed in chronological order.</div>
-  <div class="card">
-    <div id="complaints-list">${rows}</div>
-    <button class="add-btn" onclick="addComplaint()">+ Add Complaint</button>
-  </div>`;
-}
-
-function updateComplaint(i,field,val){
-  if(!currentPatient.complaints) currentPatient.complaints=[];
-  if(!currentPatient.complaints[i]) currentPatient.complaints[i]={complaint:'',duration:''};
-  currentPatient.complaints[i][field]=val;
-}
-function addComplaint(){
-  if(!currentPatient.complaints) currentPatient.complaints=[];
-  currentPatient.complaints.push({complaint:'',duration:''});
-  renderCurrentStep();
-}
-function removeComplaint(i){
-  if(!currentPatient.complaints||currentPatient.complaints.length<=1) return;
-  currentPatient.complaints.splice(i,1);
-  renderCurrentStep();
-}
-function saveComplaints(){
-  if(!currentPatient.complaints||currentPatient.complaints.filter(c=>c.complaint.trim()).length===0){
-    showToast('Add at least one complaint');return false;
-  }
-  currentPatient.complaints = currentPatient.complaints.filter(c=>c.complaint.trim());
-  return true;
-}
-
-/* ── STEP 2: HOPI ────────────────────────────────────── */
-function buildHOPI(){
-  return `
-  <div class="step-header"><h2>📖 History of Present Illness</h2><p>Elaborate each complaint in detail</p></div>
-  <div class="section-note">Describe onset, progression/regression, associated symptoms, and any new symptoms since onset.</div>
-  <div class="card">
-    <div class="field"><label>Narrative (HOPI)</label>
-      <textarea id="f-hopi" rows="8" placeholder="Describe the history of present illness in detail: onset, duration, character, progression, associated symptoms, aggravating/relieving factors…">${currentPatient.hopi||''}</textarea></div>
-
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="icon">🔍</span> Etiological History</div>
-    <div class="field"><label>Relevant Etiological Details</label>
-      <textarea id="f-etiology" rows="4" placeholder="e.g. History suggestive of rheumatic fever, TB exposure, occupational history, drug history, trauma, ear discharge…">${currentPatient.etiology||''}</textarea></div>
-  </div>`;
-}
-function saveHOPI(){
-  currentPatient.hopi=v('f-hopi');
-  currentPatient.etiology=v('f-etiology');
-  return true;
-}
-
-/* ── STEP 3: Systemic Review CVS + Resp ──────────────── */
-function buildSysReview1(){
-return `
-
-  <div class="step-header"><h2>🫀 Systemic Review</h2><p>Cardiovascular & Respiratory</p></div>
-  <div class="section-note">Tap symptoms to mark as <b style="color:var(--teal)">Positive (P)</b> or <b style="color:var(--red)">Negative (N)</b>. Unmarked = not asked.</div>
-  ${buildSystemBlock('cvs','🫀 Cardiovascular System','cvs')}
-  ${buildSystemBlock('resp','🫁 Respiratory System','resp')}`;
-}
-
-/* ── STEP 4: Systemic Review GI + Urine ──────────────── */
-function buildSysReview2(){
-return `
-
-  <div class="step-header"><h2>🫃 Systemic Review</h2><p>Gastrointestinal & Urinary</p></div>
-  <div class="section-note">Tap symptoms to mark as <b style="color:var(--teal)">Positive (P)</b> or <b style="color:var(--red)">Negative (N)</b>.</div>
-  ${buildSystemBlock('gi','🫃 Gastrointestinal System','gi')}
-  ${buildSystemBlock('urine','💧 Urinary System','urine')}`;
-}
-
-/* ── STEP 5: Systemic Review CNS + Endocrine + others ── */
-function buildSysReview3(){
-return `
-
-  <div class="step-header"><h2>🧠 Systemic Review</h2><p>CNS, Endocrine, Locomotor & Bleeding</p></div>
-  <div class="section-note">Tap symptoms to mark as <b style="color:var(--teal)">Positive (P)</b> or <b style="color:var(--red)">Negative (N)</b>.</div>
-  ${buildSystemBlock('cns','🧠 Central Nervous System','cns')}
-  ${buildSystemBlock('endocrine','⚗️ Endocrine System','endocrine')}
-  ${buildSystemBlock('locomotor','🦴 Locomotor System','locomotor')}
-  ${buildSystemBlock('bleeding','🩸 Bleeding Disorders','bleeding')}`;
-}
-
-function buildSystemBlock(key,label,sysKey){
-const syms = SYS_SYMPTOMS[sysKey]||[];
-const stored = (currentPatient.systemicReview||{})[key]||{pos:[],neg:[]};
-let chips = syms.map(s=>{
-const isPos = stored.pos.includes(s);
-const isNeg = stored.neg.includes(s);
-const cls = isPos?‘pos’:isNeg?‘neg’:’’;
-const badge = isPos?’ ✓’:isNeg?’ ✗’:’’;
-return `<span class="chip ${cls}" onclick="toggleSymptom('${key}','${escAttr(s)}')">${s}${badge}</span>`;
+function buildSysBlock(key, label) {
+if (!PT.sr) PT.sr = {};
+if (!PT.sr[key]) PT.sr[key] = {pos:[],neg:[]};
+var d = PT.sr[key];
+var chips = SYM[key].map(function(s) {
+var ip = d.pos.indexOf(s)>=0, in_ = d.neg.indexOf(s)>=0;
+var cls = ip ? ‘pos’ : in_ ? ‘neg’ : ‘’;
+var badge = ip ? ’ ✓’ : in_ ? ’ ✗’ : ‘’;
+return ‘<span class="chip ' + cls + '" data-sys="' + key + '" data-sym="' + esc(s) + '">’ + esc(s) + badge + ‘</span>’;
 }).join(’’);
-return `
-
-  <div class="system-section">
-    <div class="system-title">${label}</div>
-    <div class="chips-label">Tap: unmarked → Positive → Negative → unmarked</div>
-    <div class="chips-wrap" id="chips-${key}">${chips}</div>
-    <div class="field" style="margin-top:10px;margin-bottom:0">
-      <label>Additional notes</label>
-      <textarea rows="2" id="sysnotes-${key}" placeholder="Any additional findings or details…">${(currentPatient.systemicNotes||{})[key]||''}</textarea>
-    </div>
-  </div>`;
+var notes = (PT.sn || {})[key] || ‘’;
+return ‘<div class="sys-sec">’ +
+‘<div class="sys-ttl">’ + label + ‘</div>’ +
+‘<div class="chip-lbl">Tap: none → ✓ Positive → ✗ Negative → clear</div>’ +
+‘<div class="chips" id="chips-' + key + '">’ + chips + ‘</div>’ +
+‘<div class="f" style="margin-bottom:0"><label>Notes</label>’ +
+‘<textarea rows="2" id="sn-' + key + '" placeholder="Additional findings…">’ + esc(notes) + ‘</textarea></div>’ +
+‘</div>’;
 }
 
-function escAttr(s){return s.replace(/’/g,”\’”).replace(/”/g,’"’)}
-
-function toggleSymptom(sysKey, symptom){
-if(!currentPatient.systemicReview) currentPatient.systemicReview={};
-if(!currentPatient.systemicReview[sysKey]) currentPatient.systemicReview[sysKey]={pos:[],neg:[]};
-const sys = currentPatient.systemicReview[sysKey];
-const isPos = sys.pos.includes(symptom);
-const isNeg = sys.neg.includes(symptom);
-if(!isPos && !isNeg){ sys.pos.push(symptom); }
-else if(isPos){ sys.pos=sys.pos.filter(x=>x!==symptom); sys.neg.push(symptom); }
-else { sys.neg=sys.neg.filter(x=>x!==symptom); }
-// Re-render just chips
-const syms = SYS_SYMPTOMS[sysKey]||[];
-const stored = currentPatient.systemicReview[sysKey];
-document.getElementById(‘chips-’+sysKey).innerHTML = syms.map(s=>{
-const ip=stored.pos.includes(s),in_=stored.neg.includes(s);
-const cls=ip?‘pos’:in_?‘neg’:’’;
-const badge=ip?’ ✓’:in_?’ ✗’:’’;
-return `<span class="chip ${cls}" onclick="toggleSymptom('${sysKey}','${escAttr(s)}')">${s}${badge}</span>`;
+function toggleSym(key, sym) {
+if (!PT.sr) PT.sr = {};
+if (!PT.sr[key]) PT.sr[key] = {pos:[],neg:[]};
+var d = PT.sr[key];
+var ip = d.pos.indexOf(sym)>=0, in_ = d.neg.indexOf(sym)>=0;
+if (!ip && !in_) d.pos.push(sym);
+else if (ip) { d.pos = d.pos.filter(function(x){return x!==sym;}); d.neg.push(sym); }
+else d.neg = d.neg.filter(function(x){return x!==sym;});
+var wrap = document.getElementById(‘chips-’+key);
+if (!wrap) return;
+wrap.innerHTML = SYM[key].map(function(s) {
+var ip2=d.pos.indexOf(s)>=0, in2=d.neg.indexOf(s)>=0;
+var cls=ip2?‘pos’:in2?‘neg’:’’; var b=ip2?’ ✓’:in2?’ ✗’:’’;
+return ‘<span class="chip ' + cls + '" data-sys="' + key + '" data-sym="' + esc(s) + '">’ + esc(s) + b + ‘</span>’;
 }).join(’’);
-}
-
-function saveSysNotes(keys){
-if(!currentPatient.systemicNotes) currentPatient.systemicNotes={};
-keys.forEach(k=>{
-const el=document.getElementById(‘sysnotes-’+k);
-if(el) currentPatient.systemicNotes[k]=el.value;
+wrap.querySelectorAll(’[data-sys]’).forEach(function(c) {
+c.addEventListener(‘click’, function() { toggleSym(c.dataset.sys, c.dataset.sym); });
 });
 }
 
-/* ── STEP 6: Past + Family History ──────────────────── */
-function buildPastFamily(){
-const ph = currentPatient.pastHistory||{};
-return `
-
-  <div class="step-header"><h2>📚 Past & Family History</h2><p>Medical background</p></div>
-  <div class="card">
-    <div class="card-title"><span class="icon">🕐</span> Past History</div>
-    <div class="field"><label>Past Medical History</label>
-      <textarea id="f-ph-medical" rows="3" placeholder="Previous illnesses, hospitalisations, surgeries, blood transfusions…">${ph.medical||''}</textarea></div>
-    <div class="field"><label>Drug Allergy</label>
-      <textarea id="f-ph-allergy" rows="2" placeholder="Known drug allergies (e.g. Penicillin, Sulfonamides, NSAIDs)…">${ph.allergy||''}</textarea></div>
-    <div class="field"><label>Immunisation Status</label>
-      <input type="text" id="f-ph-immunisation" placeholder="e.g. Tetanus, Hepatitis B, COVID-19" value="${ph.immunisation||''}"/></div>
-    <div class="field"><label>Operations / Accidents</label>
-      <input type="text" id="f-ph-ops" placeholder="Previous surgeries or major accidents" value="${ph.ops||''}"/></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="icon">👨‍👩‍👧</span> Family History</div>
-    <div class="section-note">Mark conditions present in first-degree relatives</div>
-    <div class="chips-wrap" id="fh-chips">
-      ${['Diabetes Mellitus','Hypertension','Ischaemic Heart Disease','Tuberculosis',
-         'Bleeding Disorders','Malignancy','Asthma','Renal Disease','Epilepsy','Stroke'].map(c=>{
-        const sel=(currentPatient.familyHistory||[]).includes(c);
-        return `<span class="chip ${sel?'sel':''}" onclick="toggleFH('${escAttr(c)}')">${c}${sel?' ✓':''}</span>`;
-      }).join('')}
-    </div>
-    <div class="field" style="margin-top:12px"><label>Family History Details</label>
-      <textarea id="f-fh-details" rows="2" placeholder="Additional family history details…">${currentPatient.familyHistoryDetails||''}</textarea></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="icon">♀</span> Menstrual History (if applicable)</div>
-    <div class="field"><label>Menstrual History</label>
-      <textarea id="f-menstrual" rows="3" placeholder="Amenorrhoea, oligomenorrhoea, metrorrhagia, menorrhagia, post-menopausal bleeding, last menstrual period…">${currentPatient.menstrualHistory||''}</textarea></div>
-    <div class="field"><label>Obstetric History</label>
-      <textarea id="f-obstetric" rows="2" placeholder="G P A L — pregnancies, deliveries, abortions, complications (chronological)…">${currentPatient.obstetricHistory||''}</textarea></div>
-  </div>`;
+function saveSysNotes(keys) {
+if (!PT.sn) PT.sn = {};
+keys.forEach(function(k) {
+var el = document.getElementById(‘sn-’+k);
+if (el) PT.sn[k] = el.value;
+});
 }
 
-function toggleFH(val){
-if(!currentPatient.familyHistory) currentPatient.familyHistory=[];
-const idx=currentPatient.familyHistory.indexOf(val);
-if(idx>=0) currentPatient.familyHistory.splice(idx,1);
-else currentPatient.familyHistory.push(val);
-const items=[‘Diabetes Mellitus’,‘Hypertension’,‘Ischaemic Heart Disease’,‘Tuberculosis’,
+/* STEP 3 */
+function step3() {
+return hdrBlock(‘🫀’,‘Systemic Review’,‘Cardiovascular & Respiratory systems’) +
+‘<div class="note">Tap once = <b style="color:var(--teal)">Positive ✓</b>, twice = <b style="color:var(--red)">Negative ✗</b>, thrice = clear.</div>’ +
+buildSysBlock(‘cvs’,‘🫀 Cardiovascular System’) +
+buildSysBlock(‘resp’,‘🫁 Respiratory System’);
+}
+
+/* STEP 4 */
+function step4() {
+return hdrBlock(‘🫃’,‘Systemic Review’,‘Gastrointestinal & Urinary systems’) +
+‘<div class="note">Tap once = <b style="color:var(--teal)">Positive ✓</b>, twice = <b style="color:var(--red)">Negative ✗</b>, thrice = clear.</div>’ +
+buildSysBlock(‘gi’,‘🫃 Gastrointestinal System’) +
+buildSysBlock(‘urine’,‘💧 Urinary System’);
+}
+
+/* STEP 5 */
+function step5() {
+return hdrBlock(‘🧠’,‘Systemic Review’,‘CNS, Endocrine, Locomotor & Bleeding’) +
+‘<div class="note">Tap once = <b style="color:var(--teal)">Positive ✓</b>, twice = <b style="color:var(--red)">Negative ✗</b>, thrice = clear.</div>’ +
+buildSysBlock(‘cns’,‘🧠 Central Nervous System’) +
+buildSysBlock(‘endo’,‘⚗️ Endocrine System’) +
+buildSysBlock(‘loco’,‘🦴 Locomotor System’) +
+buildSysBlock(‘bleed’,‘🩸 Bleeding Disorders’);
+}
+
+/* STEP 6 */
+function step6() {
+var ph = PT.ph || {};
+var fh = PT.fh || [];
+var fhItems = [‘Diabetes Mellitus’,‘Hypertension’,‘Ischaemic Heart Disease’,‘Tuberculosis’,
 ‘Bleeding Disorders’,‘Malignancy’,‘Asthma’,‘Renal Disease’,‘Epilepsy’,‘Stroke’];
-document.getElementById(‘fh-chips’).innerHTML = items.map(c=>{
-const sel=(currentPatient.familyHistory||[]).includes(c);
-return `<span class="chip ${sel?'sel':''}" onclick="toggleFH('${escAttr(c)}')">${c}${sel?' ✓':''}</span>`;
+var fhChips = fhItems.map(function(f) {
+var on = fh.indexOf(f)>=0;
+return ‘<span class="chip ' + (on?'on':'') + '" data-fh="' + esc(f) + '">’ + esc(f) + (on?’ ✓’:’’) + ‘</span>’;
 }).join(’’);
+return hdrBlock(‘📚’,‘Past & Family History’,‘Medical background’) +
+‘<div class="card"><div class="card-h">🕐 Past History</div>’ +
+‘<div class="f"><label>Past Medical History</label><textarea id="ph-med" rows="3" placeholder="Previous illnesses, hospitalisations, surgeries, blood transfusions…">’ + esc(ph.medical||’’) + ‘</textarea></div>’ +
+‘<div class="f"><label>Drug Allergies</label><textarea id="ph-alg" rows="2" placeholder="e.g. Penicillin, Sulfonamides, NSAIDs…">’ + esc(ph.allergy||’’) + ‘</textarea></div>’ +
+‘<div class="f"><label>Immunisation Status</label><input id="ph-imm" type="text" placeholder="e.g. Tetanus, Hepatitis B" value="' + esc(ph.immunisation||'') + '"/></div>’ +
+‘<div class="f"><label>Operations / Accidents</label><input id="ph-ops" type="text" placeholder="Previous surgeries or major accidents" value="' + esc(ph.ops||'') + '"/></div>’ +
+‘</div>’ +
+‘<div class="card"><div class="card-h">👨‍👩‍👧 Family History</div>’ +
+‘<div class="chip-lbl" style="margin-bottom:8px">Tap conditions in first-degree relatives</div>’ +
+‘<div class="chips" id="fh-chips">’ + fhChips + ‘</div>’ +
+‘<div class="f"><label>Family History Details</label><textarea id="fh-det" rows="2" placeholder="Additional details…">’ + esc(PT.fhDetails||’’) + ‘</textarea></div>’ +
+‘</div>’ +
+‘<div class="card"><div class="card-h">♀ Gynaecological History (if applicable)</div>’ +
+‘<div class="f"><label>Menstrual History</label><textarea id="i-mens" rows="2" placeholder="LMP, cycle regularity, menorrhagia, amenorrhoea…">’ + esc(PT.menstrual||’’) + ‘</textarea></div>’ +
+‘<div class="f"><label>Obstetric History</label><textarea id="i-obs" rows="2" placeholder="G P A L — dates, deliveries, complications…">’ + esc(PT.obstetric||’’) + ‘</textarea></div>’ +
+‘</div>’;
 }
 
-function savePastFamily(){
-currentPatient.pastHistory = {
-medical:v(‘f-ph-medical’),
-allergy:v(‘f-ph-allergy’),
-immunisation:v(‘f-ph-immunisation’),
-ops:v(‘f-ph-ops’),
-};
-currentPatient.familyHistoryDetails = v(‘f-fh-details’);
-currentPatient.menstrualHistory = v(‘f-menstrual’);
-currentPatient.obstetricHistory = v(‘f-obstetric’);
-return true;
-}
-
-/* ── STEP 7: Personal / Social / Dietary ────────────── */
-function buildPersonalSocial(){
-const ps = currentPatient.personalHistory||{};
-return `
-
-  <div class="step-header"><h2>🧑‍🤝‍🧑 Personal & Social History</h2><p>Lifestyle and habits</p></div>
-  <div class="card">
-    <div class="card-title"><span class="icon">🏠</span> Social History</div>
-    <div class="field-row">
-      <div class="field"><label>Economic Status</label>
-        <select id="f-economic">
-          <option value="">Select</option>
-          ${['Lower','Lower-middle','Middle','Upper-middle','Upper'].map(x=>`<option ${ps.economic===x?'selected':''}>${x}</option>`).join('')}
-        </select></div>
-      <div class="field"><label>Education</label>
-        <input type="text" id="f-education" placeholder="Level of education" value="${ps.education||''}"/></div>
-    </div>
-    <div class="field"><label>Family Size / Living Conditions</label>
-      <input type="text" id="f-family-size" placeholder="No. of family members, type of housing" value="${ps.familySize||''}"/></div>
-    <div class="field"><label>Previous / Other Residences</label>
-      <input type="text" id="f-prev-residence" placeholder="Previous residence in India or abroad, recent travel" value="${ps.prevResidence||''}"/></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="icon">🚬</span> Habits</div>
-    <div class="section-note">Tap to mark substances used</div>
-    <div class="chips-wrap" id="habits-chips">
-      ${['Smoking','Tobacco (chewing)','Alcohol','Recreational drugs','Paan / Betel nut'].map(h=>{
-        const sel=(currentPatient.habits||[]).includes(h);
-        return `<span class="chip ${sel?'sel':''}" onclick="toggleHabit('${escAttr(h)}')">${h}${sel?' ✓':''}</span>`;
-      }).join('')}
-    </div>
-    <div class="field" style="margin-top:10px"><label>Habit Details (quantity, duration, pack-years etc.)</label>
-      <textarea id="f-habit-details" rows="2" placeholder="e.g. Smoking 10 cigarettes/day × 20 years (20 pack-years)">${currentPatient.habitDetails||''}</textarea></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="icon">🍽</span> Dietary History</div>
-    <div class="field"><label>Diet Type</label>
-      <select id="f-diet-type">
-        <option value="">Select</option>
-        ${['Vegetarian','Non-vegetarian','Vegan','Mixed'].map(x=>`<option ${ps.dietType===x?'selected':''}>${x}</option>`).join('')}
-      </select></div>
-    <div class="field"><label>Dietary Adequacy</label>
-      <select id="f-diet-adequacy">
-        <option value="">Select</option>
-        ${['Adequate','Inadequate','Borderline adequate'].map(x=>`<option ${ps.dietAdequacy===x?'selected':''}>${x}</option>`).join('')}
-      </select></div>
-    <div class="field"><label>Dietary Notes</label>
-      <textarea id="f-diet-notes" rows="2" placeholder="Special dietary restrictions, food intolerances, nutritional concerns…">${currentPatient.dietNotes||''}</textarea></div>
-  </div>`;
-}
-
-function toggleHabit(val){
-if(!currentPatient.habits) currentPatient.habits=[];
-const idx=currentPatient.habits.indexOf(val);
-if(idx>=0) currentPatient.habits.splice(idx,1);
-else currentPatient.habits.push(val);
-const items=[‘Smoking’,‘Tobacco (chewing)’,‘Alcohol’,‘Recreational drugs’,‘Paan / Betel nut’];
-document.getElementById(‘habits-chips’).innerHTML = items.map(h=>{
-const sel=(currentPatient.habits||[]).includes(h);
-return `<span class="chip ${sel?'sel':''}" onclick="toggleHabit('${escAttr(h)}')">${h}${sel?' ✓':''}</span>`;
+function toggleFH(v) {
+if (!PT.fh) PT.fh = [];
+var i = PT.fh.indexOf(v);
+if (i >= 0) PT.fh.splice(i,1); else PT.fh.push(v);
+var fhItems = [‘Diabetes Mellitus’,‘Hypertension’,‘Ischaemic Heart Disease’,‘Tuberculosis’,
+‘Bleeding Disorders’,‘Malignancy’,‘Asthma’,‘Renal Disease’,‘Epilepsy’,‘Stroke’];
+var wrap = document.getElementById(‘fh-chips’);
+if (!wrap) return;
+wrap.innerHTML = fhItems.map(function(f) {
+var on = PT.fh.indexOf(f)>=0;
+return ‘<span class="chip ' + (on?'on':'') + '" data-fh="' + esc(f) + '">’ + esc(f) + (on?’ ✓’:’’) + ‘</span>’;
 }).join(’’);
+wrap.querySelectorAll(’[data-fh]’).forEach(function(c) {
+c.addEventListener(‘click’, function() { toggleFH(c.dataset.fh); });
+});
 }
 
-function savePersonalSocial(){
-currentPatient.personalHistory = {
-economic:v(‘f-economic’),
-education:v(‘f-education’),
-familySize:v(‘f-family-size’),
-prevResidence:v(‘f-prev-residence’),
-dietType:v(‘f-diet-type’),
-dietAdequacy:v(‘f-diet-adequacy’),
-};
-currentPatient.habitDetails = v(‘f-habit-details’);
-currentPatient.dietNotes = v(‘f-diet-notes’);
-return true;
+/* STEP 7 */
+function step7() {
+var ps = PT.ps || {};
+var habits = PT.habits || [];
+var habItems = [‘Smoking’,‘Tobacco (chewing)’,‘Alcohol’,‘Recreational drugs’,‘Paan / Betel nut’];
+var habChips = habItems.map(function(h) {
+var on = habits.indexOf(h)>=0;
+return ‘<span class="chip ' + (on?'on':'') + '" data-hab="' + esc(h) + '">’ + esc(h) + (on?’ ✓’:’’) + ‘</span>’;
+}).join(’’);
+return hdrBlock(‘🧑‍🤝‍🧑’,‘Personal & Social History’,‘Lifestyle and habits’) +
+‘<div class="card"><div class="card-h">🏠 Social Background</div>’ +
+‘<div class="row2">’ +
+‘<div class="f"><label>Economic Status</label><select id="ps-eco"><option value="">Select</option>’ + opt([‘Lower’,‘Lower-middle’,‘Middle’,‘Upper-middle’,‘Upper’], ps.economic) + ‘</select></div>’ +
+‘<div class="f"><label>Education</label><input id="ps-edu" type="text" placeholder="Level of education" value="' + esc(ps.education||'') + '"/></div>’ +
+‘</div>’ +
+‘<div class="f"><label>Family Size / Housing</label><input id="ps-fam" type="text" placeholder="No. of family members, housing type" value="' + esc(ps.family||'') + '"/></div>’ +
+‘<div class="f"><label>Previous Residence / Recent Travel</label><input id="ps-res" type="text" placeholder="Other parts of India or abroad, recent travel" value="' + esc(ps.residence||'') + '"/></div>’ +
+‘</div>’ +
+‘<div class="card"><div class="card-h">🚬 Habits & Substances</div>’ +
+‘<div class="chips" id="hab-chips">’ + habChips + ‘</div>’ +
+‘<div class="f"><label>Details (quantity, duration, pack-years)</label><textarea id="hab-det" rows="2" placeholder="e.g. Smoking 10 cigs/day × 20 years">’ + esc(PT.habitDetails||’’) + ‘</textarea></div>’ +
+‘</div>’ +
+‘<div class="card"><div class="card-h">🍽 Dietary History</div>’ +
+‘<div class="row2">’ +
+‘<div class="f"><label>Diet Type</label><select id="dt-type"><option value="">Select</option>’ + opt([‘Vegetarian’,‘Non-vegetarian’,‘Vegan’,‘Mixed’], ps.dietType) + ‘</select></div>’ +
+‘<div class="f"><label>Dietary Adequacy</label><select id="dt-adeq"><option value="">Select</option>’ + opt([‘Adequate’,‘Inadequate’,‘Borderline adequate’], ps.dietAdequacy) + ‘</select></div>’ +
+‘</div>’ +
+‘<div class="f"><label>Dietary Notes</label><textarea id="dt-notes" rows="2" placeholder="Special restrictions, intolerances…">’ + esc(PT.dietNotes||’’) + ‘</textarea></div>’ +
+‘</div>’;
 }
 
-/* ── STEP 8: General Examination ─────────────────────── */
-function buildGeneralExam(){
-const ge = currentPatient.generalExam||{};
-return `
-
-  <div class="step-header"><h2>🔍 General Examination</h2><p>Vital signs and general findings</p></div>
-  <div class="card">
-    <div class="card-title"><span class="icon">💓</span> Vital Signs</div>
-    <div class="vitals-grid">
-      <div class="field"><label>Pulse Rate (bpm)</label>
-        <input type="text" id="f-pulse" placeholder="e.g. 78/min" value="${ge.pulse||''}"/></div>
-      <div class="field"><label>BP (mmHg)</label>
-        <input type="text" id="f-bp" placeholder="e.g. 120/80" value="${ge.bp||''}"/></div>
-      <div class="field"><label>Temperature</label>
-        <input type="text" id="f-temp" placeholder="e.g. 37.2°C / Afebrile" value="${ge.temp||''}"/></div>
-      <div class="field"><label>RR (/min)</label>
-        <input type="text" id="f-rr" placeholder="e.g. 16/min" value="${ge.rr||''}"/></div>
-      <div class="field"><label>SpO₂ (%)</label>
-        <input type="text" id="f-spo2" placeholder="e.g. 98% on RA" value="${ge.spo2||''}"/></div>
-      <div class="field"><label>Weight / BMI</label>
-        <input type="text" id="f-weight" placeholder="e.g. 65 kg / BMI 22" value="${ge.weight||''}"/></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="icon">🧍</span> General Appearance</div>
-    <div class="field"><label>Consciousness</label>
-      <select id="f-consciousness">
-        <option value="">Select</option>
-        ${['Fully conscious & oriented','Drowsy','Stuporose','Comatose','Delirious'].map(x=>`<option ${ge.consciousness===x?'selected':''}>${x}</option>`).join('')}
-      </select></div>
-    <div class="field"><label>Build & Nutrition</label>
-      <select id="f-build">
-        <option value="">Select</option>
-        ${['Well-built & nourished','Moderately nourished','Poorly nourished','Obese','Cachectic'].map(x=>`<option ${ge.build===x?'selected':''}>${x}</option>`).join('')}
-      </select></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="icon">🩺</span> Clinical Signs</div>
-    <div class="section-note">Tap to mark findings — Green = Present, Red = Absent</div>
-    <div class="chips-wrap" id="ge-chips">
-      ${['Pallor','Cyanosis (peripheral)','Cyanosis (central)','Clubbing','Koilonychia',
-         'Jaundice (mild)','Jaundice (moderate)','Jaundice (severe)','Lymphadenopathy',
-         'Oedema (pitting)','Oedema (non-pitting)','Dehydration','Recent weight loss',
-         'Skin rash','Pigmentation','Purpura','Café-au-lait spots','Nodules'].map(s=>{
-        const sys = (currentPatient.genExamFindings||{});
-        const ip=( sys.pos||[]).includes(s),in_=(sys.neg||[]).includes(s);
-        const cls=ip?'pos':in_?'neg':'';
-        const b=ip?' ✓':in_?' ✗':'';
-        return `<span class="chip ${cls}" onclick="toggleGEFinding('${escAttr(s)}')">${s}${b}</span>`;
-      }).join('')}
-    </div>
-    <div class="field" style="margin-top:12px"><label>Lymphadenopathy Details (site, size, consistency)</label>
-      <input type="text" id="f-lymph-details" placeholder="e.g. Right cervical, 1×1 cm, firm, non-tender" value="${ge.lymphDetails||''}"/></div>
-    <div class="field"><label>Oedema Details (site, pitting, distribution)</label>
-      <input type="text" id="f-oedema-details" placeholder="e.g. Bilateral pitting pedal oedema up to ankles" value="${ge.oedemaDetails||''}"/></div>
-    <div class="field"><label>Additional General Exam Notes</label>
-      <textarea id="f-ge-notes" rows="3" placeholder="Any other general examination findings…">${ge.notes||''}</textarea></div>
-  </div>`;
+function toggleHabit(v) {
+if (!PT.habits) PT.habits = [];
+var i = PT.habits.indexOf(v);
+if (i >= 0) PT.habits.splice(i,1); else PT.habits.push(v);
+var habItems = [‘Smoking’,‘Tobacco (chewing)’,‘Alcohol’,‘Recreational drugs’,‘Paan / Betel nut’];
+var wrap = document.getElementById(‘hab-chips’);
+if (!wrap) return;
+wrap.innerHTML = habItems.map(function(h) {
+var on = PT.habits.indexOf(h)>=0;
+return ‘<span class="chip ' + (on?'on':'') + '" data-hab="' + esc(h) + '">’ + esc(h) + (on?’ ✓’:’’) + ‘</span>’;
+}).join(’’);
+wrap.querySelectorAll(’[data-hab]’).forEach(function(c) {
+c.addEventListener(‘click’, function() { toggleHabit(c.dataset.hab); });
+});
 }
 
-function toggleGEFinding(s){
-if(!currentPatient.genExamFindings) currentPatient.genExamFindings={pos:[],neg:[]};
-const sys=currentPatient.genExamFindings;
-const ip=sys.pos.includes(s),in_=sys.neg.includes(s);
-if(!ip&&!in_) sys.pos.push(s);
-else if(ip){sys.pos=sys.pos.filter(x=>x!==s);sys.neg.push(s);}
-else sys.neg=sys.neg.filter(x=>x!==s);
-const items=[‘Pallor’,‘Cyanosis (peripheral)’,‘Cyanosis (central)’,‘Clubbing’,‘Koilonychia’,
+/* STEP 8 */
+var GE_SIGNS = [‘Pallor’,‘Cyanosis (peripheral)’,‘Cyanosis (central)’,‘Clubbing’,‘Koilonychia’,
 ‘Jaundice (mild)’,‘Jaundice (moderate)’,‘Jaundice (severe)’,‘Lymphadenopathy’,
 ‘Oedema (pitting)’,‘Oedema (non-pitting)’,‘Dehydration’,‘Recent weight loss’,
-‘Skin rash’,‘Pigmentation’,‘Purpura’,‘Café-au-lait spots’,‘Nodules’];
-document.getElementById(‘ge-chips’).innerHTML = items.map(sym=>{
-const ip2=(currentPatient.genExamFindings.pos||[]).includes(sym);
-const in2=(currentPatient.genExamFindings.neg||[]).includes(sym);
-const cls=ip2?‘pos’:in2?‘neg’:’’;
-const b=ip2?’ ✓’:in2?’ ✗’:’’;
-return `<span class="chip ${cls}" onclick="toggleGEFinding('${escAttr(sym)}')">${sym}${b}</span>`;
+‘Skin rash’,‘Pigmentation’,‘Purpura’,‘Nodules’];
+
+function step8() {
+var ge = PT.ge || {};
+var gef = PT.gef || {pos:[],neg:[]};
+var geChips = GE_SIGNS.map(function(s) {
+var ip=gef.pos.indexOf(s)>=0, in_=gef.neg.indexOf(s)>=0;
+var cls=ip?‘pos’:in_?‘neg’:’’; var b=ip?’ ✓’:in_?’ ✗’:’’;
+return ‘<span class="chip ' + cls + '" data-ge="' + esc(s) + '">’ + esc(s) + b + ‘</span>’;
 }).join(’’);
+return hdrBlock(‘🔍’,‘General Examination’,‘Vital signs and clinical signs’) +
+‘<div class="card"><div class="card-h">💓 Vital Signs</div>’ +
+‘<div class="row3">’ +
+‘<div class="f"><label>Pulse (bpm)</label><input id="ge-pulse" type="text" placeholder="e.g. 78/min" value="' + esc(ge.pulse||'') + '"/></div>’ +
+‘<div class="f"><label>BP (mmHg)</label><input id="ge-bp" type="text" placeholder="120/80" value="' + esc(ge.bp||'') + '"/></div>’ +
+‘<div class="f"><label>Temperature</label><input id="ge-temp" type="text" placeholder="37.2°C" value="' + esc(ge.temp||'') + '"/></div>’ +
+‘<div class="f"><label>RR (/min)</label><input id="ge-rr" type="text" placeholder="16/min" value="' + esc(ge.rr||'') + '"/></div>’ +
+‘<div class="f"><label>SpO₂ (%)</label><input id="ge-spo2" type="text" placeholder="98%" value="' + esc(ge.spo2||'') + '"/></div>’ +
+‘<div class="f"><label>Weight / BMI</label><input id="ge-wt" type="text" placeholder="65 kg" value="' + esc(ge.weight||'') + '"/></div>’ +
+‘</div>’ +
+‘</div>’ +
+‘<div class="card"><div class="card-h">🧍 General Appearance</div>’ +
+‘<div class="row2">’ +
+‘<div class="f"><label>Consciousness</label><select id="ge-cons"><option value="">Select</option>’ + opt([‘Fully conscious & oriented’,‘Drowsy’,‘Stuporose’,‘Comatose’,‘Delirious’], ge.consciousness) + ‘</select></div>’ +
+‘<div class="f"><label>Build & Nutrition</label><select id="ge-build"><option value="">Select</option>’ + opt([‘Well-built & nourished’,‘Moderately nourished’,‘Poorly nourished’,‘Obese’,‘Cachectic’], ge.build) + ‘</select></div>’ +
+‘</div>’ +
+‘</div>’ +
+‘<div class="card"><div class="card-h">🩺 Clinical Signs</div>’ +
+‘<div class="note">Tap once = Present ✓, twice = Absent ✗, thrice = clear</div>’ +
+‘<div class="chips" id="ge-chips">’ + geChips + ‘</div>’ +
+‘<div class="f"><label>Lymphadenopathy Details</label><input id="ge-lymph" type="text" placeholder="Site, size, consistency, tenderness" value="' + esc(ge.lymph||'') + '"/></div>’ +
+‘<div class="f"><label>Oedema Details</label><input id="ge-oedema" type="text" placeholder="Site, pitting/non-pitting, distribution" value="' + esc(ge.oedema||'') + '"/></div>’ +
+‘<div class="f"><label>Other Findings</label><textarea id="ge-notes" rows="2" placeholder="Any other findings…">’ + esc(ge.notes||’’) + ‘</textarea></div>’ +
+‘</div>’;
 }
 
-function saveGeneralExam(){
-const ge = currentPatient.generalExam||{};
-currentPatient.generalExam = Object.assign(ge, {
-pulse:v(‘f-pulse’),bp:v(‘f-bp’),temp:v(‘f-temp’),rr:v(‘f-rr’),
-spo2:v(‘f-spo2’),weight:v(‘f-weight’),consciousness:v(‘f-consciousness’),
-build:v(‘f-build’),lymphDetails:v(‘f-lymph-details’),
-oedemaDetails:v(‘f-oedema-details’),notes:v(‘f-ge-notes’),
+function toggleGE(sym) {
+if (!PT.gef) PT.gef = {pos:[],neg:[]};
+var d = PT.gef;
+var ip=d.pos.indexOf(sym)>=0, in_=d.neg.indexOf(sym)>=0;
+if (!ip && !in_) d.pos.push(sym);
+else if (ip) { d.pos=d.pos.filter(function(x){return x!==sym;}); d.neg.push(sym); }
+else d.neg=d.neg.filter(function(x){return x!==sym;});
+var wrap = document.getElementById(‘ge-chips’);
+if (!wrap) return;
+wrap.innerHTML = GE_SIGNS.map(function(s) {
+var ip2=d.pos.indexOf(s)>=0,in2=d.neg.indexOf(s)>=0;
+var cls=ip2?‘pos’:in2?‘neg’:’’; var b=ip2?’ ✓’:in2?’ ✗’:’’;
+return ‘<span class="chip ' + cls + '" data-ge="' + esc(s) + '">’ + esc(s) + b + ‘</span>’;
+}).join(’’);
+wrap.querySelectorAll(’[data-ge]’).forEach(function(c) {
+c.addEventListener(‘click’, function() { toggleGE(c.dataset.ge); });
 });
+}
+
+/* STEP 9 */
+function step9() {
+var se = PT.se || {};
+return hdrBlock(‘🩺’,‘Systemic Examination’,‘CVS, Respiratory, Abdomen & CNS’) +
+‘<div class="card"><div class="card-h">🫀 Cardiovascular System</div>’ +
+‘<div class="f"><label>Pulse Character / JVP / Carotid</label><input id="se-cvs1" type="text" placeholder="e.g. Regular, normal volume, no JVP elevation" value="' + esc(se.cvs1||'') + '"/></div>’ +
+‘<div class="f"><label>Precordium (Inspection / Palpation)</label><textarea id="se-cvs2" rows="2" placeholder="Apex beat, thrills, heaves…">’ + esc(se.cvs2||’’) + ‘</textarea></div>’ +
+‘<div class="f"><label>Auscultation</label><textarea id="se-cvs3" rows="3" placeholder="S1/S2, murmurs (grade, radiation), added sounds…">’ + esc(se.cvs3||’’) + ‘</textarea></div>’ +
+‘</div>’ +
+‘<div class="card"><div class="card-h">🫁 Respiratory System</div>’ +
+‘<div class="f"><label>Inspection / Palpation / Percussion</label><textarea id="se-resp1" rows="3" placeholder="Chest shape, expansion, trachea, TVF, percussion note…">’ + esc(se.resp1||’’) + ‘</textarea></div>’ +
+‘<div class="f"><label>Auscultation</label><textarea id="se-resp2" rows="3" placeholder="Breath sounds, vocal resonance, adventitious sounds…">’ + esc(se.resp2||’’) + ‘</textarea></div>’ +
+‘</div>’ +
+‘<div class="card"><div class="card-h">🫃 Abdomen</div>’ +
+‘<div class="f"><label>Inspection / Auscultation</label><textarea id="se-abd1" rows="2" placeholder="Shape, scars, veins, umbilicus, bowel sounds…">’ + esc(se.abd1||’’) + ‘</textarea></div>’ +
+‘<div class="f"><label>Palpation</label><textarea id="se-abd2" rows="3" placeholder="Liver (span, edge), spleen, kidneys, masses, tenderness, guarding, fluid thrill…">’ + esc(se.abd2||’’) + ‘</textarea></div>’ +
+‘<div class="f"><label>Percussion</label><textarea id="se-abd3" rows="2" placeholder="Shifting dullness, liver span, splenic dullness…">’ + esc(se.abd3||’’) + ‘</textarea></div>’ +
+‘<div class="f"><label>Rectal / Vaginal Examination</label><input id="se-rectal" type="text" placeholder="Findings or Not performed" value="' + esc(se.rectal||'Not performed') + '"/></div>’ +
+‘</div>’ +
+‘<div class="card"><div class="card-h">🧠 Nervous System</div>’ +
+‘<div class="f"><label>Higher Functions & Speech</label><textarea id="se-cns1" rows="2" placeholder="Orientation, memory, calculation, judgment, speech…">’ + esc(se.cns1||’’) + ‘</textarea></div>’ +
+‘<div class="f"><label>Cranial Nerves</label><textarea id="se-cns2" rows="2" placeholder="Findings or All cranial nerves intact…">’ + esc(se.cns2||’’) + ‘</textarea></div>’ +
+‘<div class="f"><label>Motor System</label><textarea id="se-cns3" rows="2" placeholder="Tone, power (0–5), wasting, fasciculations, gait…">’ + esc(se.cns3||’’) + ‘</textarea></div>’ +
+‘<div class="f"><label>Reflexes</label><textarea id="se-cns4" rows="2" placeholder="Biceps C5/6, Triceps C6/7, Knee L2–4, Ankle S1/2, Plantar…">’ + esc(se.cns4||’’) + ‘</textarea></div>’ +
+‘<div class="f"><label>Sensory System</label><textarea id="se-cns5" rows="2" placeholder="Touch, pain, temp, vibration, position sense, Romberg\'s…">’ + esc(se.cns5||’’) + ‘</textarea></div>’ +
+‘<div class="f"><label>Cerebellar / Extrapyramidal / Meningeal</label><textarea id="se-cns6" rows="2" placeholder="Finger-nose, heel-knee, Kernig\'s, Brudzinski\'s, neck rigidity…">’ + esc(se.cns6||’’) + ‘</textarea></div>’ +
+‘</div>’;
+}
+
+/* STEP 10 */
+function step10() {
+if (!PT.ddx || !PT.ddx.length) PT.ddx = [’’,’’];
+var dx = PT.dx || {};
+var ddxRows = PT.ddx.map(function(d, i) {
+return ‘<div class="cc-row">’ +
+‘<input class="ddx-inp" data-i="' + i + '" type="text" placeholder="Differential ' + (i+1) + '" value="' + esc(d||'') + '"/>’ +
+‘<button class="del-btn rm-ddx" data-i="' + i + '">🗑</button>’ +
+‘</div>’;
+}).join(’’);
+return hdrBlock(‘🎯’,‘Diagnosis’,‘Provisional, differential & final’) +
+‘<div class="card"><div class="card-h">🔶 Provisional Diagnosis</div>’ +
+‘<div class="note">Syndrome → Anatomical → Etiopathological diagnosis</div>’ +
+‘<div class="f"><label>Provisional Diagnosis</label><textarea id="dx-prov" rows="4" placeholder="e.g. Congestive cardiac failure secondary to DCM&#10;Syndrome: CCF&#10;Anatomical: Bilateral ventricular&#10;Etio: Dilated cardiomyopathy">’ + esc(dx.provisional||’’) + ‘</textarea></div>’ +
+‘</div>’ +
+‘<div class="card"><div class="card-h">📋 Differential Diagnoses</div>’ +
+‘<div id="ddx-wrap">’ + ddxRows + ‘</div>’ +
+‘<button class="add-btn add-ddx">+ Add Differential</button>’ +
+‘</div>’ +
+‘<div class="card"><div class="card-h">✅ Final Diagnosis</div>’ +
+‘<div class="f"><label>Final Diagnosis</label><textarea id="dx-final" rows="3" placeholder="Final confirmed diagnosis after investigations…">’ + esc(dx.final||’’) + ‘</textarea></div>’ +
+‘</div>’ +
+‘<div class="card"><div class="card-h">🧪 Investigations & Reports</div>’ +
+‘<div class="f"><label>Laboratory & Imaging Findings</label><textarea id="dx-inv" rows="4" placeholder="Hb, WBC, CXR, ECG, Echo, USG, CT, LFT, RFT…">’ + esc(PT.investigations||’’) + ‘</textarea></div>’ +
+‘</div>’;
+}
+
+function addDDxRow() { if(!PT.ddx) PT.ddx=[]; PT.ddx.push(’’); renderStep(); }
+function removeDDx(i) { if(!PT.ddx||PT.ddx.length<=1) return; PT.ddx.splice(i,1); renderStep(); }
+
+/* ── SAVE STEP ── */
+function saveStep(s) {
+switch(s) {
+case 0:
+PT.name = val(‘i-name’);
+if (!PT.name) { toast(‘Please enter patient name’); return false; }
+PT.age=val(‘i-age’); PT.sex=val(‘i-sex’); PT.occupation=val(‘i-occ’);
+PT.address=val(‘i-addr’); PT.marital=val(‘i-marital’); PT.insurance=val(‘i-ins’);
+PT.doa=val(‘i-doa’); PT.doe=val(‘i-doe’); PT.informant=val(‘i-inf’); PT.idmark=val(‘i-idm’);
 return true;
+case 1:
+if (!PT.complaints || !PT.complaints.filter(function(c){return c.complaint.trim();}).length) {
+toast(‘Add at least one complaint’); return false;
 }
-
-/* ── STEP 9: Systemic Examination ────────────────────── */
-function buildSysExam(){
-const se = currentPatient.sysExam||{};
-return `
-
-  <div class="step-header"><h2>🩺 Systemic Examination</h2><p>CVS, Respiratory, Abdomen & CNS</p></div>
-  <div class="card">
-    <div class="card-title"><span class="icon">🫀</span> Cardiovascular System</div>
-    <div class="field"><label>Pulse Character / JVP / Carotid</label>
-      <input type="text" id="f-se-cvs-pulse" placeholder="e.g. Regular, normal volume, no JVP elevation" value="${se.cvsPulse||''}"/></div>
-    <div class="field"><label>Precordial Examination (Inspection / Palpation)</label>
-      <textarea id="f-se-cvs-precordium" rows="2" placeholder="Apex beat, thrills, heaves, parasternal pulsations…">${se.cvsPrecordium||''}</textarea></div>
-    <div class="field"><label>Auscultation (Heart Sounds / Murmurs)</label>
-      <textarea id="f-se-cvs-auscult" rows="3" placeholder="S1/S2 character, murmurs (grade, character, radiation), added sounds (S3/S4), rubs…">${se.cvsAuscult||''}</textarea></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="icon">🫁</span> Respiratory System</div>
-    <div class="field"><label>Inspection / Palpation / Percussion</label>
-      <textarea id="f-se-resp-ipp" rows="3" placeholder="Chest shape, expansion, trachea position, TVF, percussion note (dull/resonant), areas…">${se.respIPP||''}</textarea></div>
-    <div class="field"><label>Auscultation</label>
-      <textarea id="f-se-resp-auscult" rows="3" placeholder="Breath sounds (vesicular/bronchial), intensity, vocal resonance, adventitious sounds (crepitations, rhonchi, rub)…">${se.respAuscult||''}</textarea></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="icon">🫃</span> Abdomen</div>
-    <div class="field"><label>Inspection / Auscultation</label>
-      <textarea id="f-se-abd-insp" rows="2" placeholder="Shape, distension, dilated veins, scars, umbilicus, bowel sounds…">${se.abdInsp||''}</textarea></div>
-    <div class="field"><label>Palpation (Organomegaly / Masses)</label>
-      <textarea id="f-se-abd-palp" rows="3" placeholder="Liver (span, edge, texture), spleen (size, Traube's), kidneys, any masses, tenderness, guarding, rigidity, fluid thrill…">${se.abdPalp||''}</textarea></div>
-    <div class="field"><label>Percussion</label>
-      <textarea id="f-se-abd-perc" rows="2" placeholder="Shifting dullness, liver dullness span, splenic dullness…">${se.abdPerc||''}</textarea></div>
-    <div class="field"><label>Rectal / Vaginal Examination</label>
-      <input type="text" id="f-se-rectal" placeholder="Findings or 'Not performed'" value="${se.rectal||'Not performed'}"/></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="icon">🧠</span> Nervous System</div>
-    <div class="field"><label>Higher Functions & Speech</label>
-      <textarea id="f-se-cns-higher" rows="2" placeholder="Orientation, memory, calculation, judgment, speech, mood, insight…">${se.cnsHigher||''}</textarea></div>
-    <div class="field"><label>Cranial Nerves</label>
-      <textarea id="f-se-cns-cn" rows="2" placeholder="Notable cranial nerve findings or 'All cranial nerves intact'…">${se.cnsCranial||''}</textarea></div>
-    <div class="field"><label>Motor System</label>
-      <textarea id="f-se-cns-motor" rows="2" placeholder="Tone, power (grade 0-5), abnormal movements, wasting, fasciculations, coordination, gait…">${se.cnsMotor||''}</textarea></div>
-    <div class="field"><label>Reflexes</label>
-      <textarea id="f-se-cns-reflexes" rows="2" placeholder="DTRs (biceps, triceps, supinator, knee, ankle), plantar response, abdominal reflexes…">${se.cnsReflexes||''}</textarea></div>
-    <div class="field"><label>Sensory System</label>
-      <textarea id="f-se-cns-sensory" rows="2" placeholder="Light touch, pain, temperature, vibration, position sense, Romberg's…">${se.cnsSensory||''}</textarea></div>
-    <div class="field"><label>Cerebellar / Extrapyramidal / Meningeal Signs</label>
-      <textarea id="f-se-cns-other" rows="2" placeholder="Cerebellar tests, extrapyramidal signs, neck rigidity, Kernig's/Brudzinski's…">${se.cnsOther||''}</textarea></div>
-  </div>`;
-}
-
-function saveSysExam(){
-currentPatient.sysExam = {
-cvsPulse:v(‘f-se-cvs-pulse’),cvsPrecordium:v(‘f-se-cvs-precordium’),
-cvsAuscult:v(‘f-se-cvs-auscult’),respIPP:v(‘f-se-resp-ipp’),
-respAuscult:v(‘f-se-resp-auscult’),abdInsp:v(‘f-se-abd-insp’),
-abdPalp:v(‘f-se-abd-palp’),abdPerc:v(‘f-se-abd-perc’),rectal:v(‘f-se-rectal’),
-cnsHigher:v(‘f-se-cns-higher’),cnsCranial:v(‘f-se-cns-cn’),
-cnsMotor:v(‘f-se-cns-motor’),cnsReflexes:v(‘f-se-cns-reflexes’),
-cnsSensory:v(‘f-se-cns-sensory’),cnsOther:v(‘f-se-cns-other’),
-};
+PT.complaints = PT.complaints.filter(function(c){return c.complaint.trim();});
 return true;
-}
-
-/* ── STEP 10: Diagnosis ──────────────────────────────── */
-function buildDiagnosis(){
-const dx = currentPatient.diagnosis||{};
-return `
-
-  <div class="step-header"><h2>🎯 Diagnosis</h2><p>Provisional, differential and final</p></div>
-  <div class="card">
-    <div class="card-title"><span class="icon">🔶</span> Provisional Diagnosis</div>
-    <div class="section-note">Syndrome → Anatomical → Etiopathological</div>
-    <div class="field"><label>Provisional Diagnosis</label>
-      <textarea id="f-dx-provisional" rows="3" placeholder="e.g. Congestive cardiac failure secondary to dilated cardiomyopathy&#10;Syndrome: CCF&#10;Anatomical: Bilateral cardiac&#10;Etio: DCM">${dx.provisional||''}</textarea></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="icon">📋</span> Differential Diagnoses</div>
-    <div id="ddx-list">
-      ${(currentPatient.ddx||['','']).map((d,i)=>`
-        <div class="complaint-row">
-          <input type="text" placeholder="Differential ${i+1}" value="${d}"
-            oninput="updateDDx(${i},this.value)"/>
-          <button class="del-btn" onclick="removeDDx(${i})">🗑</button>
-        </div>`).join('')}
-    </div>
-    <button class="add-btn" onclick="addDDx()">+ Add Differential</button>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="icon">✅</span> Final Diagnosis</div>
-    <div class="field"><label>Final Diagnosis</label>
-      <textarea id="f-dx-final" rows="3" placeholder="Final confirmed diagnosis after investigations…">${dx.final||''}</textarea></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="icon">🧪</span> Investigations</div>
-    <div class="field"><label>Laboratory & Imaging Findings</label>
-      <textarea id="f-investigations" rows="4" placeholder="Hb, WBC, platelets, LFT, RFT, CXR, ECG, Echo, USG, CT findings…">${currentPatient.investigations||''}</textarea></div>
-  </div>`;
-}
-
-function updateDDx(i,v){
-if(!currentPatient.ddx) currentPatient.ddx=[’’,’’];
-currentPatient.ddx[i]=v;
-}
-function addDDx(){
-if(!currentPatient.ddx) currentPatient.ddx=[’’,’’];
-currentPatient.ddx.push(’’);
-renderCurrentStep();
-}
-function removeDDx(i){
-if(!currentPatient.ddx||currentPatient.ddx.length<=1) return;
-currentPatient.ddx.splice(i,1);
-renderCurrentStep();
-}
-function saveDiagnosis(){
-currentPatient.diagnosis = {
-provisional:v(‘f-dx-provisional’),
-final:v(‘f-dx-final’),
-};
-currentPatient.investigations = v(‘f-investigations’);
-if(!currentPatient.ddx) currentPatient.ddx=[];
-currentPatient.ddx = currentPatient.ddx.filter(d=>d&&d.trim());
-return true;
-}
-
-/* ════════════════════════════════════════════════════════
-STEP NAVIGATION
-════════════════════════════════════════════════════════ */
-function v(id){const el=document.getElementById(id);return el?el.value.trim():’’;}
-
-function saveCurrentStep(){
-switch(currentStep){
-case 0: return savePatientDetails();
-case 1: return saveComplaints();
-case 2: saveHOPI(); return true;
+case 2: PT.hopi=val(‘i-hopi’); PT.etiology=val(‘i-etio’); return true;
 case 3: saveSysNotes([‘cvs’,‘resp’]); return true;
 case 4: saveSysNotes([‘gi’,‘urine’]); return true;
-case 5: saveSysNotes([‘cns’,‘endocrine’,‘locomotor’,‘bleeding’]); return true;
-case 6: return savePastFamily();
-case 7: savePersonalSocial(); return true;
-case 8: saveGeneralExam(); return true;
-case 9: saveSysExam(); return true;
-case 10: return saveDiagnosis();
+case 5: saveSysNotes([‘cns’,‘endo’,‘loco’,‘bleed’]); return true;
+case 6:
+PT.ph = {medical:val(‘ph-med’),allergy:val(‘ph-alg’),immunisation:val(‘ph-imm’),ops:val(‘ph-ops’)};
+PT.fhDetails=val(‘fh-det’); PT.menstrual=val(‘i-mens’); PT.obstetric=val(‘i-obs’);
+return true;
+case 7:
+PT.ps = {economic:val(‘ps-eco’),education:val(‘ps-edu’),family:val(‘ps-fam’),residence:val(‘ps-res’),dietType:val(‘dt-type’),dietAdequacy:val(‘dt-adeq’)};
+PT.habitDetails=val(‘hab-det’); PT.dietNotes=val(‘dt-notes’);
+return true;
+case 8:
+PT.ge = {pulse:val(‘ge-pulse’),bp:val(‘ge-bp’),temp:val(‘ge-temp’),rr:val(‘ge-rr’),spo2:val(‘ge-spo2’),weight:val(‘ge-wt’),consciousness:val(‘ge-cons’),build:val(‘ge-build’),lymph:val(‘ge-lymph’),oedema:val(‘ge-oedema’),notes:val(‘ge-notes’)};
+return true;
+case 9:
+PT.se = {cvs1:val(‘se-cvs1’),cvs2:val(‘se-cvs2’),cvs3:val(‘se-cvs3’),resp1:val(‘se-resp1’),resp2:val(‘se-resp2’),abd1:val(‘se-abd1’),abd2:val(‘se-abd2’),abd3:val(‘se-abd3’),rectal:val(‘se-rectal’),cns1:val(‘se-cns1’),cns2:val(‘se-cns2’),cns3:val(‘se-cns3’),cns4:val(‘se-cns4’),cns5:val(‘se-cns5’),cns6:val(‘se-cns6’)};
+return true;
+case 10:
+PT.dx = {provisional:val(‘dx-prov’),final:val(‘dx-final’)};
+PT.investigations=val(‘dx-inv’);
+if (PT.ddx) PT.ddx = PT.ddx.filter(function(d){return d&&d.trim();});
+return true;
 }
 return true;
 }
 
-function renderCurrentStep(){
-document.getElementById(‘form-content’).innerHTML = buildStep(currentStep);
-updateProgress();
-window.scrollTo(0,0);
-document.getElementById(‘form-content’).scrollTop=0;
+/* ── NAVIGATION ── */
+function nextStep() {
+if (!saveStep(STEP)) return;
+if (STEP === TOTAL-1) { finalise(); return; }
+STEP++; renderStep();
+}
+function prevStep() {
+saveStep(STEP);
+if (STEP > 0) { STEP–; renderStep(); }
+}
+function finalise() {
+if (!PT.id) PT.id = uid();
+PT.updatedAt = new Date().toISOString();
+if (!PT.createdAt) PT.createdAt = PT.updatedAt;
+var i = DB.findIndex ? DB.findIndex(function(x){return x.id===PT.id;}) : (function(){for(var j=0;j<DB.length;j++)if(DB[j].id===PT.id)return j;return -1;})();
+if (i >= 0) DB[i] = PT; else DB.unshift(PT);
+persist();
+toast(‘Patient saved ✓’);
+$(‘case-name-bar’).textContent = (PT.name||‘Unknown’) + ’ · Case Sheet’;
+$(‘case-body’).innerHTML = buildCaseSheet(PT);
+go(‘scr-case’);
 }
 
-function updateProgress(){
-const pct = Math.round(((currentStep+1)/TOTAL_STEPS)*100);
-document.getElementById(‘prog-fill’).style.width = pct+’%’;
-document.getElementById(‘prog-text’).textContent = `Step ${currentStep+1} / ${TOTAL_STEPS}`;
-document.getElementById(‘prog-pct’).textContent = pct+’%’;
-document.getElementById(‘form-step-title’).textContent = STEPS[currentStep].title;
-document.getElementById(‘form-step-sub’).textContent = STEPS[currentStep].sub;
-document.getElementById(‘btn-back’).style.display = currentStep===0?‘none’:‘flex’;
-document.getElementById(‘btn-next’).textContent = currentStep===TOTAL_STEPS-1?‘✓ Save Patient’:‘Next →’;
-}
+/* ── CASE SHEET ── */
+function buildCaseSheet(p) {
+var h = ‘’;
+var ge = p.ge||{}, se = p.se||{}, ph = p.ph||{}, ps = p.ps||{};
+var sr = p.sr||{}, sn = p.sn||{}, dx = p.dx||{}, gef = p.gef||{pos:[],neg:[]};
 
-function nextStep(){
-if(!saveCurrentStep()) return;
-if(currentStep===TOTAL_STEPS-1){
-finalizePatient();
-} else {
-currentStep++;
-renderCurrentStep();
-}
-}
+/* Header */
+h += ‘<div class="card"><div class="cs-hdr"><div class="cs-hdr-title">CLINICAL CASE SHEET</div><div class="cs-hdr-sub">Christian Medical College, Ludhiana</div></div><div>’;
+h += kv(‘Name’,p.name) + kv(‘Age’,p.age) + kv(‘Sex’,p.sex) + kv(‘Occupation’,p.occupation) + kv(‘Marital’,p.marital);
+h += ‘<br>’ + kv(‘Date of Admission’,fmtDate(p.doa)) + kv(‘Date of Examination’,fmtDate(p.doe));
+h += kv(‘Informant’,p.informant) + kv(‘Insurance’,p.insurance) + kv(‘ID Mark’,p.idmark);
+h += ‘</div>’ + (p.address ? ’<div style="font-size:.85rem;margin-top:8px"><b style="color:var(--muted)">Address:</b> ’ + esc(p.address) + ‘</div>’ : ‘’) + ‘</div>’;
 
-function prevStep(){
-saveCurrentStep();
-if(currentStep>0){currentStep–;renderCurrentStep();}
-}
-
-function finalizePatient(){
-// Assign ID + timestamp
-if(!currentPatient.id) currentPatient.id=genId();
-currentPatient.updatedAt = new Date().toISOString();
-if(!currentPatient.createdAt) currentPatient.createdAt=new Date().toISOString();
-// Save or update
-const idx = patients.findIndex(p=>p.id===currentPatient.id);
-if(idx>=0) patients[idx]=currentPatient;
-else patients.unshift(currentPatient);
-savePatients();
-showToast(‘Patient saved successfully!’);
-caseViewSource=‘form’;
-openCaseView(currentPatient);
-}
-
-/* ════════════════════════════════════════════════════════
-START NEW PATIENT
-════════════════════════════════════════════════════════ */
-function startNewPatient(){
-currentPatient = {};
-currentStep = 0;
-editingId = null;
-showScreen(‘form-screen’);
-renderCurrentStep();
-}
-
-function editPatient(id){
-const p = patients.find(x=>x.id===id);
-if(!p) return;
-currentPatient = JSON.parse(JSON.stringify(p));
-currentStep=0;
-editingId=id;
-showScreen(‘form-screen’);
-renderCurrentStep();
-}
-
-function confirmExit(){
-if(confirm(‘Exit case form? Unsaved progress on this step may be lost.’)) showScreen(‘home-screen’);
-}
-
-/* ════════════════════════════════════════════════════════
-PATIENT LIST
-════════════════════════════════════════════════════════ */
-function renderPatientList(){
-const q=(document.getElementById(‘patient-search’)||{}).value||’’;
-const filtered = patients.filter(p=>{
-if(!q) return true;
-const s=(p.name||’’)+(p.age||’’)+(p.sex||’’)+((p.diagnosis||{}).final||’’)+((p.diagnosis||{}).provisional||’’);
-return s.toLowerCase().includes(q.toLowerCase());
+/* Chief Complaints */
+if (p.complaints && p.complaints.length) {
+h += ‘<div class="card"><div class="cs-sec-title">CHIEF COMPLAINTS</div><div class="cs-body"><ul>’;
+p.complaints.forEach(function(c,i) {
+h += ‘<li><b>’ + (i+1) + ’. ’ + esc(c.complaint) + ‘</b>’ + (c.duration ? ’ — ’ + esc(c.duration) : ‘’) + ‘</li>’;
 });
-const el=document.getElementById(‘patient-list’);
-if(filtered.length===0){
-el.innerHTML=`<div class="empty-state"><div class="empty-icon">📂</div><p>${q?'No patients match your search.':'No patients saved yet.<br>Start by adding a new patient.'}</p></div>`;
-return;
-}
-el.innerHTML=filtered.map(p=>` <div class="patient-item" onclick="openCaseView(${JSON.stringify(p).replace(/"/g,'&quot;')})"> <div class="patient-avatar">${(p.name||'?')[0].toUpperCase()}</div> <div class="patient-info"> <div class="patient-name">${p.name||'Unnamed'}</div> <div class="patient-meta">${[p.age,p.sex,p.occupation].filter(Boolean).join(' · ')} ${p.doa?'| Admitted: '+formatDate(p.doa):''}</div> <div class="patient-meta" style="color:var(--teal);margin-top:2px">${(p.diagnosis||{}).provisional||'No diagnosis recorded'}</div> </div> <div class="patient-actions" onclick="event.stopPropagation()"> <button class="p-del-btn" onclick="editPatient('${p.id}')" title="Edit">✏️</button> <button class="p-del-btn" onclick="deletePatient('${p.id}')" title="Delete">🗑</button> </div> </div>`).join(’’);
+h += ‘</ul></div></div>’;
 }
 
-function deletePatient(id){
-if(!confirm(‘Delete this patient? This cannot be undone.’)) return;
-patients=patients.filter(p=>p.id!==id);
-savePatients();
-renderPatientList();
-showToast(‘Patient deleted’);
+/* HOPI */
+if (p.hopi || p.etiology) {
+h += ‘<div class="card"><div class="cs-sec-title">HISTORY OF PRESENT ILLNESS</div>’;
+if (p.hopi) h += ‘<div class="cs-body">’ + esc(p.hopi).replace(/\n/g,’<br>’) + ‘</div>’;
+if (p.etiology) h += ‘<div style="margin-top:10px"><div style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Etiological History</div><div class="cs-body">’ + esc(p.etiology).replace(/\n/g,’<br>’) + ‘</div></div>’;
+h += ‘</div>’;
 }
 
-function formatDate(d){
-if(!d) return ‘’;
-try{const dt=new Date(d);return dt.toLocaleDateString(‘en-IN’,{day:‘numeric’,month:‘short’,year:‘numeric’});}
-catch(e){return d;}
-}
-
-/* ════════════════════════════════════════════════════════
-CASE VIEW — GENERATE FORMATTED CASE SHEET
-════════════════════════════════════════════════════════ */
-function openCaseView(p){
-if(typeof p===‘string’) p=JSON.parse(p);
-showScreen(‘case-view-screen’);
-document.getElementById(‘case-view-name’).textContent = (p.name||‘Unknown’)+’ · Case Sheet’;
-document.getElementById(‘case-view-content’).innerHTML = generateCaseSheet(p);
-}
-
-function goBackFromCase(){
-showScreen(caseViewSource===‘form’?‘patients-screen’:‘patients-screen’);
-caseViewSource=‘patients’;
-}
-
-function printCase(){
-window.print();
-}
-
-function generateCaseSheet(p){
-let html = ‘’;
-
-/* ── Header ── */
-html += `<div class="card"> <div style="text-align:center;padding:8px 0 14px"> <div style="font-family:'Lora',serif;font-size:1.2rem;font-weight:700;color:var(--navy)">CLINICAL CASE SHEET</div> <div style="font-size:.75rem;color:var(--muted);margin-top:2px">Christian Medical College, Ludhiana</div> </div> <div class="case-row"> ${kv('Name', p.name)} ${kv('Age', p.age)} ${kv('Sex', p.sex)} ${kv('Occupation', p.occupation)} ${kv('Marital Status', p.marital)} </div> <div class="case-row" style="margin-top:6px"> ${kv('Date of Admission', formatDate(p.doa))} ${kv('Date of Examination', formatDate(p.doe))} ${kv('Informant', p.informant)} ${kv('ID Mark', p.idmark)} ${kv('Insurance', p.insurance)} </div> ${p.address?`<div style="font-size:.85rem;margin-top:6px"><b style="color:var(--muted);font-weight:500">Address:</b> ${p.address}</div>`:’’}
-
-  </div>`;
-
-/* ── Chief Complaints ── */
-if(p.complaints&&p.complaints.length){
-html+=`<div class="card"><div class="case-section-title">CHIEF COMPLAINTS</div><div class="case-body"><ul>`;
-p.complaints.forEach((c,i)=>{
-html+=`<li><b>${i+1}. ${c.complaint}</b>${c.duration?' — '+c.duration:''}</li>`;
-});
-html+=`</ul></div></div>`;
-}
-
-/* ── HOPI ── */
-if(p.hopi||p.etiology){
-html+=`<div class="card"><div class="case-section-title">HISTORY OF PRESENT ILLNESS</div>`;
-if(p.hopi) html+=`<div class="case-body">${escHtml(p.hopi).replace(/\n/g,'<br/>')}</div>`;
-if(p.etiology) html+=`<div style="margin-top:12px"><div style="font-weight:600;font-size:.88rem;margin-bottom:4px;color:var(--muted)">ETIOLOGICAL HISTORY</div><div class="case-body">${escHtml(p.etiology).replace(/\n/g,'<br/>')}</div></div>`;
-html+=`</div>`;
-}
-
-/* ── Systemic Review ── */
-const sysLabels = {
-cvs:‘Cardiovascular System’,resp:‘Respiratory System’,
-gi:‘Gastrointestinal System’,urine:‘Urinary System’,
-cns:‘Central Nervous System’,endocrine:‘Endocrine System’,
-locomotor:‘Locomotor System’,bleeding:‘Bleeding Disorders’
-};
-const sr = p.systemicReview||{};
-const sn = p.systemicNotes||{};
-const sysKeys = Object.keys(sysLabels);
-const hasSR = sysKeys.some(k=>(sr[k]&&(sr[k].pos.length||sr[k].neg.length))||sn[k]);
-if(hasSR){
-html+=`<div class="card"><div class="case-section-title">SYSTEMIC REVIEW</div>`;
-sysKeys.forEach(k=>{
-const data=sr[k]||{pos:[],neg:[]};
-const notes=sn[k]||’’;
-if(!data.pos.length&&!data.neg.length&&!notes) return;
-html+=`<div class="sys-block"><div class="sys-block-title">${sysLabels[k]}</div>`;
-if(data.pos.length){
-html+=`<div class="case-body" style="margin-bottom:4px"><span style="font-weight:600;color:var(--teal)">Positive: </span>`;
-html+=data.pos.map(s=>`<span class="finding-pos">✓ ${s}</span>`).join(’  ’);
-html+=`</div>`;
-}
-if(data.neg.length){
-html+=`<div class="case-body" style="margin-bottom:4px"><span style="font-weight:600;color:var(--muted)">Negative: </span>`;
-html+=data.neg.map(s=>`<span class="finding-neg">✗ ${s}</span>`).join(’  ’);
-html+=`</div>`;
-}
-if(notes) html+=`<div class="case-body" style="font-style:italic;color:var(--muted)">${escHtml(notes)}</div>`;
-html+=`</div>`;
-});
-html+=`</div>`;
-}
-
-/* ── Past History ── */
-const ph=p.pastHistory||{};
-if(ph.medical||ph.allergy||ph.immunisation||ph.ops||p.menstrualHistory||p.obstetricHistory){
-html+=`<div class="card"><div class="case-section-title">PAST HISTORY</div><div class="case-body">`;
-if(ph.medical) html+=`<p><b>Past Medical History:</b> ${escHtml(ph.medical)}</p>`;
-if(ph.allergy) html+=`<p><b>Drug Allergy:</b> ${escHtml(ph.allergy)}</p>`;
-if(ph.immunisation) html+=`<p><b>Immunisation Status:</b> ${escHtml(ph.immunisation)}</p>`;
-if(ph.ops) html+=`<p><b>Operations / Accidents:</b> ${escHtml(ph.ops)}</p>`;
-if(p.menstrualHistory) html+=`<p><b>Menstrual History:</b> ${escHtml(p.menstrualHistory)}</p>`;
-if(p.obstetricHistory) html+=`<p><b>Obstetric History:</b> ${escHtml(p.obstetricHistory)}</p>`;
-html+=`</div></div>`;
-}
-
-/* ── Family History ── */
-if((p.familyHistory&&p.familyHistory.length)||p.familyHistoryDetails){
-html+=`<div class="card"><div class="case-section-title">FAMILY HISTORY</div><div class="case-body">`;
-if(p.familyHistory&&p.familyHistory.length)
-html+=`<p>${p.familyHistory.map(h=>`<span class="dx-chip">${h}</span>`).join('')}</p>`;
-if(p.familyHistoryDetails) html+=`<p>${escHtml(p.familyHistoryDetails)}</p>`;
-html+=`</div></div>`;
-}
-
-/* ── Personal / Social / Dietary ── */
-const ps=p.personalHistory||{};
-const hasPS=ps.economic||ps.education||ps.familySize||ps.prevResidence||
-(p.habits&&p.habits.length)||p.habitDetails||ps.dietType||ps.dietAdequacy||p.dietNotes;
-if(hasPS){
-html+=`<div class="card"><div class="case-section-title">PERSONAL, SOCIAL & DIETARY HISTORY</div><div class="case-body">`;
-if(ps.economic||ps.education||ps.familySize||ps.prevResidence){
-html+=`<p>`;
-if(ps.economic) html+=`<b>Economic Status:</b> ${escHtml(ps.economic)}. `;
-if(ps.education) html+=`<b>Education:</b> ${escHtml(ps.education)}. `;
-if(ps.familySize) html+=`<b>Family:</b> ${escHtml(ps.familySize)}. `;
-if(ps.prevResidence) html+=`<b>Residence/Travel:</b> ${escHtml(ps.prevResidence)}.`;
-html+=`</p>`;
-}
-if(p.habits&&p.habits.length){
-html+=`<p><b>Habits:</b> ${p.habits.join(', ')}`;
-if(p.habitDetails) html+=` — ${escHtml(p.habitDetails)}`;
-html+=`</p>`;
-}
-if(ps.dietType||ps.dietAdequacy||p.dietNotes){
-html+=`<p><b>Diet:</b> ${[ps.dietType,ps.dietAdequacy].filter(Boolean).join(', ')}`;
-if(p.dietNotes) html+=`. ${escHtml(p.dietNotes)}`;
-html+=`</p>`;
-}
-html+=`</div></div>`;
-}
-
-/* ── General Examination ── */
-const ge=p.generalExam||{};
-const gef=p.genExamFindings||{pos:[],neg:[]};
-html+=`<div class="card"><div class="case-section-title">GENERAL EXAMINATION</div>`;
-// Vitals
-const vitals=[[ge.pulse,‘Pulse’],[ge.bp,‘BP’],[ge.temp,‘Temperature’],[ge.rr,‘RR’],[ge.spo2,‘SpO₂’],[ge.weight,‘Weight/BMI’]].filter(v=>v[0]);
-if(vitals.length){
-html+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">`;
-vitals.forEach(([val,lbl])=>{
-html+=`<div style="background:var(--bg);border-radius:8px;padding:8px 10px;border:1px solid var(--border)"><div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">${lbl}</div><div style="font-weight:600;font-size:.9rem;margin-top:2px">${escHtml(val)}</div></div>`;
-});
-html+=`</div>`;
-}
-html+=`<div class="case-body">`;
-if(ge.consciousness) html+=`<p><b>Consciousness:</b> ${escHtml(ge.consciousness)}</p>`;
-if(ge.build) html+=`<p><b>Build & Nutrition:</b> ${escHtml(ge.build)}</p>`;
-// Positive findings first
-if(gef.pos&&gef.pos.length)
-html+=`<p><b>Present:</b> ${gef.pos.map(s=>`<span class="finding-pos">✓ ${s}</span>`).join(' ')}</p>`;
-if(gef.neg&&gef.neg.length)
-html+=`<p><b>Absent:</b> ${gef.neg.map(s=>`<span class="finding-neg">✗ ${s}</span>`).join(' ')}</p>`;
-if(ge.lymphDetails) html+=`<p><b>Lymphadenopathy:</b> ${escHtml(ge.lymphDetails)}</p>`;
-if(ge.oedemaDetails) html+=`<p><b>Oedema:</b> ${escHtml(ge.oedemaDetails)}</p>`;
-if(ge.notes) html+=`<p>${escHtml(ge.notes)}</p>`;
-html+=`</div></div>`;
-
-/* ── Systemic Examination ── */
-const se=p.sysExam||{};
-const hasCSE=Object.values(se).some(v=>v&&v.trim());
-if(hasCSE){
-html+=`<div class="card"><div class="case-section-title">SYSTEMIC EXAMINATION</div>`;
-const seBlocks=[
-[‘🫀 Cardiovascular System’,[
-[‘Pulse / JVP / Carotid’,se.cvsPulse],
-[‘Precordium (Inspection/Palpation)’,se.cvsPrecordium],
-[‘Auscultation’,se.cvsAuscult],
-]],
-[‘🫁 Respiratory System’,[
-[‘Inspection / Palpation / Percussion’,se.respIPP],
-[‘Auscultation’,se.respAuscult],
-]],
-[‘🫃 Abdomen’,[
-[‘Inspection / Auscultation’,se.abdInsp],
-[‘Palpation’,se.abdPalp],
-[‘Percussion’,se.abdPerc],
-[‘Rectal/Vaginal’,se.rectal],
-]],
-[‘🧠 Nervous System’,[
-[‘Higher Functions’,se.cnsHigher],
-[‘Cranial Nerves’,se.cnsCranial],
-[‘Motor System’,se.cnsMotor],
-[‘Reflexes’,se.cnsReflexes],
-[‘Sensory System’,se.cnsSensory],
-[‘Cerebellar/Extrapyramidal/Meningeal’,se.cnsOther],
-]],
+/* Systemic Review */
+var sysMap = [
+[‘cvs’,‘Cardiovascular’],[‘resp’,‘Respiratory’],[‘gi’,‘Gastrointestinal’],
+[‘urine’,‘Urinary’],[‘cns’,‘Central Nervous’],[‘endo’,‘Endocrine’],
+[‘loco’,‘Locomotor’],[‘bleed’,‘Bleeding Disorders’]
 ];
-seBlocks.forEach(([sysTitle, fields])=>{
-const hasAny=fields.some(([,v])=>v&&v.trim());
-if(!hasAny) return;
-html+=`<div class="sys-block"><div class="sys-block-title">${sysTitle}</div><div class="case-body">`;
-fields.forEach(([lbl,val])=>{
-if(val&&val.trim()) html+=`<p><b>${lbl}:</b> ${escHtml(val).replace(/\n/g,'<br/>')}</p>`;
+var hasSR = sysMap.some(function(m){ var d=sr[m[0]]||{pos:[],neg:[]}; return d.pos.length||d.neg.length||(sn[m[0]]||’’).length; });
+if (hasSR) {
+h += ‘<div class="card"><div class="cs-sec-title">SYSTEMIC REVIEW</div>’;
+sysMap.forEach(function(m) {
+var k=m[0], label=m[1], d=sr[k]||{pos:[],neg:[]}, n=sn[k]||’’;
+if (!d.pos.length&&!d.neg.length&&!n) return;
+h += ‘<div class="sys-blk"><div class="sys-blk-title">’ + label + ’ System</div><div class="cs-body">’;
+if (d.pos.length) h += ‘<p><span style="color:var(--teal);font-weight:600">Positive: </span>’ + d.pos.map(function(s){return ‘<span class="fpos">✓ ‘+esc(s)+’</span>’;}).join(’  ’) + ‘</p>’;
+if (d.neg.length) h += ‘<p><span style="color:var(--muted);font-weight:600">Negative: </span>’ + d.neg.map(function(s){return ‘<span class="fneg">✗ ‘+esc(s)+’</span>’;}).join(’  ’) + ‘</p>’;
+if (n) h += ‘<p style="font-style:italic">’ + esc(n) + ‘</p>’;
+h += ‘</div></div>’;
 });
-html+=`</div></div>`;
+h += ‘</div>’;
+}
+
+/* Past History */
+if (ph.medical||ph.allergy||ph.immunisation||ph.ops||p.menstrual||p.obstetric) {
+h += ‘<div class="card"><div class="cs-sec-title">PAST HISTORY</div><div class="cs-body">’;
+if (ph.medical) h += ’<p><b>Past Medical History:</b> ’ + esc(ph.medical) + ‘</p>’;
+if (ph.allergy) h += ’<p><b>Drug Allergy:</b> ’ + esc(ph.allergy) + ‘</p>’;
+if (ph.immunisation) h += ’<p><b>Immunisation:</b> ’ + esc(ph.immunisation) + ‘</p>’;
+if (ph.ops) h += ’<p><b>Operations/Accidents:</b> ’ + esc(ph.ops) + ‘</p>’;
+if (p.menstrual) h += ’<p><b>Menstrual History:</b> ’ + esc(p.menstrual) + ‘</p>’;
+if (p.obstetric) h += ’<p><b>Obstetric History:</b> ’ + esc(p.obstetric) + ‘</p>’;
+h += ‘</div></div>’;
+}
+
+/* Family History */
+if ((p.fh&&p.fh.length)||p.fhDetails) {
+h += ‘<div class="card"><div class="cs-sec-title">FAMILY HISTORY</div><div class="cs-body">’;
+if (p.fh&&p.fh.length) h += ‘<p>’ + p.fh.map(function(f){return ‘<span class="dx-chip-prov">’+esc(f)+’</span>’;}).join(’’) + ‘</p>’;
+if (p.fhDetails) h += ‘<p>’ + esc(p.fhDetails) + ‘</p>’;
+h += ‘</div></div>’;
+}
+
+/* Personal/Social/Dietary */
+var hasPS = ps.economic||ps.education||ps.family||ps.residence||(p.habits&&p.habits.length)||p.habitDetails||ps.dietType||ps.dietAdequacy||p.dietNotes;
+if (hasPS) {
+h += ‘<div class="card"><div class="cs-sec-title">PERSONAL, SOCIAL & DIETARY HISTORY</div><div class="cs-body">’;
+var soc = [];
+if (ps.economic) soc.push(’Economic status: ’ + ps.economic);
+if (ps.education) soc.push(’Education: ’ + ps.education);
+if (ps.family) soc.push(‘Family: ’ + ps.family);
+if (ps.residence) soc.push(‘Residence/Travel: ’ + ps.residence);
+if (soc.length) h += ‘<p>’ + soc.map(esc).join(’. ‘) + ‘</p>’;
+if (p.habits&&p.habits.length) h += ‘<p><b>Habits:</b> ’ + p.habits.map(esc).join(’, ‘) + (p.habitDetails?’. ‘+esc(p.habitDetails):’’) + ‘</p>’;
+var diet=[ps.dietType,ps.dietAdequacy].filter(Boolean).join(’, ‘);
+if (diet||p.dietNotes) h += ‘<p><b>Diet:</b> ’ + esc(diet) + (p.dietNotes?’. ‘+esc(p.dietNotes):’’) + ‘</p>’;
+h += ‘</div></div>’;
+}
+
+/* General Examination */
+h += ‘<div class="card"><div class="cs-sec-title">GENERAL EXAMINATION</div>’;
+var vitals = [[‘Pulse’,ge.pulse],[‘BP’,ge.bp],[‘Temp’,ge.temp],[‘RR’,ge.rr],[‘SpO₂’,ge.spo2],[‘Wt/BMI’,ge.weight]].filter(function(v){return v[1];});
+if (vitals.length) {
+h += ‘<div class="vtl-grid">’ + vitals.map(function(v){return ‘<div class="vtl-box"><div class="vtl-lbl">’+v[0]+’</div><div class="vtl-val">’+esc(v[1])+’</div></div>’;}).join(’’) + ‘</div>’;
+}
+h += ‘<div class="cs-body">’;
+if (ge.consciousness) h += ’<p><b>Consciousness:</b> ’ + esc(ge.consciousness) + ‘</p>’;
+if (ge.build) h += ’<p><b>Build & Nutrition:</b> ’ + esc(ge.build) + ‘</p>’;
+if (gef.pos&&gef.pos.length) h += ‘<p><b>Present:</b> ’ + gef.pos.map(function(s){return ‘<span class="fpos">✓ ‘+esc(s)+’</span>’;}).join(’ ’) + ‘</p>’;
+if (gef.neg&&gef.neg.length) h += ‘<p><b>Absent:</b> ’ + gef.neg.map(function(s){return ‘<span class="fneg">✗ ‘+esc(s)+’</span>’;}).join(’ ’) + ‘</p>’;
+if (ge.lymph) h += ’<p><b>Lymphadenopathy:</b> ’ + esc(ge.lymph) + ‘</p>’;
+if (ge.oedema) h += ’<p><b>Oedema:</b> ’ + esc(ge.oedema) + ‘</p>’;
+if (ge.notes) h += ‘<p>’ + esc(ge.notes) + ‘</p>’;
+h += ‘</div></div>’;
+
+/* Systemic Examination */
+var seMap = [
+[‘🫀 Cardiovascular System’, [[‘Pulse/JVP/Carotid’,se.cvs1],[‘Precordium’,se.cvs2],[‘Auscultation’,se.cvs3]]],
+[‘🫁 Respiratory System’,    [[‘Inspection/Palpation/Percussion’,se.resp1],[‘Auscultation’,se.resp2]]],
+[‘🫃 Abdomen’,               [[‘Inspection/Auscultation’,se.abd1],[‘Palpation’,se.abd2],[‘Percussion’,se.abd3],[‘Rectal/Vaginal’,se.rectal]]],
+[‘🧠 Nervous System’,        [[‘Higher Functions’,se.cns1],[‘Cranial Nerves’,se.cns2],[‘Motor’,se.cns3],[‘Reflexes’,se.cns4],[‘Sensory’,se.cns5],[‘Cerebellar/EP/Meningeal’,se.cns6]]],
+];
+var hasSeAny = seMap.some(function(m){ return m[1].some(function(f){return f[1]&&f[1].trim();}); });
+if (hasSeAny) {
+h += ‘<div class="card"><div class="cs-sec-title">SYSTEMIC EXAMINATION</div>’;
+seMap.forEach(function(m) {
+var any = m[1].some(function(f){return f[1]&&f[1].trim();});
+if (!any) return;
+h += ‘<div class="sys-blk"><div class="sys-blk-title">’ + m[0] + ‘</div><div class="cs-body">’;
+m[1].forEach(function(f){ if(f[1]&&f[1].trim()) h += ‘<p><b>’+f[0]+’:</b> ‘+esc(f[1]).replace(/\n/g,’<br>’)+’</p>’; });
+h += ‘</div></div>’;
 });
-html+=`</div>`;
+h += ‘</div>’;
 }
 
-/* ── Investigations ── */
-if(p.investigations){
-html+=`<div class="card"><div class="case-section-title">INVESTIGATIONS</div><div class="case-body">${escHtml(p.investigations).replace(/\n/g,'<br/>')}</div></div>`;
+/* Investigations */
+if (p.investigations) {
+h += ‘<div class="card"><div class="cs-sec-title">INVESTIGATIONS</div><div class="cs-body">’ + esc(p.investigations).replace(/\n/g,’<br>’) + ‘</div></div>’;
 }
 
-/* ── Diagnosis ── */
-const dx=p.diagnosis||{};
-html+=`<div class="card"><div class="case-section-title">DIAGNOSIS</div><div class="case-body">`;
-if(dx.provisional) html+=`<div class="sys-block"><div class="sys-block-title">Provisional Diagnosis</div><p>${escHtml(dx.provisional).replace(/\n/g,'<br/>')}</p></div>`;
-if(p.ddx&&p.ddx.length){
-html+=`<div class="sys-block"><div class="sys-block-title">Differential Diagnoses</div><ol style="padding-left:18px">`;
-p.ddx.forEach(d=>html+=`<li>${escHtml(d)}</li>`);
-html+=`</ol></div>`;
+/* Diagnosis */
+h += ‘<div class="card"><div class="cs-sec-title">DIAGNOSIS</div><div class="cs-body">’;
+if (dx.provisional) h += ‘<div class="sys-blk"><div class="sys-blk-title">Provisional Diagnosis</div><p>’ + esc(dx.provisional).replace(/\n/g,’<br>’) + ‘</p></div>’;
+if (p.ddx&&p.ddx.length) {
+h += ‘<div class="sys-blk"><div class="sys-blk-title">Differential Diagnoses</div><ol style="padding-left:18px">’;
+p.ddx.forEach(function(d){ h += ‘<li>’ + esc(d) + ‘</li>’; });
+h += ‘</ol></div>’;
 }
-if(dx.final) html+=`<div class="sys-block"><div class="sys-block-title" style="color:var(--teal)">✅ Final Diagnosis</div><p style="font-weight:600;font-size:1rem">${escHtml(dx.final).replace(/\n/g,'<br/>')}</p></div>`;
-html+=`</div></div>`;
+if (dx.final) h += ‘<div class="sys-blk"><div class="sys-blk-title" style="color:var(--teal)">✅ Final Diagnosis</div><p style="font-weight:700;font-size:.97rem">’ + esc(dx.final).replace(/\n/g,’<br>’) + ‘</p></div>’;
+h += ‘</div></div>’;
 
-/* ── Footer ── */
-html+=`<div class="card" style="text-align:center;color:var(--muted);font-size:.75rem;padding:12px">
-Case recorded: ${new Date(p.updatedAt||p.createdAt||Date.now()).toLocaleString(‘en-IN’)}  ·  ClinCase App
-
-  </div>`;
-
-return html;
+/* Footer */
+h += ‘<div style="text-align:center;color:var(--muted);font-size:.72rem;padding:12px 0 4px">Recorded: ’ + new Date(p.updatedAt||Date.now()).toLocaleString(‘en-IN’) + ’ · ClinCase</div>’;
+return h;
 }
 
-function kv(label,value){
-if(!value) return ‘’;
-return `<span class="case-kv"><b>${label}:</b> ${escHtml(value)}</span>`;
+function kv(label, value) {
+if (!value) return ‘’;
+return ‘<span class="cs-kv"><b>’ + label + ’:</b> ’ + esc(value) + ‘</span>’;
 }
 
-function escHtml(str){
-if(!str) return ‘’;
-return String(str).replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’).replace(/”/g,’"’);
-}
+/* ── INIT ── */
+updateHomeLbl();
 
-/* ════════════════════════════════════════════════════════
-INIT
-════════════════════════════════════════════════════════ */
-updateHomeCounts();
+})(); // end IIFE
 </script>
 
 </body>
